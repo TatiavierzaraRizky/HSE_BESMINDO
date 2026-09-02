@@ -490,7 +490,7 @@ function buildLaggingRows(reports) {
             indicator: master.name,
             definition: master.definition,
             unit: master.unit,
-            target: "",,
+            target: 0,
             values: createValueObject(),
             notes: "",
         });

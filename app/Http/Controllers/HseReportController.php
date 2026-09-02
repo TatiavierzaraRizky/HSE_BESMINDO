@@ -541,11 +541,11 @@ class HseReportController extends Controller
 
                         'target_month' =>
                             $indicator['target_month']
-                            ?? ($indicator['plan'] ?? 0),
+                            ?? 0,
 
                         'target_year' =>
                             $indicator['target_year']
-                            ?? ($indicator['plan'] ?? 0),
+                            ?? 0,
 
                         'plan' =>
                             $indicator['plan'] ?? 0,

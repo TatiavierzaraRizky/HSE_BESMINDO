@@ -361,11 +361,9 @@ export default function ActualReport() {
                                         ? number(
                                               item.target_month ??
                                                   item.targetMonth ??
-                                                  item.plan
+                                                  0
                                           )
-                                        : number(
-                                              item.plan
-                                          ),
+                                        : 0,
 
                                 annualTarget:
                                     type ===
@@ -373,7 +371,7 @@ export default function ActualReport() {
                                         ? number(
                                               item.target_year ??
                                                   item.targetYear ??
-                                                  item.plan
+                                                  0
                                           )
                                         : 0,
 

@@ -292,15 +292,15 @@ export default function PlanReport() {
                                 ? number(
                                       item.target_month ??
                                           item.targetMonth ??
-                                          item.plan
+                                          0
                                   )
-                                : number(item.plan),
+                                : 0,
                         annualTarget:
                             type === "leading"
                                 ? number(
                                       item.target_year ??
                                           item.targetYear ??
-                                          item.plan
+                                          0
                                   )
                                 : 0,
                         values: Array(12).fill(0),
@@ -328,15 +328,7 @@ export default function PlanReport() {
                 |--------------------------------------------------------------------------
                 */
 
-                const planValue =
-                    type === "leading"
-                        ? number(
-                              item.plan ??
-                                  item.target_month ??
-                                  item.targetMonth ??
-                                  0
-                          )
-                        : number(item.plan);
+                const planValue = number(item.plan);
 
                 row.values[month] += planValue;
 
