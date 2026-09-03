@@ -23,13 +23,13 @@ const responsiveStyle = `
     }
 
     .admin-main-content {
-        margin-left: 100px !important;
-        width: calc(100% - 100px) !important;
-        max-width: calc(100% - 100px) !important;
+        margin-left: var(--admin-sidebar-width, 215px) !important;
+        width: calc(100% - var(--admin-sidebar-width, 215px)) !important;
+        max-width: calc(100% - var(--admin-sidebar-width, 215px)) !important;
         min-width: 0 !important;
         box-sizing: border-box;
         overflow-x: hidden;
-        transition: margin-left 0.25s ease, width 0.25s ease;
+        transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .admin-topbar {
@@ -38,6 +38,7 @@ const responsiveStyle = `
         min-width: 0 !important;
         box-sizing: border-box;
         overflow: hidden;
+        transition: padding 0.25s ease;
     }
 
     .admin-topbar > div:first-child {
@@ -59,6 +60,25 @@ const responsiveStyle = `
         min-width: 0 !important;
         box-sizing: border-box;
         overflow-x: hidden;
+        padding: 24px 30px 50px;
+        transition: padding 0.25s ease;
+    }
+
+    .dashboard-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 12px;
+        width: 100%;
+        box-sizing: border-box;
+        transition: all 0.25s ease;
+    }
+
+    .dashboard-chart-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .dashboard-kpi-grid > *,
@@ -67,13 +87,13 @@ const responsiveStyle = `
         max-width: 100%;
     }
 
-    @media (max-width: 900px) {
-        .admin-main-content {
-            margin-left: 68px !important;
-            width: calc(100% - 68px) !important;
-            max-width: calc(100% - 68px) !important;
+    @media (max-width: 1400px) {
+        .dashboard-kpi-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         }
+    }
 
+    @media (max-width: 900px) {
         .admin-topbar {
             padding-left: 18px !important;
             padding-right: 18px !important;
@@ -88,8 +108,7 @@ const responsiveStyle = `
         }
 
         .admin-main {
-            padding-left: 18px !important;
-            padding-right: 18px !important;
+            padding: 20px 18px 40px !important;
         }
     }
 
@@ -302,14 +321,14 @@ export default function Dashboard() {
             <div
                 className="admin-main-content"
                 style={{
-                    marginLeft: "100px",
+                    marginLeft: "var(--admin-sidebar-width, 215px)",
                     minHeight: "100vh",
-                    width: "calc(100% - 100px)",
-                    maxWidth: "calc(100% - 100px)",
+                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                    maxWidth: "calc(100% - var(--admin-sidebar-width, 215px))",
                     minWidth: 0,
                     boxSizing: "border-box",
                     overflowX: "hidden",
-                    transition: "margin-left 0.25s ease, width 0.25s ease",
+                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
             >
                 {/* =================================
@@ -889,27 +908,50 @@ function FilterSelect({ icon, value, onChange, options }) {
    METRIC CARD
 ===================================================== */
 
+/* =====================================================
+   MODERN CLASSIC: METRIC CARD (HIJAU BOTOL & KUNING NEON)
+===================================================== */
+
 function MetricCard({ title, value, change, badge }) {
+    const isIncrease = change && change.includes("↑");
+    const isNeutral = change && change.includes("—");
+
     return (
         <div
             style={{
-                backgroundColor: "white",
-                border: "1px solid #d4ded9",
-                borderRadius: "4px",
-                minHeight: "82px",
-                padding: "14px",
-                boxSizing: "border-box",
+                backgroundColor: "#ffffff",
+                borderRadius: "14px",
+                border: "1px solid #004d32",
+                padding: "18px 20px",
+                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.08)",
                 position: "relative",
                 overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                minHeight: "105px",
+                boxSizing: "border-box",
+                transition: "transform 0.2s, box-shadow 0.2s",
             }}
         >
             <div
                 style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "4px",
+                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
+                }}
+            />
+
+            <div
+                style={{
                     fontSize: "11px",
-                    letterSpacing: "1px",
-                    color: "#355449",
-                    marginBottom: "10px",
-                    fontWeight: "700",
+                    letterSpacing: "0.06em",
+                    color: "#004d32",
+                    fontWeight: "800",
+                    textTransform: "uppercase",
                 }}
             >
                 {title}
@@ -918,14 +960,18 @@ function MetricCard({ title, value, change, badge }) {
             <div
                 style={{
                     display: "flex",
-                    alignItems: "flex-end",
-                    gap: "10px",
+                    alignItems: "baseline",
+                    justifyContent: "space-between",
+                    marginTop: "8px",
+                    gap: "8px",
                 }}
             >
                 <strong
                     style={{
-                        fontSize: "27px",
-                        color: "#075E45",
+                        fontSize: "26px",
+                        fontWeight: "900",
+                        color: "#003824",
+                        letterSpacing: "-0.02em",
                     }}
                 >
                     {value}
@@ -934,9 +980,14 @@ function MetricCard({ title, value, change, badge }) {
                 {change && (
                     <span
                         style={{
-                            fontSize: "12px",
-                            color: "#0A6B50",
-                            marginBottom: "3px",
+                            fontSize: "11px",
+                            fontWeight: "800",
+                            padding: "2px 7px",
+                            borderRadius: "999px",
+                            backgroundColor: "#004d32",
+                            color: "#efff00",
+                            border: "1px solid #efff00",
+                            boxShadow: "0 0 6px rgba(239, 255, 0, 0.25)",
                         }}
                     >
                         {change}
@@ -945,37 +996,44 @@ function MetricCard({ title, value, change, badge }) {
             </div>
 
             {badge && (
-                <span
-                    style={{
-                        position: "absolute",
-                        right: "0",
-                        bottom: "0",
-                        backgroundColor: "#EFFF00",
-                        color: "#064E3B",
-                        padding: "4px 6px",
-                        fontSize: "10px",
-                        fontWeight: "700",
-                    }}
-                >
-                    {badge}
-                </span>
+                <div style={{ marginTop: "10px" }}>
+                    <span
+                        style={{
+                            display: "inline-block",
+                            backgroundColor: "#004d32",
+                            color: "#efff00",
+                            padding: "3px 9px",
+                            borderRadius: "999px",
+                            fontSize: "10.5px",
+                            fontWeight: "800",
+                            letterSpacing: "0.03em",
+                            border: "1px solid #efff00",
+                            boxShadow: "0 0 8px rgba(239, 255, 0, 0.25)",
+                        }}
+                    >
+                        ● {badge}
+                    </span>
+                </div>
             )}
         </div>
     );
 }
 
 /* =====================================================
-   CHART CARD
+   MODERN CHART CARD
 ===================================================== */
 
 function ChartCard({ title, children, menu = false }) {
     return (
         <div
             style={{
-                backgroundColor: "white",
-                border: "1px solid #d4ded9",
-                borderRadius: "5px",
-                padding: "14px",
+                backgroundColor: "#ffffff",
+                borderRadius: "14px",
+                border: "1px solid #004d32",
+                padding: "22px 24px",
+                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.08)",
+                boxSizing: "border-box",
+                overflow: "hidden",
             }}
         >
             <div
@@ -983,20 +1041,22 @@ function ChartCard({ title, children, menu = false }) {
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    marginBottom: "12px",
+                    marginBottom: "16px",
                 }}
             >
                 <h2
                     style={{
                         margin: 0,
-                        fontSize: "18px",
-                        color: "#C94F3D",
+                        fontSize: "16px",
+                        fontWeight: "800",
+                        color: "#004d32",
+                        letterSpacing: "-0.01em",
                     }}
                 >
                     {title}
                 </h2>
 
-                {menu && <MoreVertical size={17} color="#4f625b" />}
+                {menu && <MoreVertical size={16} color="#004d32" style={{ cursor: "pointer" }} />}
             </div>
 
             {children}
@@ -1005,13 +1065,12 @@ function ChartCard({ title, children, menu = false }) {
 }
 
 /* =====================================================
-   LINE CHART
+   MODERN LINE CHART (HIJAU BOTOL & KUNING NEON)
 ===================================================== */
 
 function LineChart({ values }) {
     const width = 600;
     const height = 220;
-
     const max = Math.max(...values, 120);
 
     const points = values
@@ -1020,9 +1079,7 @@ function LineChart({ values }) {
                 values.length === 1
                     ? width / 2
                     : (index / (values.length - 1)) * width;
-
-            const y = height - (value / max) * 180 - 10;
-
+            const y = height - (value / max) * 160 - 20;
             return `${x},${y}`;
         })
         .join(" ");
@@ -1033,25 +1090,37 @@ function LineChart({ values }) {
         <div
             style={{
                 width: "100%",
-                height: "230px",
-                backgroundColor: "#F7F9F2",
-                padding: "10px",
+                height: "240px",
+                background: "#fcfdfc",
+                borderRadius: "10px",
+                padding: "16px 14px 10px",
                 boxSizing: "border-box",
+                border: "1px solid #e2e8f0",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
             }}
         >
             <svg
                 viewBox={`0 0 ${width} ${height}`}
                 width="100%"
-                height="100%"
+                height="190px"
                 preserveAspectRatio="none"
             >
-                <polygon points={areaPoints} fill="#E8FF33" />
+                <defs>
+                    <linearGradient id="neonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#efff00" stopOpacity="0.5" />
+                        <stop offset="100%" stopColor="#004d32" stopOpacity="0.05" />
+                    </linearGradient>
+                </defs>
+
+                <polygon points={areaPoints} fill="url(#neonGrad)" />
 
                 <polyline
                     points={points}
                     fill="none"
-                    stroke="#075E45"
-                    strokeWidth="3"
+                    stroke="#004d32"
+                    strokeWidth="4"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                 />
@@ -1061,30 +1130,31 @@ function LineChart({ values }) {
                         values.length === 1
                             ? width / 2
                             : (index / (values.length - 1)) * width;
-
-                    const y = height - (value / max) * 180 - 10;
+                    const y = height - (value / max) * 160 - 20;
 
                     return (
                         <circle
                             key={index}
                             cx={x}
                             cy={y}
-                            r="3"
-                            fill="#C94F3D"
+                            r="5"
+                            fill="#efff00"
+                            stroke="#004d32"
+                            strokeWidth="2.5"
                         />
                     );
                 })}
             </svg>
 
             {/* MONTH LABELS */}
-
             <div
                 style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    color: "#61786D",
+                    color: "#004d32",
                     fontSize: "11px",
-                    padding: "0 8px",
+                    fontWeight: "800",
+                    padding: "0 4px",
                 }}
             >
                 {[
@@ -1099,6 +1169,7 @@ function LineChart({ values }) {
                     "Sep",
                     "Oct",
                     "Nov",
+                    "Dec",
                 ].map((item) => (
                     <span key={item}>{item}</span>
                 ))}
@@ -1108,75 +1179,52 @@ function LineChart({ values }) {
 }
 
 /* =====================================================
-   BAR CHART
+   MODERN BAR CHART (HIJAU BOTOL & KUNING NEON)
 ===================================================== */
 
 function BarChart() {
     const data = [
-        {
-            label: "Q1",
-            target: 85,
-            actual: 75,
-        },
-        {
-            label: "Q2",
-            target: 78,
-            actual: 65,
-        },
-        {
-            label: "Q3",
-            target: 95,
-            actual: 88,
-        },
-        {
-            label: "Q4",
-            target: 70,
-            actual: 45,
-        },
-        {
-            label: "YTD",
-            target: 92,
-            actual: 88,
-        },
+        { label: "Q1", target: 85, actual: 75 },
+        { label: "Q2", target: 78, actual: 65 },
+        { label: "Q3", target: 95, actual: 88 },
+        { label: "Q4", target: 70, actual: 45 },
+        { label: "YTD", target: 92, actual: 88 },
     ];
 
     return (
         <div>
             {/* LEGEND */}
-
             <div
                 style={{
                     display: "flex",
                     justifyContent: "flex-end",
-                    gap: "10px",
+                    gap: "14px",
                     fontSize: "12px",
-                    marginBottom: "8px",
-                    color: "#53655e",
+                    marginBottom: "12px",
+                    fontWeight: "700",
+                    color: "#004d32",
                 }}
             >
-                <span>
+                <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <span
                         style={{
-                            display: "inline-block",
-                            width: "7px",
-                            height: "7px",
-                            borderRadius: "50%",
-                            backgroundColor: "#EFFF00",
-                            marginRight: "4px",
+                            width: "9px",
+                            height: "9px",
+                            borderRadius: "3px",
+                            backgroundColor: "#cbd5e1",
                         }}
                     />
                     Target
                 </span>
 
-                <span>
+                <span style={{ display: "flex", alignItems: "center", gap: "5px", color: "#004d32" }}>
                     <span
                         style={{
-                            display: "inline-block",
-                            width: "7px",
-                            height: "7px",
-                            borderRadius: "50%",
-                            backgroundColor: "#075E45",
-                            marginRight: "4px",
+                            width: "9px",
+                            height: "9px",
+                            borderRadius: "3px",
+                            background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                            border: "1px solid #004d32",
                         }}
                     />
                     Actual
@@ -1184,16 +1232,17 @@ function BarChart() {
             </div>
 
             {/* BARS */}
-
             <div
                 style={{
-                    height: "210px",
+                    height: "190px",
+                    background: "#fcfdfc",
+                    borderRadius: "10px",
                     display: "flex",
                     alignItems: "flex-end",
                     justifyContent: "space-around",
-                    borderBottom: "1px solid #dce4e1",
-                    padding: "10px 10px 0",
+                    padding: "16px 14px 0",
                     boxSizing: "border-box",
+                    border: "1px solid #e2e8f0",
                 }}
             >
                 {data.map((item) => (
@@ -1202,46 +1251,61 @@ function BarChart() {
                         style={{
                             height: "100%",
                             display: "flex",
-                            alignItems: "flex-end",
-                            gap: "4px",
+                            flexDirection: "column",
+                            justifyContent: "flex-end",
+                            alignItems: "center",
+                            gap: "8px",
+                            flex: 1,
                         }}
                     >
-                        {/* TARGET */}
-
                         <div
                             style={{
-                                width: "13px",
-                                height: `${item.target}%`,
-                                backgroundColor: "#EFFF00",
+                                display: "flex",
+                                alignItems: "flex-end",
+                                justifyContent: "center",
+                                gap: "6px",
+                                height: "100%",
+                                width: "100%",
                             }}
-                        />
+                        >
+                            {/* TARGET */}
+                            <div
+                                style={{
+                                    width: "16px",
+                                    height: `${item.target}%`,
+                                    backgroundColor: "#cbd5e1",
+                                    borderRadius: "4px 4px 0 0",
+                                    transition: "height 0.3s ease",
+                                }}
+                                title={`Target: ${item.target}%`}
+                            />
 
-                        {/* ACTUAL */}
+                            {/* ACTUAL */}
+                            <div
+                                style={{
+                                    width: "16px",
+                                    height: `${item.actual}%`,
+                                    background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                                    borderRadius: "4px 4px 0 0",
+                                    boxShadow: "0 0 10px rgba(239, 255, 0, 0.4)",
+                                    border: "1px solid #004d32",
+                                    transition: "height 0.3s ease",
+                                }}
+                                title={`Actual: ${item.actual}%`}
+                            />
+                        </div>
 
-                        <div
+                        <span
                             style={{
-                                width: "13px",
-                                height: `${item.actual}%`,
-                                backgroundColor: "#075E45",
+                                fontSize: "11px",
+                                color: "#004d32",
+                                fontWeight: "800",
+                                paddingBottom: "6px",
                             }}
-                        />
+                        >
+                            {item.label}
+                        </span>
                     </div>
-                ))}
-            </div>
-
-            {/* LABELS */}
-
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "space-around",
-                    fontSize: "11px",
-                    color: "#61786D",
-                    paddingTop: "6px",
-                }}
-            >
-                {data.map((item) => (
-                    <span key={item.label}>{item.label}</span>
                 ))}
             </div>
         </div>
@@ -1249,19 +1313,22 @@ function BarChart() {
 }
 
 /* =====================================================
-   TABLE
+   MODERN TABLE
 ===================================================== */
 
 function TableHead({ children }) {
     return (
         <th
             style={{
-                padding: "10px",
+                padding: "13px 16px",
                 textAlign: "center",
                 fontSize: "11px",
-                letterSpacing: "0.7px",
-                color: "#3e514a",
-                fontWeight: "700",
+                letterSpacing: "0.05em",
+                color: "#ffffff",
+                backgroundColor: "#004d32",
+                fontWeight: "800",
+                textTransform: "uppercase",
+                borderBottom: "2px solid #efff00",
             }}
         >
             {children}
@@ -1273,10 +1340,11 @@ function TableCell({ children, left = false }) {
     return (
         <td
             style={{
-                padding: "9px 10px",
+                padding: "13px 16px",
                 textAlign: left ? "left" : "center",
-                color: "#233F35",
+                color: "#1e293b",
                 fontSize: "13px",
+                fontWeight: "500",
             }}
         >
             {children}
@@ -1285,21 +1353,28 @@ function TableCell({ children, left = false }) {
 }
 
 /* =====================================================
-   STATUS
+   MODERN STATUS BADGE
 ===================================================== */
 
 function StatusBadge({ status }) {
-    let background = "#d6f8e6";
-    let color = "#0A6B50";
+    const isAchieved = status === "ACHIEVED";
+    const isNotAchieved = status === "NOT ACHIEVED";
 
-    if (status === "NOT ACHIEVED") {
-        background = "#ffe1df";
-        color = "#dc2626";
-    }
+    let bg = "#004d32";
+    let color = "#efff00";
+    let border = "#efff00";
+    let dot = "#efff00";
 
-    if (status === "PENDING") {
-        background = "#e2e7eb";
-        color = "#52616b";
+    if (isNotAchieved) {
+        bg = "#7f1d1d";
+        color = "#fecaca";
+        border = "#ef4444";
+        dot = "#ef4444";
+    } else if (!isAchieved) {
+        bg = "#f8fafc";
+        color = "#64748b";
+        border = "#e2e8f0";
+        dot = "#94a3b8";
     }
 
     return (
@@ -1307,34 +1382,26 @@ function StatusBadge({ status }) {
             style={{
                 display: "inline-flex",
                 alignItems: "center",
-                justifyContent: "center",
-                minWidth: "78px",
-                padding: "5px 8px",
-                borderRadius: "2px",
-                backgroundColor: background,
+                gap: "5px",
+                padding: "4px 10px",
+                borderRadius: "999px",
+                backgroundColor: bg,
                 color: color,
-                fontSize: "10px",
-                fontWeight: "700",
+                border: `1px solid ${border}`,
+                boxShadow: isAchieved ? "0 0 8px rgba(239, 255, 0, 0.3)" : "none",
+                fontSize: "11px",
+                fontWeight: "800",
             }}
         >
-            {status === "ACHIEVED" && (
-                <CheckCircle2
-                    size={10}
-                    style={{
-                        marginRight: "4px",
-                    }}
-                />
-            )}
-
-            {status === "NOT ACHIEVED" && (
-                <AlertCircle
-                    size={10}
-                    style={{
-                        marginRight: "4px",
-                    }}
-                />
-            )}
-
+            <span
+                style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    backgroundColor: dot,
+                    boxShadow: isAchieved ? "0 0 6px #efff00" : "none",
+                }}
+            />
             {status}
         </span>
     );

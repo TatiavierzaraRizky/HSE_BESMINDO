@@ -241,7 +241,9 @@ export default function UserManagement() {
 
             <main
                 style={{
-                    marginLeft: "200px",
+                    marginLeft: "var(--admin-sidebar-width, 215px)",
+                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
                 }}
             >
@@ -1069,100 +1071,123 @@ export default function UserManagement() {
 }
 
 // ==============================================
-// STYLES
+// MODERN CLASSIC: STYLES (HIJAU BOTOL & KUNING NEON)
 // ==============================================
 
 const iconButton = {
-    border: "none",
-    background: "transparent",
-    color: "#00583b",
+    width: "36px",
+    height: "36px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
+    backgroundColor: "#ffffff",
+    color: "#004d32",
+    fontSize: "16px",
     cursor: "pointer",
-    fontSize: "20px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
 };
 
 const primaryButton = {
-    border: "none",
-    backgroundColor: "#00583b",
-    color: "#ffffff",
-    padding: "0 13px",
-    height: "34px",
-    borderRadius: "4px",
-    fontSize: "15px",
-    fontWeight: "700",
+    border: "1px solid #efff00",
+    background: "#004d32",
+    color: "#efff00",
+    padding: "0 18px",
+    height: "38px",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "800",
     cursor: "pointer",
+    boxShadow: "0 0 10px rgba(239, 255, 0, 0.25)",
 };
 
 const secondaryButton = {
-    border: "1px solid #d0d5dd",
+    border: "1px solid #004d32",
     backgroundColor: "#ffffff",
-    color: "#344054",
-    padding: "0 13px",
-    height: "34px",
-    borderRadius: "4px",
-    fontSize: "15px",
-    fontWeight: "600",
+    color: "#004d32",
+    padding: "0 18px",
+    height: "38px",
+    borderRadius: "8px",
+    fontSize: "13px",
+    fontWeight: "700",
     cursor: "pointer",
 };
 
 const tableHeader = {
-    padding: "8px 10px",
+    padding: "14px 16px",
     textAlign: "left",
-    fontSize: "12px",
-    color: "#475467",
-    fontWeight: "700",
+    fontSize: "11.5px",
+    color: "#ffffff",
+    backgroundColor: "#004d32",
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    borderBottom: "2px solid #efff00",
 };
 
 const tableCell = {
-    padding: "8px 10px",
-    fontSize: "15px",
-    color: "#172033",
+    padding: "14px 16px",
+    fontSize: "13px",
+    color: "#1e293b",
+    fontWeight: "500",
 };
 
 const roleBadge = {
     display: "inline-block",
-    backgroundColor: "#e9eef2",
-    border: "1px solid #d6dde3",
-    color: "#475467",
-    borderRadius: "10px",
-    padding: "3px 7px",
-    fontSize: "12px",
+    backgroundColor: "#004d32",
+    border: "1px solid #efff00",
+    color: "#efff00",
+    borderRadius: "6px",
+    padding: "3px 8px",
+    fontSize: "11px",
+    fontWeight: "800",
+    boxShadow: "0 0 6px rgba(239, 255, 0, 0.2)",
 };
 
 const actionButton = {
-    border: "none",
-    background: "transparent",
-    color: "#00583b",
-    fontSize: "13px",
+    border: "1px solid #004d32",
+    background: "#004d32",
+    color: "#efff00",
+    fontSize: "11px",
+    borderRadius: "6px",
     cursor: "pointer",
-    padding: "3px 5px",
+    padding: "5px 10px",
+    fontWeight: "800",
+    transition: "all 0.15s",
 };
 
 const paginationButton = {
-    border: "1px solid #d0d5dd",
+    border: "1px solid #004d32",
     backgroundColor: "#ffffff",
-    color: "#667085",
-    borderRadius: "3px",
-    padding: "4px 7px",
+    color: "#004d32",
+    borderRadius: "8px",
+    padding: "6px 12px",
     fontSize: "12px",
+    fontWeight: "700",
+    cursor: "pointer",
 };
 
 const modalLabel = {
     display: "block",
-    fontSize: "13px",
-    fontWeight: "700",
-    color: "#344054",
+    fontSize: "11px",
+    fontWeight: "800",
+    color: "#004d32",
     marginBottom: "5px",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
 };
 
 const modalInput = {
     width: "100%",
-    height: "34px",
+    height: "38px",
     boxSizing: "border-box",
-    border: "1px solid #d0d5dd",
-    borderRadius: "4px",
-    padding: "0 9px",
-    marginBottom: "12px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
+    padding: "0 10px",
+    marginBottom: "14px",
     outline: "none",
-    fontSize: "15px",
+    fontSize: "13px",
+    fontWeight: "600",
     backgroundColor: "#ffffff",
 };

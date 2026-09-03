@@ -93,9 +93,10 @@ Route::prefix('admin')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/kpi-per-rig', function () {
-        return Inertia::render('Admin/KPIPerRig');
-    })->name('admin.kpi-per-rig');
+    Route::get('/kpi-per-rig', [
+        HseReportController::class,
+        'kpiPerRig',
+    ])->name('admin.kpi-per-rig');
 
 
     /*
@@ -167,9 +168,10 @@ Route::prefix('admin')->group(function () {
     |
     */
 
-    Route::get('/reports/plan', function () {
-        return Inertia::render('Admin/PlanReport');
-    })->name('admin.reports.plan');
+    Route::get('/reports/plan', [
+        HseReportController::class,
+        'plan',
+    ])->name('admin.reports.plan');
 
 
     /*
@@ -185,9 +187,10 @@ Route::prefix('admin')->group(function () {
     |
     */
 
-    Route::get('/reports/actual', function () {
-        return Inertia::render('Admin/ActualReport');
-    })->name('admin.reports.actual');
+    Route::get('/reports/actual', [
+        HseReportController::class,
+        'actual',
+    ])->name('admin.reports.actual');
 
 
     /*

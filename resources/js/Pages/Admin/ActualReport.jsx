@@ -530,171 +530,152 @@ export default function ActualReport() {
     );
 
     /*
-    |--------------------------------------------------------------------------
-    | MAN HOURS ACTUAL
-    |--------------------------------------------------------------------------
-    */
-
-    const manHours = useMemo(() => {
-        const values = Array(
-            12
-        ).fill(0);
-
-        filteredReports.forEach(
-            (report) => {
-                const month =
-                    getMonthFromReport(
-                        report
-                    );
-
-                const data =
-                    Array.isArray(
-                        report.manHours
-                    )
-                        ? report
-                              .manHours[0]
-                        : report.manHours;
-
-                if (!data) return;
-
-                const actual =
-                    number(
-                        data.premises_actual
-                    ) +
-                    number(
-                        data.non_premises_actual
-                    );
-
-                values[month] +=
-                    actual;
-            }
-        );
-
-        return {
-            indicator:
-                "Man Hours",
-
-            definition:
-                "Total jam kerja personel pada periode pelaporan.",
-
-            unit: "Hours",
-
-            values,
-
-            q1: quarter(
-                values,
-                0
-            ),
-
-            q2: quarter(
-                values,
-                1
-            ),
-
-            q3: quarter(
-                values,
-                2
-            ),
-
-            q4: quarter(
-                values,
-                3
-            ),
-
-            ytd: values.reduce(
-                (
-                    total,
-                    value
-                ) =>
-                    total +
-                    number(value),
-                0
-            ),
-        };
-    }, [filteredReports]);
-
     /*
     |--------------------------------------------------------------------------
-    | KILOMETER ACTUAL
+    | MAN HOURS & KILOMETER ACTUAL
     |--------------------------------------------------------------------------
     */
 
-    const kilometer = useMemo(() => {
-        const values = Array(
-            12
-        ).fill(0);
+    const manHourMetrics = useMemo(() => {
+        if (filteredReports.length === 0) return [];
 
-        filteredReports.forEach(
-            (report) => {
-                const month =
-                    getMonthFromReport(
-                        report
-                    );
+        const createValues = () => Array(12).fill(0);
 
-                const data =
-                    Array.isArray(
-                        report.manHours
-                    )
-                        ? report
-                              .manHours[0]
-                        : report.manHours;
-
-                if (!data) return;
-
-                const actual =
-                    number(
-                        data.kilometer_premises_actual
-                    ) +
-                    number(
-                        data.kilometer_non_premises_actual
-                    );
-
-                values[month] +=
-                    actual;
-            }
-        );
-
-        return {
-            indicator:
-                "Kilometer Driven",
-
-            definition:
-                "Total jarak tempuh kendaraan operasional.",
-
-            unit: "KM",
-
-            values,
-
-            q1: quarter(
-                values,
-                0
-            ),
-
-            q2: quarter(
-                values,
-                1
-            ),
-
-            q3: quarter(
-                values,
-                2
-            ),
-
-            q4: quarter(
-                values,
-                3
-            ),
-
-            ytd: values.reduce(
-                (
-                    total,
-                    value
-                ) =>
-                    total +
-                    number(value),
-                0
-            ),
+        const rowPremises = {
+            indicator: "MANHOURS PREMISES",
+            definition: "Total per bulan",
+            unit: "Hours",
+            monthlyTarget: 0,
+            annualTarget: 0,
+            values: createValues(),
         };
+
+        const rowNonPremises = {
+            indicator: "MANHOURS NON PREMISES",
+            definition: "Total per bulan",
+            unit: "Hours",
+            monthlyTarget: 0,
+            annualTarget: 0,
+            values: createValues(),
+        };
+
+        const rowEmployees = {
+            indicator: "JML KARYAWAN CCPM",
+            definition: "CCPM",
+            unit: "Person",
+            monthlyTarget: 0,
+            annualTarget: 0,
+            values: createValues(),
+        };
+
+        const rowKmPremises = {
+            indicator: "KILOMETER DRIVEN PREMISES",
+            definition: "Total per bulan",
+            unit: "KM",
+            monthlyTarget: 0,
+            annualTarget: 0,
+            values: createValues(),
+        };
+
+        const rowKmNonPremises = {
+            indicator: "KILOMETER DRIVEN NON PREMISES",
+            definition: "Total per bulan",
+            unit: "KM",
+            monthlyTarget: 0,
+            annualTarget: 0,
+            values: createValues(),
+        };
+
+        const rowVehicles = {
+            indicator: "JUMLAH UNIT CCPM",
+            definition: "CCPM",
+            unit: "Unit",
+            monthlyTarget: 0,
+            annualTarget: 0,
+            values: createValues(),
+        };
+
+        filteredReports.forEach((report) => {
+            const month = getMonthFromReport(report);
+            const data =
+                (Array.isArray(report.manHours)
+                    ? report.manHours[0]
+                    : report.manHours) ||
+                (Array.isArray(report.man_hours)
+                    ? report.man_hours[0]
+                    : report.man_hours) ||
+                null;
+
+            if (!data) return;
+
+            rowPremises.values[month] += number(data.premises_actual);
+            rowNonPremises.values[month] += number(data.non_premises_actual);
+            rowEmployees.values[month] += number(data.total_employees);
+
+            rowKmPremises.values[month] += number(data.kilometer_premises_actual);
+            rowKmNonPremises.values[month] += number(data.kilometer_non_premises_actual);
+            rowVehicles.values[month] += number(data.total_vehicles);
+        });
+
+        // Total Man Hours
+        const totalManHoursValues = createValues();
+        for (let i = 0; i < 12; i++) {
+            totalManHoursValues[i] = rowPremises.values[i] + rowNonPremises.values[i];
+        }
+
+        const totalManHoursRow = {
+            indicator: "JAM KERJA / MAN HOURS (Total)",
+            definition: "Total per bulan",
+            unit: "Hours",
+            monthlyTarget: 0,
+            annualTarget: 0,
+            values: totalManHoursValues,
+            q1: quarter(totalManHoursValues, 0),
+            q2: quarter(totalManHoursValues, 1),
+            q3: quarter(totalManHoursValues, 2),
+            q4: quarter(totalManHoursValues, 3),
+            ytd: totalManHoursValues.reduce((total, value) => total + number(value), 0),
+        };
+
+        // Total KM
+        const totalKmValues = createValues();
+        for (let i = 0; i < 12; i++) {
+            totalKmValues[i] = rowKmPremises.values[i] + rowKmNonPremises.values[i];
+        }
+
+        const totalKmRow = {
+            indicator: "KILOMETER DRIVEN (Total)",
+            definition: "Total per bulan",
+            unit: "KM",
+            monthlyTarget: 0,
+            annualTarget: 0,
+            values: totalKmValues,
+            q1: quarter(totalKmValues, 0),
+            q2: quarter(totalKmValues, 1),
+            q3: quarter(totalKmValues, 2),
+            q4: quarter(totalKmValues, 3),
+            ytd: totalKmValues.reduce((total, value) => total + number(value), 0),
+        };
+
+        const wrapRow = (row) => ({
+            ...row,
+            q1: quarter(row.values, 0),
+            q2: quarter(row.values, 1),
+            q3: quarter(row.values, 2),
+            q4: quarter(row.values, 3),
+            ytd: row.values.reduce((total, value) => total + number(value), 0),
+        });
+
+        return [
+            totalManHoursRow,
+            wrapRow(rowPremises),
+            wrapRow(rowNonPremises),
+            wrapRow(rowEmployees),
+            totalKmRow,
+            wrapRow(rowKmPremises),
+            wrapRow(rowKmNonPremises),
+            wrapRow(rowVehicles),
+        ];
     }, [filteredReports]);
 
     /*
@@ -1139,14 +1120,12 @@ export default function ActualReport() {
 
             <main
                 style={{
-                    marginLeft:
-                        "260px",
-                    minHeight:
-                        "100vh",
-                    padding:
-                        "35px",
-                    boxSizing:
-                        "border-box",
+                    marginLeft: "var(--admin-sidebar-width, 215px)",
+                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    minHeight: "100vh",
+                    padding: "35px",
+                    boxSizing: "border-box",
                 }}
             >
                 {/* HEADER */}
@@ -1694,13 +1673,7 @@ export default function ActualReport() {
                     "LAGGING INDICATOR - ACTUAL",
                     [
                         ...lagging,
-                        ...(filteredReports.length >
-                        0
-                            ? [
-                                  manHours,
-                                  kilometer,
-                              ]
-                            : []),
+                        ...manHourMetrics,
                     ]
                 )}
 

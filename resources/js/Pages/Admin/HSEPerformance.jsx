@@ -229,7 +229,9 @@ export default function HSEPerformance() {
 
             <main
                 style={{
-                    marginLeft: "215px",
+                    marginLeft: "var(--admin-sidebar-width, 215px)",
+                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
                     boxSizing: "border-box",
                 }}
@@ -1236,7 +1238,7 @@ export default function HSEPerformance() {
 }
 
 // =============================================================
-// COMPONENT KARTU KPI
+// MODERN CLASSIC: KPI CARD (HIJAU BOTOL & KUNING NEON)
 // =============================================================
 
 function KpiCard({ title, value, change, icon }) {
@@ -1244,13 +1246,31 @@ function KpiCard({ title, value, change, icon }) {
         <div
             style={{
                 backgroundColor: "#ffffff",
-                border: "1px solid #d9e1e8",
-                borderRadius: "7px",
-                padding: "15px",
-                minHeight: "95px",
+                border: "1px solid #004d32",
+                borderRadius: "14px",
+                padding: "20px",
+                minHeight: "105px",
                 boxSizing: "border-box",
+                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.08)",
+                position: "relative",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                transition: "transform 0.2s, box-shadow 0.2s",
             }}
         >
+            <div
+                style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "4px",
+                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
+                }}
+            />
+
             <div
                 style={{
                     display: "flex",
@@ -1261,9 +1281,9 @@ function KpiCard({ title, value, change, icon }) {
                 <span
                     style={{
                         fontSize: "11px",
-                        color: "#475569",
+                        color: "#004d32",
                         textTransform: "uppercase",
-                        fontWeight: "700",
+                        fontWeight: "800",
                         letterSpacing: "0.06em",
                     }}
                 >
@@ -1272,58 +1292,72 @@ function KpiCard({ title, value, change, icon }) {
 
                 <span
                     style={{
-                        width: "24px",
-                        height: "24px",
-                        borderRadius: "50%",
-                        backgroundColor: "#e8edf2",
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "8px",
+                        backgroundColor: "#004d32",
+                        border: "1px solid #efff00",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#00583b",
+                        color: "#efff00",
+                        fontSize: "15px",
+                        boxShadow: "0 0 8px rgba(239, 255, 0, 0.25)",
                     }}
                 >
                     {icon}
                 </span>
             </div>
 
-            <div
-                style={{
-                    fontSize: "27px",
-                    fontWeight: "700",
-                    color: "#111827",
-                    marginTop: "10px",
-                }}
-            >
-                {value}
-            </div>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginTop: "10px" }}>
+                <div
+                    style={{
+                        fontSize: "26px",
+                        fontWeight: "900",
+                        color: "#003824",
+                        letterSpacing: "-0.02em",
+                    }}
+                >
+                    {value}
+                </div>
 
-            <div
-                style={{
-                    marginTop: "3px",
-                    fontSize: "11px",
-                    color: "#00583b",
-                }}
-            >
-                ↗ {change}
+                <div
+                    style={{
+                        fontSize: "11px",
+                        fontWeight: "800",
+                        padding: "2px 7px",
+                        borderRadius: "999px",
+                        backgroundColor: "#004d32",
+                        color: "#efff00",
+                        border: "1px solid #efff00",
+                        boxShadow: "0 0 6px rgba(239, 255, 0, 0.25)",
+                    }}
+                >
+                    ↗ {change}
+                </div>
             </div>
         </div>
     );
 }
 
 // =============================================================
-// INDICATOR BARS
+// MODERN CLASSIC: INDICATOR BARS
 // =============================================================
 
 function IndicatorBars({ data }) {
     return (
         <div
             style={{
-                height: "150px",
+                height: "170px",
+                background: "#fcfdfc",
+                borderRadius: "10px",
                 display: "flex",
                 alignItems: "flex-end",
                 justifyContent: "space-around",
-                gap: "8px",
-                padding: "10px",
+                gap: "10px",
+                padding: "16px 14px 10px",
+                boxSizing: "border-box",
+                border: "1px solid #e2e8f0",
             }}
         >
             {data.map(([label, value]) => (
@@ -1346,7 +1380,6 @@ function IndicatorBars({ data }) {
                         style={{
                             width: "100%",
                             height: "100%",
-                            backgroundColor: "#e1e6ec",
                             display: "flex",
                             alignItems: "flex-end",
                         }}
@@ -1355,16 +1388,21 @@ function IndicatorBars({ data }) {
                             style={{
                                 width: "100%",
                                 height: `${value}%`,
-                                backgroundColor: "#004d32",
+                                background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                                borderRadius: "4px 4px 0 0",
+                                boxShadow: "0 0 8px rgba(239, 255, 0, 0.35)",
+                                border: "1px solid #004d32",
+                                transition: "height 0.3s ease",
                             }}
                         />
                     </div>
 
                     <span
                         style={{
-                            marginTop: "6px",
-                            fontSize: "10px",
-                            color: "#475569",
+                            marginTop: "8px",
+                            fontSize: "11px",
+                            fontWeight: "800",
+                            color: "#004d32",
                         }}
                     >
                         {label}
@@ -1376,44 +1414,65 @@ function IndicatorBars({ data }) {
 }
 
 // =============================================================
-// SEVERITY BADGE
+// MODERN SEVERITY BADGE
 // =============================================================
 
 function SeverityBadge({ severity }) {
     const styles = {
         High: {
-            backgroundColor: "#fee2e2",
-            color: "#b91c1c",
+            backgroundColor: "#7f1d1d",
+            color: "#fecaca",
+            border: "1px solid #ef4444",
+            dot: "#ef4444",
         },
-
         Medium: {
-            backgroundColor: "#fff1db",
-            color: "#c26a00",
+            backgroundColor: "#78350f",
+            color: "#fef3c7",
+            border: "1px solid #f59e0b",
+            dot: "#f59e0b",
         },
-
         Low: {
-            backgroundColor: "#d9f7e7",
-            color: "#16834d",
+            backgroundColor: "#004d32",
+            color: "#efff00",
+            border: "1px solid #efff00",
+            dot: "#efff00",
         },
-
         Info: {
-            backgroundColor: "#e8edf5",
+            backgroundColor: "#f8fafc",
             color: "#475569",
+            border: "1px solid #e2e8f0",
+            dot: "#94a3b8",
         },
     };
+
+    const current = styles[severity] || styles.Info;
 
     return (
         <span
             style={{
-                display: "inline-block",
-                padding: "3px 7px",
-                borderRadius: "10px",
-                fontSize: "10px",
-                fontWeight: "700",
-                ...styles[severity],
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "3px 9px",
+                borderRadius: "999px",
+                fontSize: "11px",
+                fontWeight: "800",
+                backgroundColor: current.backgroundColor,
+                color: current.color,
+                border: current.border,
+                boxShadow: severity === "Low" ? "0 0 6px rgba(239, 255, 0, 0.3)" : "none",
             }}
         >
-            ● {severity}
+            <span
+                style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    backgroundColor: current.dot,
+                    boxShadow: severity === "Low" ? "0 0 6px #efff00" : "none",
+                }}
+            />
+            {severity}
         </span>
     );
 }
@@ -1430,13 +1489,14 @@ function DetailRow({ label, value }) {
                 justifyContent: "space-between",
                 gap: "20px",
                 paddingBottom: "10px",
-                borderBottom: "1px solid #e2e8f0",
+                borderBottom: "1px solid #f1f5f9",
             }}
         >
             <span
                 style={{
-                    fontSize: "11px",
+                    fontSize: "12px",
                     color: "#64748b",
+                    fontWeight: "600",
                 }}
             >
                 {label}
@@ -1444,10 +1504,10 @@ function DetailRow({ label, value }) {
 
             <strong
                 style={{
-                    fontSize: "11px",
-                    color: "#102033",
                     fontSize: "13px",
+                    color: "#004d32",
                     textAlign: "right",
+                    fontWeight: "800",
                 }}
             >
                 {value}
@@ -1461,33 +1521,43 @@ function DetailRow({ label, value }) {
 // =============================================================
 
 const headerButtonStyle = {
-    border: "none",
-    background: "transparent",
+    width: "36px",
+    height: "36px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
+    backgroundColor: "#ffffff",
     color: "#004d32",
-    fontSize: "18px",
+    fontSize: "16px",
     cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
 };
 
 const labelStyle = {
     display: "block",
-    marginBottom: "4px",
+    marginBottom: "5px",
     fontSize: "11px",
-    color: "#475569",
-    fontWeight: "700",
+    color: "#004d32",
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
 };
 
 const sectionHeaderStyle = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: "12px",
+    marginBottom: "16px",
 };
 
 const sectionTitleStyle = {
     margin: 0,
-    fontSize: "18px",
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: "16px",
+    fontWeight: "800",
+    color: "#004d32",
+    letterSpacing: "-0.01em",
 };
 
 const moreButtonStyle = {
@@ -1495,41 +1565,55 @@ const moreButtonStyle = {
     background: "transparent",
     fontSize: "18px",
     cursor: "pointer",
-    color: "#475569",
+    color: "#004d32",
 };
 
 const tableButtonStyle = {
-    width: "27px",
-    height: "27px",
-    border: "1px solid #d9e1e8",
+    width: "30px",
+    height: "30px",
+    border: "1px solid #004d32",
     backgroundColor: "#ffffff",
-    borderRadius: "4px",
+    borderRadius: "8px",
+    color: "#004d32",
     cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
 };
 
 const thStyle = {
-    padding: "9px 8px",
+    padding: "14px 16px",
     textAlign: "left",
-    fontSize: "11px",
-    fontWeight: "700",
-    whiteSpace: "nowrap",
+    fontSize: "11.5px",
+    fontWeight: "800",
+    color: "#ffffff",
+    backgroundColor: "#004d32",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    borderBottom: "2px solid #efff00",
 };
 
 const tdStyle = {
-    padding: "10px 8px",
+    padding: "14px 16px",
     color: "#1e293b",
     whiteSpace: "nowrap",
     fontSize: "13px",
+    fontWeight: "500",
 };
 
 const paginationButtonStyle = (disabled) => ({
-    minWidth: "27px",
-    height: "25px",
-    padding: "0 7px",
-    border: "1px solid #d9e1e8",
-    borderRadius: "3px",
+    minWidth: "32px",
+    height: "32px",
+    padding: "0 8px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
     backgroundColor: "#ffffff",
-    color: disabled ? "#cbd5e1" : "#334155",
+    color: disabled ? "#cbd5e1" : "#004d32",
     cursor: disabled ? "not-allowed" : "pointer",
-    fontSize: "11px",
+    fontSize: "12px",
+    fontWeight: "700",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
 });

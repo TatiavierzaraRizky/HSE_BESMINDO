@@ -94,6 +94,14 @@ function getReportYear(report) {
 }
 
 function getMonthFromReport(report) {
+    if (report?.period !== undefined && report?.period !== null && report?.period !== "") {
+        const period = Number(report.period);
+
+        if (period >= 1 && period <= 12) {
+            return period - 1;
+        }
+    }
+
     if (
         report?.report_date ||
         report?.issued_date ||
@@ -107,14 +115,6 @@ function getMonthFromReport(report) {
 
         if (!Number.isNaN(date.getTime())) {
             return date.getMonth();
-        }
-    }
-
-    if (report?.period !== undefined) {
-        const period = Number(report.period);
-
-        if (period >= 1 && period <= 12) {
-            return period - 1;
         }
     }
 
@@ -143,14 +143,17 @@ function getQuarterValue(item, quarterName, mode = "Actual") {
 }
 
 function normalizeReport(report) {
+    const manHoursData =
+        report?.man_hours ||
+        report?.manHours ||
+        null;
+
     return {
         ...report,
 
-        manHours: Array.isArray(report?.man_hours)
-            ? report.man_hours
-            : Array.isArray(report?.manHours)
-              ? report.manHours
-              : [],
+        manHours: Array.isArray(manHoursData)
+            ? manHoursData[0] || null
+            : manHoursData,
 
         laggingIndicators: Array.isArray(report?.lagging_indicators)
             ? report.lagging_indicators
@@ -260,182 +263,329 @@ const LAGGING_INDICATOR_MASTER = [
 const LEADING_INDICATOR_MASTER = [
     {
         no: 1,
-        indicator:
-            "OBSERVASI PERILAKU (PEKA) *",
+        indicator: "OBSERVASI PERILAKU (PEKA) *)",
+        definition: "2 Laporan / Org / Bln",
+        monthlyTarget: 180,
+        annualTarget: 2160,
+        definition2: "Kru Operasi",
+        defaultPlanMonthly: [102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102],
     },
     {
         no: 2,
-        indicator:
-            "IDENTIFIKASI BAHAYA (HAZID/5 MNT RISK ASSESSMENT)",
+        indicator: "IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)",
+        definition: "1.5 Laporan / Shift / Hari",
+        monthlyTarget: 900,
+        annualTarget: 10800,
+        definition2: "Total target bulanan menyesuaikan jumlah hari / bulan",
+        defaultPlanMonthly: [930, 840, 930, 900, 930, 900, 930, 930, 900, 930, 900, 930],
     },
     {
         no: 3,
         indicator: "SWA REPORT",
+        definition: "3 Laporan / Shift / Hari",
+        monthlyTarget: 60,
+        annualTarget: 720,
+        definition2: "",
+        defaultPlanMonthly: [62, 56, 62, 60, 62, 60, 62, 62, 60, 62, 60, 62],
     },
     {
         no: 4,
-        indicator:
-            "INSPEKSI SAFETY EQUIPMENT & APD * (Eye wash, Shower, Firex, P3K, Tandu, FBH, SCBA)",
+        indicator: "INSPEKSI SAFETY EQUIPMENT & APD *) (Eye wash, Shower, Fire, P3K, Tandu, FBH, SCBA)",
+        definition: "Laporan bulanan",
+        monthlyTarget: 1,
+        annualTarget: 12,
+        definition2: "",
+        defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     {
         no: 5,
-        indicator:
-            "EKSTERNAL INSPEKSI LR COLOR CODE",
+        indicator: "EKSTERNAL INSPEKSI LR COLOR CODE",
+        definition: "1x / semester",
+        monthlyTarget: "TBA",
+        annualTarget: 2,
+        definition2: "",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
     },
     {
         no: 6,
-        indicator:
-            "INSPEKSI BENDA JATUH / DROPS **",
+        indicator: "INSPEKSI BENDA JATUH / DROPS **)",
+        definition: "Per 7 hari / 30 hari / 90 hari / 180 hari",
+        monthlyTarget: "TBA",
+        annualTarget: "TBA",
+        definition2: "",
+        defaultPlanMonthly: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
     },
     {
         no: 7,
-        indicator:
-            "INTERNAL INSPEKSI / V&V OLEH TEAM",
+        indicator: "INTERNAL INSPEKSI / V&V OLEH TEAM",
+        definition: "Minimal 1x / bulan",
+        monthlyTarget: 1,
+        annualTarget: 12,
+        definition2: "",
+        defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     {
         no: 8,
-        indicator:
-            "INSPEKSI / Audit SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR",
+        indicator: "INSPEKSI / AUDIT SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR",
+        definition: "1x / tahun",
+        monthlyTarget: "TBA",
+        annualTarget: 1,
+        definition2: "",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     },
     {
         no: 9,
-        indicator:
-            "SPOT CHECK KENDARAAN **) **)",
+        indicator: "SPOT CHECK KENDARAAN *) **)",
+        definition: "1x / semester",
+        monthlyTarget: "TBA",
+        annualTarget: 2,
+        definition2: "",
+        defaultPlanMonthly: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
     },
     {
         no: 10,
-        indicator:
-            "AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)",
+        indicator: "AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)",
+        definition: "1x / tahun",
+        monthlyTarget: "TBA",
+        annualTarget: 1,
+        definition2: "",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     },
     {
         no: 11,
-        indicator:
-            "MONITORING KEPATUHAN MENGEMUDI\nMencakup speed / j-MPS report / fatigue *",
+        indicator: "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)",
+        definition: "100% tak ada pelanggaran",
+        monthlyTarget: "100%",
+        annualTarget: "100%",
+        definition2: "PIC Transport",
+        isPercentage: true,
+        targetNumber: 100,
+        defaultPlanMonthly: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100],
     },
     {
         no: 12,
-        indicator:
-            "Laporan Inspeksi Kendaraan (PTI)",
+        indicator: "Laporan Inspeksi Kendaraan (PTI)",
+        definition: "1 laporan (Random) / bulan / unit",
+        monthlyTarget: 11,
+        annualTarget: 132,
+        definition2: "PIC Transport",
+        defaultPlanMonthly: [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9],
     },
     {
         no: 13,
-        indicator:
-            "SPESIFIK MCU RANDOM : NAPZA & MIRAS TEST *)",
+        indicator: "SPESIFIK MCU RANDOM : (NAPZA & MIRAS TEST *)",
+        definition: "1x / tahun",
+        monthlyTarget: "TBA",
+        annualTarget: 1,
+        definition2: "Random 5 personel / kontrak",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 14,
-        indicator:
-            "PRA MCU (MCU TAHUNAN BAGI YANG KONSULTASI TAHUN SEBELUMNYA)",
+        indicator: "PRA MCU (MCU TAHUNAN BAGI YANG KONSULTASI TAHUN SEBELUMNYA)",
+        definition: "1x / tahun",
+        monthlyTarget: "TBA",
+        annualTarget: 1,
+        definition2: "Karyawan histori konsul pada tahun sebelumnya",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     },
     {
         no: 15,
-        indicator:
-            "TOP MANAGEMENT VISIT / MWT\n(Level General Manager / Dir. Operasi / Direktur Utama ***)",
+        indicator: "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)",
+        definition: "1x / Caturwulan",
+        monthlyTarget: "TBA",
+        annualTarget: 3,
+        definition2: "",
+        defaultPlanMonthly: [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
     },
     {
         no: 16,
-        indicator:
-            "MANAGEMENT VISIT / MWT\nLevel Coord level s/d Manager *)",
+        indicator: "MANAGEMENT VISIT / MWT (Level Coord level s/d Manager *)",
+        definition: "4X / Rig / bulan",
+        monthlyTarget: 4,
+        annualTarget: 48,
+        definition2: "Mencakup pelaksanaan V&V SIPP's",
+        defaultPlanMonthly: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
     },
     {
         no: 17,
-        indicator:
-            "RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)",
+        indicator: "RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)",
+        definition: "1x / shift / hari",
+        monthlyTarget: 60,
+        annualTarget: 720,
+        definition2: "",
+        defaultPlanMonthly: [62, 56, 62, 60, 62, 60, 62, 62, 60, 62, 60, 62],
     },
     {
         no: 18,
-        indicator:
-            "PRE HITCH MEETING",
+        indicator: "PRE HITCH MEETING",
+        definition: "3x / Bulan",
+        monthlyTarget: 3,
+        annualTarget: 36,
+        definition2: "1 atau 2 hari sebelum kru Jadwal masuk kerja (on schedule) hari-1.",
+        defaultPlanMonthly: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
     },
     {
         no: 19,
-        indicator:
-            "RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.",
+        indicator: "RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.",
+        definition: "Minimal 4x / bulan",
+        monthlyTarget: 4,
+        annualTarget: 48,
+        definition2: "HMM, HES Council Meeting bulanan, C&C/Alignment meeting mingguan, PQA Mgr mingguan",
+        defaultPlanMonthly: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
     },
     {
         no: 20,
-        indicator:
-            "SAFETY TALK MONTHLY MEETING :\n- SUPPORT YARD\n- RIG (Minggu ke IV jadwal PHM)",
+        indicator: "SAFETY TALK MONTHLY MEETING :\n- Support Yard\n- RIG (Minggu ke IV jadwal PHM)",
+        definition: "Minimal 1X / Bulan",
+        monthlyTarget: 1,
+        annualTarget: 12,
+        definition2: "",
+        defaultPlanMonthly: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
     },
     {
         no: 21,
-        indicator:
-            "LEADERSHIP FORUM ***)",
+        indicator: "LEADERSHIP FORUM ***)",
+        definition: "1X / Caturwulan",
+        monthlyTarget: "TBA",
+        annualTarget: 3,
+        definition2: "",
+        defaultPlanMonthly: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
     },
     {
         no: 22,
-        indicator:
-            "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/SPANDUK *)",
+        indicator: "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK) *)",
+        definition: "1X / Caturwulan",
+        monthlyTarget: "TBA",
+        annualTarget: 3,
+        definition2: "",
+        defaultPlanMonthly: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
     },
     {
         no: 23,
-        indicator:
-            "REVIEW, TINJAUAN MANAJEMEN *)",
+        indicator: "REVIEW, TINJAUAN MANAJEMEN *)",
+        definition: "1X / Tahun",
+        monthlyTarget: "TBA",
+        annualTarget: 1,
+        definition2: "",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     },
     {
         no: 24,
-        indicator:
-            "HYGIENE MONITORING : NOISE & LUX MONITORING **)",
+        indicator: "HYGIENE MONITORING : NOISE & LUX MONITORING **)",
+        definition: "Min 1x / semester",
+        monthlyTarget: "TBA",
+        annualTarget: 2,
+        definition2: "",
+        defaultPlanMonthly: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     },
     {
         no: 25,
-        indicator:
-            "HYGIENE MONITORING : Mess, Catering, DAM*)",
+        indicator: "HYGIENE MONITORING : Mess, Catering, DAM*)",
+        definition: "Min 1x / tahun",
+        monthlyTarget: "TBA",
+        annualTarget: 1,
+        definition2: "",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 26,
-        indicator:
-            'INSPEKSI "HOUSEKEEPING RIG"',
+        indicator: "INSPEKSI \"HOUSEKEEPING RIG\"",
+        definition: "1x / Bulan",
+        monthlyTarget: 1,
+        annualTarget: 12,
+        definition2: "",
+        defaultPlanMonthly: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     },
     {
         no: 27,
-        indicator:
-            'PENGHARGAAN: KONTES "HOUSEKEEPING RIG" *)',
+        indicator: "PENGHARGAAN: KONTES \"HOUSEKEEPING RIG\" *)",
+        definition: "1x / semester",
+        monthlyTarget: "TBA",
+        annualTarget: 2,
+        definition2: "",
+        defaultPlanMonthly: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     },
     {
         no: 28,
-        indicator:
-            "PELAPORAN LINGKUNGAN KE DINAS LH",
+        indicator: "PELAPORAN LINGKUNGAN KE DINAS LH",
+        definition: "1x / semester",
+        monthlyTarget: "TBA",
+        annualTarget: 2,
+        definition2: "",
+        defaultPlanMonthly: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     },
     {
         no: 29,
-        indicator:
-            "PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL **)",
+        indicator: "PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL **)",
+        definition: "Rig Yang The Best / Mencapai target nilai yang ditentukan",
+        monthlyTarget: "TBA",
+        annualTarget: "TBA",
+        definition2: "Rig: Insentif 5% x upah pokok\nSupport: Insentif 2,5% x upah pokok",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 30,
-        indicator:
-            "PENGHARGAAN THE BEST BBS / PEKA",
+        indicator: "PENGHARGAAN THE BEST BBS / PEKA",
+        definition: "1 orang / bulan / Rig",
+        monthlyTarget: 1,
+        annualTarget: 12,
+        definition2: "The best PEKA / BBS dan The best driver support diberikan 1 orang / area",
+        defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     {
         no: 31,
-        indicator:
-            "PENGHARGAAN THE BEST DRIVER",
+        indicator: "PENGHARGAAN THE BEST DRIVER",
+        definition: "1 orang / bulan / Rig",
+        monthlyTarget: 1,
+        annualTarget: 12,
+        definition2: "",
+        defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     {
         no: 32,
-        indicator:
-            "PENGHARGAAN: PENCAPAIAN KERJA SELAMAT TAHUNAN",
+        indicator: "PENGHARGAAN: PENCAPAIAN KERJA SELAMAT TAHUNAN",
+        definition: "Non recordable case dalam 1 tahun",
+        monthlyTarget: "TBA",
+        annualTarget: 1,
+        definition2: "Voucher Belanja",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 33,
-        indicator:
-            "PENGHARGAAN HES REFRESHING :\na. Domestik (minimal 10 orang, mewakili seluruh rig di periode perpelan), sasaran: semua jabatan (operation & Support).\nb. Luar Negri - China / dll (minimal 3 orang mewakili seluruh rig beroperasi di periode pelaksanaan), sasaran: Sr. Supervisor s/d Manager level.",
+        indicator: "PENGHARGAAN HES REFRESHING :\na. Domestik (minimal 10 orang, mewakili seluruh rig beroperasi di periode penilaian), sasaran : semua jabatan (operation & Support).\nb. Luar Negri - China / dll (minimal 3 orang mewakili seluruh rig beroperasi di periode penilaian), sasaran : Sr. Supervisor s/d Manager level.",
+        definition: "Per Semester / Per 1 tahun",
+        monthlyTarget: "TBA",
+        annualTarget: "2 / 1",
+        definition2: "Pelaksanaan disesuaikan dengan kondisi bisnis / kontrak & situasi perusahaan.",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 34,
-        indicator:
-            '"ON SITE TRAINING" DI LOKASI *)',
+        indicator: "\"ON SITE TRAINING\" DI LOKASI *)",
+        definition: "Min 1x / kru + Hyb / bulan",
+        monthlyTarget: 6,
+        annualTarget: 72,
+        definition2: "",
+        defaultPlanMonthly: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
     },
     {
         no: 35,
-        indicator:
-            "ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN, **)",
+        indicator: "ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)",
+        definition: "1 x / kru + Hyb / 3 bulan (sesuai jadwal)",
+        monthlyTarget: 3,
+        annualTarget: 36,
+        definition2: "",
+        defaultPlanMonthly: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
     },
     {
         no: 36,
-        indicator:
-            "ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)",
+        indicator: "ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)",
+        definition: "1 x / Semester",
+        monthlyTarget: "TBA",
+        annualTarget: 2,
+        definition2: "",
+        defaultPlanMonthly: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
     },
 ];
 
@@ -451,18 +601,20 @@ function createValueObject() {
 }
 
 function calculateSummary(values) {
-    const plan = values.plan;
-    const actual = values.actual;
+    const plan = values?.plan || [];
+    const actual = values?.actual || [];
 
     return {
         planQ1: quarter(plan, 0),
-        planQ2: quarter(plan, 1),
-        planQ3: quarter(plan, 2),
-        planQ4: quarter(plan, 3),
-
         actualQ1: quarter(actual, 0),
+
+        planQ2: quarter(plan, 1),
         actualQ2: quarter(actual, 1),
+
+        planQ3: quarter(plan, 2),
         actualQ3: quarter(actual, 2),
+
+        planQ4: quarter(plan, 3),
         actualQ4: quarter(actual, 3),
 
         planYtd: plan.reduce(
@@ -557,15 +709,19 @@ function buildLeadingRows(reports) {
     const map = new Map();
 
     LEADING_INDICATOR_MASTER.forEach((master) => {
+        const values = createValueObject();
+
         map.set(String(master.no), {
             no: master.no,
             indicator: master.indicator,
-            definition: "",
-            definition2: "",
-            monthlyTarget: 0,
-            annualTarget: 0,
-            unit: "Activity",
-            values: createValueObject(),
+            definition: master.definition || "",
+            definition2: master.definition2 || "",
+            monthlyTarget: master.monthlyTarget ?? 0,
+            annualTarget: master.annualTarget ?? 0,
+            unit: master.isPercentage ? "%" : "Activity",
+            isPercentage: master.isPercentage || false,
+            targetNumber: master.targetNumber || 0,
+            values,
             notes: "",
         });
     });
@@ -574,7 +730,17 @@ function buildLeadingRows(reports) {
         const indicators = report.leadingIndicators || [];
 
         indicators.forEach((item) => {
-            const no = Number(item.indicator_no);
+            let no = Number(item.indicator_no);
+
+            if (!no || no < 1 || no > 36) {
+                const name = String(item.indicator_name || item.name || "").toLowerCase();
+                const matched = LEADING_INDICATOR_MASTER.find(m =>
+                    name.includes(m.indicator.slice(0, 15).toLowerCase())
+                );
+                if (matched) {
+                    no = matched.no;
+                }
+            }
 
             if (!no || no < 1 || no > 36) {
                 return;
@@ -595,7 +761,6 @@ function buildLeadingRows(reports) {
                     : getMonthFromReport(report);
 
             row.values.plan[month] += number(item.plan);
-
             row.values.actual[month] += number(item.actual);
 
             if (item.definition) {
@@ -623,32 +788,60 @@ function buildLeadingRows(reports) {
 
             if (
                 item.target_month !== null &&
-                item.target_month !== undefined
+                item.target_month !== undefined &&
+                item.target_month !== "" &&
+                item.target_month !== 0
             ) {
-                row.monthlyTarget = number(
-                    item.target_month,
-                );
+                row.monthlyTarget = item.target_month;
             }
 
             if (
                 item.target_year !== null &&
-                item.target_year !== undefined
+                item.target_year !== undefined &&
+                item.target_year !== "" &&
+                item.target_year !== 0
             ) {
-                row.annualTarget = number(
-                    item.target_year,
-                );
+                row.annualTarget = item.target_year;
             }
         });
     });
 
-    return Array.from(map.values()).map((item) => ({
-        ...item,
-        ...calculateSummary(item.values),
+    return Array.from(map.values()).map((item) => {
+        if (item.isPercentage) {
+            const calcQuarterActual = (start, end) => {
+                const slice = item.values.actual.slice(start, end);
+                const filled = slice.filter((v) => v > 0);
+                if (filled.length === 0) return `${item.targetNumber}.00%`;
+                const avg = filled.reduce((a, b) => a + b, 0) / filled.length;
+                return `${avg.toFixed(2)}%`;
+            };
 
-        annualTarget:
-            item.annualTarget ||
-            item.monthlyTarget * 12,
-    }));
+            const allFilled = item.values.actual.filter((v) => v > 0);
+            const actualYtd =
+                allFilled.length === 0
+                    ? `${item.targetNumber}.00%`
+                    : `${(allFilled.reduce((a, b) => a + b, 0) / allFilled.length).toFixed(2)}%`;
+
+            return {
+                ...item,
+                planQ1: `${item.targetNumber}.00%`,
+                actualQ1: calcQuarterActual(0, 3),
+                planQ2: `${item.targetNumber}.00%`,
+                actualQ2: calcQuarterActual(3, 6),
+                planQ3: `${item.targetNumber}.00%`,
+                actualQ3: calcQuarterActual(6, 9),
+                planQ4: `${item.targetNumber}.00%`,
+                actualQ4: calcQuarterActual(9, 12),
+                planYtd: `${item.targetNumber}.00%`,
+                actualYtd,
+            };
+        }
+
+        return {
+            ...item,
+            ...calculateSummary(item.values),
+        };
+    });
 }
 
 /* ============================================================
@@ -660,80 +853,73 @@ function buildManHourRows(reports) {
         {
             no: "2.1",
             name: "MANHOURS PREMISES",
-            definition:
-                "MANHOURS PREMISES",
+            definition: "Total per bulan",
             unit: "Hours",
-            plan: (item) =>
-                number(item?.premises_plan),
-            actual: (item) =>
-                number(item?.premises_actual),
+            notes: "Ops : Dihitung Jml orang / km",
+            plan: (item) => number(item?.premises_plan),
+            actual: (item) => number(item?.premises_actual),
         },
         {
             no: "2.2",
             name: "MANHOURS NON PREMISES",
-            definition:
-                "MANHOURS NON PREMISES",
+            definition: "Total per bulan",
             unit: "Hours",
-            plan: (item) =>
-                number(item?.non_premises_plan),
-            actual: (item) =>
-                number(item?.non_premises_actual),
+            notes: "",
+            plan: (item) => number(item?.non_premises_plan),
+            actual: (item) => number(item?.non_premises_actual),
         },
         {
             no: "2.3",
             name: "JML KARYAWAN CCPM",
-            definition:
-                "Jumlah karyawan CCPM",
+            definition: "CCPM",
             unit: "Person",
-            plan: (item) =>
-                number(item?.total_employees),
-            actual: (item) =>
-                number(item?.total_employees),
+            notes: "Ops : Support:",
+            plan: (item) => number(item?.total_employees),
+            actual: (item) => number(item?.total_employees),
         },
         {
             no: "2.4",
             name: "KILOMETER DRIVEN PREMISES",
-            definition:
-                "Kilometer driven premises",
+            definition: "Total per bulan",
             unit: "KM",
-            plan: (item) =>
-                number(item?.kilometer_premises_plan),
-            actual: (item) =>
-                number(item?.kilometer_premises_actual),
+            notes: "Jml Ops : sesuai kontrak (Roco 2unit, Bus 2unit, Vacuum 1unit, tandem 1unit, LV 5unit, dll)",
+            plan: (item) => number(item?.kilometer_premises_plan),
+            actual: (item) => number(item?.kilometer_premises_actual),
         },
         {
             no: "2.5",
             name: "KILOMETER DRIVEN NON PREMISES",
-            definition:
-                "Kilometer driven non premises",
+            definition: "Total per bulan",
             unit: "KM",
-            plan: (item) =>
-                number(item?.kilometer_non_premises_plan),
-            actual: (item) =>
-                number(item?.kilometer_non_premises_actual),
+            notes: "",
+            plan: (item) => number(item?.kilometer_non_premises_plan),
+            actual: (item) => number(item?.kilometer_non_premises_actual),
         },
         {
             no: "2.6",
             name: "JUMLAH UNIT CCPM",
-            definition:
-                "Jumlah unit CCPM",
+            definition: "CCPM",
             unit: "Unit",
-            plan: (item) =>
-                number(item?.total_vehicles),
-            actual: (item) =>
-                number(item?.total_vehicles),
+            notes: "Ops : Support:",
+            plan: (item) => number(item?.total_vehicles),
+            actual: (item) => number(item?.total_vehicles),
         },
     ];
 
-    return configs.map((config) => {
+    const rows = configs.map((config) => {
         const values = createValueObject();
 
         reports.forEach((report) => {
             const month = getMonthFromReport(report);
 
-            const manHours = Array.isArray(report.manHours)
-                ? report.manHours[0]
-                : report.manHours;
+            const manHours =
+                (Array.isArray(report.manHours)
+                    ? report.manHours[0]
+                    : report.manHours) ||
+                (Array.isArray(report.man_hours)
+                    ? report.man_hours[0]
+                    : report.man_hours) ||
+                null;
 
             if (!manHours) return;
 
@@ -748,11 +934,57 @@ function buildManHourRows(reports) {
             unit: config.unit,
             target: 0,
             values,
-            notes: "Ops : Support",
-
+            notes: config.notes,
             ...calculateSummary(values),
         };
     });
+
+    // TOTAL JAM KERJA / MAN HOURS (Total) = 2.1 + 2.2
+    const totalManHoursValues = createValueObject();
+    for (let i = 0; i < 12; i++) {
+        totalManHoursValues.plan[i] = rows[0].values.plan[i] + rows[1].values.plan[i];
+        totalManHoursValues.actual[i] = rows[0].values.actual[i] + rows[1].values.actual[i];
+    }
+    const totalManHoursRow = {
+        no: "",
+        isTotalHeader: true,
+        indicator: "JAM KERJA / MAN HOURS (Total)",
+        definition: "Total per bulan",
+        unit: "Hours",
+        target: rows[0].target + rows[1].target,
+        values: totalManHoursValues,
+        notes: "Ops : Dihitung Jml orang / km",
+        ...calculateSummary(totalManHoursValues),
+    };
+
+    // TOTAL KILOMETER DRIVEN (Total) = 2.4 + 2.5
+    const totalKilometerValues = createValueObject();
+    for (let i = 0; i < 12; i++) {
+        totalKilometerValues.plan[i] = rows[3].values.plan[i] + rows[4].values.plan[i];
+        totalKilometerValues.actual[i] = rows[3].values.actual[i] + rows[4].values.actual[i];
+    }
+    const totalKilometerRow = {
+        no: "",
+        isTotalHeader: true,
+        indicator: "KILOMETER DRIVEN (Total)",
+        definition: "Total per bulan",
+        unit: "KM",
+        target: rows[3].target + rows[4].target,
+        values: totalKilometerValues,
+        notes: "Jml Ops : sesuai kontrak (Roco 2unit, Bus 2unit, Vacuum 1unit, tandem 1unit, LV 5unit, dll)",
+        ...calculateSummary(totalKilometerValues),
+    };
+
+    return [
+        totalManHoursRow,
+        rows[0], // 2.1
+        rows[1], // 2.2
+        rows[2], // 2.3
+        totalKilometerRow,
+        rows[3], // 2.4
+        rows[4], // 2.5
+        rows[5], // 2.6
+    ];
 }
 
 /* ============================================================
@@ -762,92 +994,194 @@ function buildManHourRows(reports) {
 const OPS_MASTER = [
     {
         no: "3.1",
-        name: "REABILITY",
+        name: "REALIBILITY",
+        definition: "Persentase / Bulan",
+        unit: "%",
+        target: "99.00%",
+        targetNumber: 99,
+        notes: "Merujuk target Kebijakan Mutu",
+        defaultPlan: "99.00%",
+        isPercentage: true,
     },
     {
         no: "3.2",
-        name: "AVAILABILITY",
+        name: "AVAILIBILITY",
+        definition: "Persentase / Bulan",
+        unit: "%",
+        target: "98.00%",
+        targetNumber: 98,
+        notes: "Merujuk target Kebijakan Mutu",
+        defaultPlan: "98.00%",
+        isPercentage: true,
     },
     {
         no: "3.3",
         name: "UTILIZATION",
+        definition: "Persentase / Bulan",
+        unit: "%",
+        target: "90.00%",
+        targetNumber: 90,
+        notes: "Merujuk target Kebijakan Mutu",
+        defaultPlan: "90.00%",
+        isPercentage: true,
     },
     {
         no: "3.4",
         name: "NPT TIDAK MELEBIHI BATASAN",
+        definition: "Merujuk batasan NPT Pelanggan",
+        unit: "Jam",
+        target: "< 16 Jam /Rig / Bulan",
+        notes: "Merujuk batasan NPT Pelanggan",
+        defaultPlan: "< 16 Jam /Rig / Bulan",
+        isText: true,
     },
 ];
 
 function buildOpsRows(reports) {
-    const rows = OPS_MASTER.map((item) => ({
-        no: item.no,
-        indicator: item.name,
-        definition: "",
-        unit: "",
-        target: 0,
-        values: createValueObject(),
-        notes: "",
-    }));
+    return OPS_MASTER.map((config) => {
+        const values = createValueObject();
 
-    reports.forEach((report) => {
-        const indicators = report.laggingIndicators || [];
-
-        indicators.forEach((item) => {
-            const name = String(
-                item.indicator_name || "",
-            ).toLowerCase();
-
-            let targetRow = null;
-
-            if (
-                name.includes("reliability") ||
-                name.includes("reability")
-            ) {
-                targetRow = rows[0];
-            } else if (
-                name.includes("availability") ||
-                name.includes("availibility")
-            ) {
-                targetRow = rows[1];
-            } else if (
-                name.includes("utilization")
-            ) {
-                targetRow = rows[2];
-            } else if (name.includes("npt")) {
-                targetRow = rows[3];
+        if (config.isPercentage) {
+            for (let i = 0; i < 12; i++) {
+                values.plan[i] = config.targetNumber;
             }
+        }
 
-            if (!targetRow) return;
+        reports.forEach((report) => {
+            const indicators = [
+                ...(report.laggingIndicators || []),
+                ...(report.leadingIndicators || []),
+            ];
 
-            const month =
-                Number(item.month) >= 1 &&
-                Number(item.month) <= 12
-                    ? Number(item.month) - 1
-                    : getMonthFromReport(report);
+            indicators.forEach((item) => {
+                const name = String(
+                    item.indicator_name || item.name || "",
+                ).toLowerCase();
 
-            targetRow.values.plan[month] += number(
-                item.plan,
-            );
+                let isMatch = false;
 
-            targetRow.values.actual[month] += number(
-                item.actual,
-            );
+                if (
+                    config.no === "3.1" &&
+                    (name.includes("reliability") ||
+                        name.includes("reability") ||
+                        name.includes("realibility"))
+                ) {
+                    isMatch = true;
+                } else if (
+                    config.no === "3.2" &&
+                    (name.includes("availability") ||
+                        name.includes("availibility"))
+                ) {
+                    isMatch = true;
+                } else if (
+                    config.no === "3.3" &&
+                    name.includes("utilization")
+                ) {
+                    isMatch = true;
+                } else if (
+                    config.no === "3.4" &&
+                    (name.includes("npt") ||
+                        name.includes("tidak melebihi batasan"))
+                ) {
+                    isMatch = true;
+                }
 
-            if (item.definition) {
-                targetRow.definition =
-                    item.definition;
-            }
+                if (!isMatch) return;
 
-            if (item.unit) {
-                targetRow.unit = item.unit;
-            }
+                const month =
+                    Number(item.month) >= 1 && Number(item.month) <= 12
+                        ? Number(item.month) - 1
+                        : getMonthFromReport(report);
+
+                if (
+                    item.plan !== undefined &&
+                    item.plan !== null &&
+                    item.plan !== ""
+                ) {
+                    values.plan[month] = number(item.plan);
+                }
+
+                if (
+                    item.actual !== undefined &&
+                    item.actual !== null &&
+                    item.actual !== ""
+                ) {
+                    values.actual[month] = number(item.actual);
+                }
+            });
         });
-    });
 
-    return rows.map((row) => ({
-        ...row,
-        ...calculateSummary(row.values),
-    }));
+        if (config.isPercentage) {
+            const calcQuarterActual = (start, end) => {
+                const slice = values.actual.slice(start, end);
+                const filled = slice.filter((v) => v > 0);
+                if (filled.length === 0) return `${config.targetNumber}.00%`;
+                const avg = filled.reduce((a, b) => a + b, 0) / filled.length;
+                return `${avg.toFixed(2)}%`;
+            };
+
+            const allFilled = values.actual.filter((v) => v > 0);
+            const actualYtd =
+                allFilled.length === 0
+                    ? `${config.targetNumber}.00%`
+                    : `${(allFilled.reduce((a, b) => a + b, 0) / allFilled.length).toFixed(2)}%`;
+
+            return {
+                no: config.no,
+                indicator: config.name,
+                definition: config.definition,
+                unit: config.unit,
+                target: config.target,
+                notes: config.notes,
+                isPercentage: true,
+                values,
+                planQ1: `${config.targetNumber}.00%`,
+                actualQ1: calcQuarterActual(0, 3),
+                planQ2: `${config.targetNumber}.00%`,
+                actualQ2: calcQuarterActual(3, 6),
+                planQ3: `${config.targetNumber}.00%`,
+                actualQ3: calcQuarterActual(6, 9),
+                planQ4: `${config.targetNumber}.00%`,
+                actualQ4: calcQuarterActual(9, 12),
+                planYtd: `${config.targetNumber}.00%`,
+                actualYtd,
+            };
+        }
+
+        if (config.isText) {
+            return {
+                no: config.no,
+                indicator: config.name,
+                definition: config.definition,
+                unit: config.unit,
+                target: config.target,
+                notes: config.notes,
+                isText: true,
+                values,
+                planQ1: "< 16 Jam /Rig / Bulan",
+                actualQ1: "< 16 Jam /Rig / Bulan",
+                planQ2: "< 16 Jam /Rig / Bulan",
+                actualQ2: "< 16 Jam /Rig / Bulan",
+                planQ3: "< 16 Jam /Rig / Bulan",
+                actualQ3: "< 16 Jam /Rig / Bulan",
+                planQ4: "< 16 Jam /Rig / Bulan",
+                actualQ4: "< 16 Jam /Rig / Bulan",
+                planYtd: "< 16 Jam /Rig / Bulan",
+                actualYtd: "< 16 Jam /Rig / Bulan",
+            };
+        }
+
+        return {
+            no: config.no,
+            indicator: config.name,
+            definition: config.definition,
+            unit: config.unit,
+            target: config.target,
+            notes: config.notes,
+            values,
+            ...calculateSummary(values),
+        };
+    });
 }
 
 /* ============================================================
@@ -1635,47 +1969,49 @@ export default function Reports() {
 
         row++;
 
-        ws.mergeCells(row, 1, row, 38);
-        ws.getCell(row, 1).value =
-            "JAM KERJA / MAN HOURS (Total)";
-
-        applyCellStyle(
-            ws.getCell(row, 1),
-            {
-                bold: true,
-                color: "000000",
-                fill: "DDEBF7",
-                horizontal: "left",
-            },
-        );
-
-        row++;
-
         const writeMetric = (item) => {
+            const isHeader = item.isTotalHeader || !item.no;
+
+            const formatForExcel = (val, isPlan = false) => {
+                if (val === undefined || val === null || val === "") return "";
+                if (typeof val === "string") return val;
+                if (item?.isPercentage) {
+                    if (isPlan && val === 0 && item.targetNumber) {
+                        return `${item.targetNumber}.00%`;
+                    }
+                    return `${Number(val).toFixed(2)}%`;
+                }
+                if (item?.isText) {
+                    return "< 16 Jam /Rig / Bulan";
+                }
+                return val;
+            };
+
             const values = [
-                item.no,
+                item.no || "",
                 item.indicator,
                 item.target,
                 item.notes || "",
-                item.planQ1,
-                item.actualQ1,
-                item.planQ2,
-                item.actualQ2,
-                item.planQ3,
-                item.actualQ3,
-                item.planQ4,
-                item.actualQ4,
-                item.planYtd,
-                item.actualYtd,
+                formatForExcel(item.planQ1, true),
+                formatForExcel(item.actualQ1, false),
+                formatForExcel(item.planQ2, true),
+                formatForExcel(item.actualQ2, false),
+                formatForExcel(item.planQ3, true),
+                formatForExcel(item.actualQ3, false),
+                formatForExcel(item.planQ4, true),
+                formatForExcel(item.actualQ4, false),
+                formatForExcel(item.planYtd, true),
+                formatForExcel(item.actualYtd, false),
             ];
 
             item.values.plan.forEach(
                 (value, index) => {
-                    values.push(value);
+                    values.push(formatForExcel(value, true));
                     values.push(
-                        item.values.actual[
-                            index
-                        ],
+                        formatForExcel(
+                            item.values.actual[index],
+                            false,
+                        ),
                     );
                 },
             );
@@ -1695,8 +2031,14 @@ export default function Reports() {
                         {
                             size: 8,
                             bold:
+                                isHeader ||
                                 index === 0 ||
                                 index === 1,
+                            fill: isHeader
+                                ? "DDEBF7"
+                                : row % 2 === 0
+                                  ? "FFFFFF"
+                                  : "F7F8EE",
                             horizontal:
                                 index === 1
                                     ? "left"
@@ -1709,55 +2051,7 @@ export default function Reports() {
             row++;
         };
 
-        manHours
-            .filter((item) =>
-                ["2.1", "2.2", "2.3"].includes(
-                    item.no,
-                ),
-            )
-            .forEach(writeMetric);
-
-        ws.mergeCells(row, 1, row, 38);
-        ws.getCell(row, 1).value =
-            "Ops : Support";
-
-        applyCellStyle(
-            ws.getCell(row, 1),
-            {
-                size: 8,
-                horizontal: "center",
-            },
-        );
-
-        row++;
-
-        ws.mergeCells(row, 1, row, 38);
-        ws.getCell(row, 1).value =
-            "KILOMETER DRIVEN (Total)";
-
-        applyCellStyle(
-            ws.getCell(row, 1),
-            {
-                bold: true,
-                color: "000000",
-                fill: "DDEBF7",
-                horizontal: "left",
-            },
-        );
-
-        row++;
-
-        manHours
-            .filter((item) =>
-                ["2.4", "2.5", "2.6"].includes(
-                    item.no,
-                ),
-            )
-            .forEach(writeMetric);
-
-        ws.mergeCells(row, 1, row, 38);
-        ws.getCell(row, 1).value =
-            "Ops : Support";
+        manHours.forEach(writeMetric);
 
         applyCellStyle(
             ws.getCell(row, 1),
@@ -2547,6 +2841,21 @@ export default function Reports() {
        REACT TABLE ROW
     ======================================================== */
 
+    const formatMetricCell = (val, item, isPlan = false) => {
+        if (val === undefined || val === null || val === "") return "-";
+        if (typeof val === "string") return val;
+        if (item?.isPercentage) {
+            if (isPlan && val === 0 && item.targetNumber) {
+                return `${item.targetNumber}.00%`;
+            }
+            return `${Number(val).toFixed(2)}%`;
+        }
+        if (item?.isText) {
+            return "< 16 Jam /Rig / Bulan";
+        }
+        return formatNumber(val);
+    };
+
     const renderPlanActualCells = (
         item,
     ) => {
@@ -2566,12 +2875,14 @@ export default function Reports() {
                         key={`${q}-plan`}
                         style={tdCenter}
                     >
-                        {formatNumber(
+                        {formatMetricCell(
                             getQuarterValue(
                                 item,
                                 q,
                                 "Plan",
                             ),
+                            item,
+                            true,
                         )}
                     </td>,
                 );
@@ -2581,12 +2892,14 @@ export default function Reports() {
                         key={`${q}-actual`}
                         style={tdCenter}
                     >
-                        {formatNumber(
+                        {formatMetricCell(
                             getQuarterValue(
                                 item,
                                 q,
                                 "Actual",
                             ),
+                            item,
+                            false,
                         )}
                     </td>,
                 );
@@ -2598,8 +2911,10 @@ export default function Reports() {
                 key="ytd-plan"
                 style={tdCenter}
             >
-                {formatNumber(
+                {formatMetricCell(
                     item.planYtd,
+                    item,
+                    true,
                 )}
             </td>,
         );
@@ -2609,8 +2924,10 @@ export default function Reports() {
                 key="ytd-actual"
                 style={tdCenter}
             >
-                {formatNumber(
+                {formatMetricCell(
                     item.actualYtd,
+                    item,
+                    false,
                 )}
             </td>,
         );
@@ -2622,11 +2939,13 @@ export default function Reports() {
                         key={`${month}-plan`}
                         style={tdCenter}
                     >
-                        {formatNumber(
+                        {formatMetricCell(
                             item.values
                                 .plan[
                                 index
                             ],
+                            item,
+                            true,
                         )}
                     </td>,
                 );
@@ -2636,11 +2955,13 @@ export default function Reports() {
                         key={`${month}-actual`}
                         style={tdCenter}
                     >
-                        {formatNumber(
+                        {formatMetricCell(
                             item.values
                                 .actual[
                                 index
                             ],
+                            item,
+                            false,
                         )}
                     </td>,
                 );
@@ -2699,9 +3020,9 @@ export default function Reports() {
             </td>
 
             <td style={tdCenter}>
-                {formatNumber(
-                    item.target,
-                )}
+                {typeof item.target === "string"
+                    ? item.target
+                    : formatNumber(item.target)}
             </td>
 
             <td
@@ -2726,61 +3047,76 @@ export default function Reports() {
     const renderMetricRow = (
         item,
         index,
-    ) => (
-        <tr
-            key={`metric-${item.no}`}
-        >
-            <td
-                style={{
-                    ...tdStyle,
-                    fontWeight: "700",
-                }}
+    ) => {
+        const isHeader = item.isTotalHeader || !item.no;
+
+        return (
+            <tr
+                key={`metric-${item.no || item.indicator}-${index}`}
+                style={isHeader ? { backgroundColor: "#DDEBF7" } : undefined}
             >
-                <span
+                <td
                     style={{
-                        display:
-                            "inline-block",
-                        minWidth:
-                            "32px",
-                        marginRight:
-                            "5px",
-                        padding:
-                            "2px 5px",
-                        backgroundColor:
-                            "#FFFF00",
-                        border:
-                            "1px solid #222",
-                        textAlign:
-                            "center",
+                        ...tdStyle,
+                        backgroundColor: isHeader ? "#DDEBF7" : undefined,
+                        fontWeight: "700",
                     }}
                 >
-                    {item.no}
-                </span>
+                    {item.no ? (
+                        <span
+                            style={{
+                                display: "inline-block",
+                                minWidth: "32px",
+                                marginRight: "5px",
+                                padding: "2px 5px",
+                                backgroundColor: "#FFFF00",
+                                border: "1px solid #222",
+                                textAlign: "center",
+                            }}
+                        >
+                            {item.no}
+                        </span>
+                    ) : null}
 
-                {item.indicator}
-            </td>
+                    {item.indicator}
+                </td>
 
-            <td style={tdStyle}>
-                {item.definition ||
-                    "-"}
-            </td>
+                <td
+                    style={{
+                        ...tdStyle,
+                        backgroundColor: isHeader ? "#DDEBF7" : undefined,
+                        fontWeight: isHeader ? "700" : undefined,
+                    }}
+                >
+                    {item.definition || "-"}
+                </td>
 
-            <td style={tdCenter}>
-                {formatNumber(
-                    item.target,
-                )}
-            </td>
+                <td
+                    style={{
+                        ...tdCenter,
+                        backgroundColor: isHeader ? "#DDEBF7" : undefined,
+                        fontWeight: isHeader ? "700" : undefined,
+                    }}
+                >
+                    {typeof item.target === "string"
+                        ? item.target
+                        : formatNumber(item.target)}
+                </td>
 
-            <td style={tdCenter}>
-                {item.notes ||
-                    "Ops : Support"}
-            </td>
+                <td
+                    style={{
+                        ...tdCenter,
+                        backgroundColor: isHeader ? "#DDEBF7" : undefined,
+                        fontWeight: isHeader ? "700" : undefined,
+                    }}
+                >
+                    {item.notes || (isHeader ? "" : "Ops : Support")}
+                </td>
 
-            {renderPlanActualCells(
-                item,
-            )}
-        </tr>
-    );
+                {renderPlanActualCells(item)}
+            </tr>
+        );
+    };
 
     /* ========================================================
        RENDER
@@ -2800,11 +3136,12 @@ export default function Reports() {
 
             <main
                 style={{
-                    marginLeft: "260px",
+                    marginLeft: "var(--admin-sidebar-width, 215px)",
+                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
                     padding: "35px",
-                    boxSizing:
-                        "border-box",
+                    boxSizing: "border-box",
                 }}
             >
                 {/* HEADER */}
@@ -3947,145 +4284,20 @@ export default function Reports() {
 
                                         <tr>
                                             <td
-                                                colSpan={
-                                                    38
-                                                }
+                                                colSpan={38}
                                                 style={{
                                                     ...tdStyle,
-                                                    backgroundColor:
-                                                        "#D9D9D9",
-                                                    fontWeight:
-                                                        "700",
+                                                    backgroundColor: "#D9D9D9",
+                                                    fontWeight: "700",
                                                 }}
                                             >
-                                                2. MAN
-                                                HOURS &
-                                                KILOMETER
-                                                PERFORMANCE
+                                                2. MAN HOURS & KILOMETER PERFORMANCE
                                             </td>
                                         </tr>
 
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    38
-                                                }
-                                                style={{
-                                                    ...tdStyle,
-                                                    backgroundColor:
-                                                        "#DDEBF7",
-                                                    fontWeight:
-                                                        "700",
-                                                }}
-                                            >
-                                                JAM KERJA /
-                                                MAN HOURS
-                                                (Total)
-                                            </td>
-                                        </tr>
-
-                                        {manHours
-                                            .filter(
-                                                (
-                                                    item,
-                                                ) =>
-                                                    [
-                                                        "2.1",
-                                                        "2.2",
-                                                        "2.3",
-                                                    ].includes(
-                                                        item.no,
-                                                    ),
-                                            )
-                                            .map(
-                                                (
-                                                    item,
-                                                    index,
-                                                ) =>
-                                                    renderMetricRow(
-                                                        item,
-                                                        index,
-                                                    ),
-                                            )}
-
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    38
-                                                }
-                                                style={{
-                                                    ...tdStyle,
-                                                    textAlign:
-                                                        "center",
-                                                    fontStyle:
-                                                        "italic",
-                                                }}
-                                            >
-                                                Ops :
-                                                Support:
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    38
-                                                }
-                                                style={{
-                                                    ...tdStyle,
-                                                    backgroundColor:
-                                                        "#DDEBF7",
-                                                    fontWeight:
-                                                        "700",
-                                                }}
-                                            >
-                                                KILOMETER
-                                                DRIVEN
-                                                (Total)
-                                            </td>
-                                        </tr>
-
-                                        {manHours
-                                            .filter(
-                                                (
-                                                    item,
-                                                ) =>
-                                                    [
-                                                        "2.4",
-                                                        "2.5",
-                                                        "2.6",
-                                                    ].includes(
-                                                        item.no,
-                                                    ),
-                                            )
-                                            .map(
-                                                (
-                                                    item,
-                                                    index,
-                                                ) =>
-                                                    renderMetricRow(
-                                                        item,
-                                                        index,
-                                                    ),
-                                            )}
-
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    38
-                                                }
-                                                style={{
-                                                    ...tdStyle,
-                                                    textAlign:
-                                                        "center",
-                                                    fontStyle:
-                                                        "italic",
-                                                }}
-                                            >
-                                                Ops :
-                                                Support:
-                                            </td>
-                                        </tr>
+                                        {manHours.map((item, index) =>
+                                            renderMetricRow(item, index)
+                                        )}
 
                                         {/* SECTION 3 */}
 
@@ -4428,9 +4640,11 @@ export default function Reports() {
                                                             tdCenter
                                                         }
                                                     >
-                                                        {formatNumber(
-                                                            item.monthlyTarget,
-                                                        )}
+                                                        {typeof item.monthlyTarget === "string"
+                                                            ? item.monthlyTarget
+                                                            : formatNumber(
+                                                                  item.monthlyTarget,
+                                                              )}
                                                     </td>
 
                                                     <td
@@ -4438,9 +4652,11 @@ export default function Reports() {
                                                             tdCenter
                                                         }
                                                     >
-                                                        {formatNumber(
-                                                            item.annualTarget,
-                                                        )}
+                                                        {typeof item.annualTarget === "string"
+                                                            ? item.annualTarget
+                                                            : formatNumber(
+                                                                  item.annualTarget,
+                                                              )}
                                                     </td>
 
                                                     <td
@@ -4701,17 +4917,17 @@ export default function Reports() {
                                         Manager
                                     </div>
 
-                                    <div
+                                    <div   
                                         style={{
                                             padding:
                                                 "5px",
                                             backgroundColor:
                                                 "#F1DDDC",
                                             border:
-                                                "1px solid #222",
-                                        }}
+                                                "1px solid #222", 
+                                        }}                                            
                                     />
-                                </div>
+                                </div>  
                             </div>
                         </section>
                     )}

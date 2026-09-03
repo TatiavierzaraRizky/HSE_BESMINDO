@@ -28,7 +28,7 @@ export default function AdminLayout({ children }) {
             {/* =====================================================
                 MAIN CONTENT
             ===================================================== */}
-            <div
+            <div                                
                 style={{
                     marginLeft: `${sidebarWidth}px`,
 

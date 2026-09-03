@@ -357,7 +357,9 @@ export default function TargetKPIManagement() {
 
             <main
                 style={{
-                    marginLeft: "215px",
+                    marginLeft: "var(--admin-sidebar-width, 215px)",
+                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
                 }}
             >
@@ -1217,129 +1219,176 @@ export default function TargetKPIManagement() {
 }
 
 // =====================================================
-// STATUS COMPONENT
+// MODERN STATUS COMPONENT (HIJAU BOTOL & KUNING NEON)
 // =====================================================
 
 function Status({ status }) {
-    let background = "#e4e8ed";
-    let color = "#52606d";
+    let background = "#f8fafc";
+    let color = "#64748b";
+    let border = "#e2e8f0";
+    let dot = "#94a3b8";
+    let shadow = "none";
 
     if (status === "Approved") {
-        background = "#b9f1d0";
-        color = "#006b45";
-    }
-
-    if (status === "Waiting Approval") {
-        background = "#fff0d5";
-        color = "#d98200";
-    }
-
-    if (status === "Rejected") {
-        background = "#ffd6d6";
-        color = "#c62828";
+        background = "#004d32";
+        color = "#efff00";
+        border = "#efff00";
+        dot = "#efff00";
+        shadow = "0 0 8px rgba(239, 255, 0, 0.3)";
+    } else if (status === "Waiting Approval") {
+        background = "#78350f";
+        color = "#fef3c7";
+        border = "#f59e0b";
+        dot = "#f59e0b";
+    } else if (status === "Rejected") {
+        background = "#7f1d1d";
+        color = "#fecaca";
+        border = "#ef4444";
+        dot = "#ef4444";
     }
 
     return (
         <span
             style={{
-                display: "inline-block",
-                padding: "4px 10px",
-                borderRadius: "12px",
-                backgroundColor:
-                    background,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "3px 9px",
+                borderRadius: "999px",
+                backgroundColor: background,
                 color: color,
-                fontSize: "12px",
-                fontWeight: "700",
+                border: `1px solid ${border}`,
+                boxShadow: shadow,
+                fontSize: "11px",
+                fontWeight: "800",
                 whiteSpace: "nowrap",
             }}
         >
-            ● {status}
+            <span
+                style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    backgroundColor: dot,
+                    boxShadow: status === "Approved" ? "0 0 6px #efff00" : "none",
+                }}
+            />
+            {status}
         </span>
     );
 }
 
 // =====================================================
-// STYLE
+// MODERN STYLES
 // =====================================================
 
 const topButton = {
-    border: "none",
-    background: "transparent",
-    cursor: "pointer",
+    width: "36px",
+    height: "36px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
+    backgroundColor: "#ffffff",
+    color: "#004d32",
     fontSize: "16px",
-    color: "#00583b",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
 };
 
 const label = {
     display: "block",
-    fontSize: "14px",
-    fontWeight: "700",
-    color: "#52606d",
+    fontSize: "11px",
+    fontWeight: "800",
+    color: "#004d32",
     marginBottom: "5px",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
 };
 
 const select = {
     width: "100%",
-    height: "34px",
+    height: "38px",
     boxSizing: "border-box",
-    border: "1px solid #d2dae2",
-    borderRadius: "4px",
-    backgroundColor: "#f7f9fb",
-    padding: "0 8px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
+    backgroundColor: "#ffffff",
+    padding: "0 10px",
     fontSize: "13px",
-    color: "#102033",
+    fontWeight: "700",
+    color: "#0f172a",
+    outline: "none",
 };
 
 const button = {
-    height: "34px",
-    padding: "0 15px",
-    border: "none",
-    borderRadius: "4px",
+    height: "38px",
+    padding: "0 18px",
+    border: "1px solid #efff00",
+    borderRadius: "8px",
     fontSize: "13px",
-    fontWeight: "700",
+    fontWeight: "800",
     cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    backgroundColor: "#004d32",
+    color: "#efff00",
+    boxShadow: "0 0 10px rgba(239, 255, 0, 0.25)",
 };
 
 const actionButton = {
-    border: "none",
-    borderRadius: "4px",
-    padding: "7px 10px",
-    fontSize: "12px",
-    fontWeight: "700",
+    border: "1px solid #004d32",
+    borderRadius: "6px",
+    padding: "5px 10px",
+    fontSize: "11px",
+    fontWeight: "800",
     cursor: "pointer",
+    backgroundColor: "#004d32",
+    color: "#efff00",
+    transition: "all 0.15s",
 };
 
 const th = {
-    padding: "8px 10px",
-    fontSize: "14px",
-    color: "#52606d",
-    fontWeight: "700",
+    padding: "14px 16px",
+    fontSize: "11.5px",
+    color: "#ffffff",
+    backgroundColor: "#004d32",
+    fontWeight: "800",
     textAlign: "left",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    borderBottom: "2px solid #efff00",
 };
 
 const td = {
-    padding: "9px 10px",
+    padding: "14px 16px",
     fontSize: "13px",
-    color: "#172033",
+    color: "#1e293b",
+    whiteSpace: "nowrap",
+    fontWeight: "500",
 };
 
 const modalLabel = {
     display: "block",
-    marginTop: "12px",
+    marginTop: "14px",
     marginBottom: "5px",
-    fontSize: "13px",
+    fontSize: "12px",
     fontWeight: "700",
     color: "#334155",
+    textTransform: "uppercase",
+    letterSpacing: "0.02em",
 };
 
 const input = {
     width: "100%",
     height: "38px",
-    boxSizing: "border-box",
-    border: "1px solid #d2dae2",
-    borderRadius: "4px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
     padding: "0 10px",
-    fontSize: "14px",
+    fontSize: "13px",
+    fontWeight: "600",
     outline: "none",
+    boxSizing: "border-box",
     backgroundColor: "#ffffff",
 };

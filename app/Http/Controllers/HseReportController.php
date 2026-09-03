@@ -13,9 +13,9 @@ use Inertia\Inertia;
 class HseReportController extends Controller
 {
     /**
-     * Menampilkan halaman Reports dan menyediakan filter dari database.
+     * Menyiapkan data reports dan filters dari database.
      */
-    public function index(Request $request)
+    private function getReportData(Request $request): array
     {
         $query = HseReport::with([
             'manHours',
@@ -160,7 +160,7 @@ class HseReportController extends Controller
             ->map(fn ($date) => \Carbon\Carbon::parse($date)->format('Y-m-d'))
             ->values();
 
-        return Inertia::render('Admin/Reports', [
+        return [
             'reports' => $reports,
             'filters' => [
                 'years' => $years,
@@ -180,7 +180,39 @@ class HseReportController extends Controller
                 'report_date' => $request->report_date,
                 'status' => $request->status,
             ],
-        ]);
+        ];
+    }
+
+    /**
+     * Menampilkan halaman Reports utama.
+     */
+    public function index(Request $request)
+    {
+        return Inertia::render('Admin/Reports', $this->getReportData($request));
+    }
+
+    /**
+     * Menampilkan halaman Plan Report.
+     */
+    public function plan(Request $request)
+    {
+        return Inertia::render('Admin/PlanReport', $this->getReportData($request));
+    }
+
+    /**
+     * Menampilkan halaman Actual Report.
+     */
+    public function actual(Request $request)
+    {
+        return Inertia::render('Admin/ActualReport', $this->getReportData($request));
+    }
+
+    /**
+     * Menampilkan halaman KPI Per Rig.
+     */
+    public function kpiPerRig(Request $request)
+    {
+        return Inertia::render('Admin/KPIPerRig', $this->getReportData($request));
     }
 
     /**

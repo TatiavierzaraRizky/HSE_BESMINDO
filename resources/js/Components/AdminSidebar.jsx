@@ -33,8 +33,15 @@ function AdminSidebar({
     | SIDEBAR STATE
     |--------------------------------------------------------------------------
     */
-    const [internalCollapsed, setInternalCollapsed] =
-        useState(false);
+    const [internalCollapsed, setInternalCollapsed] = useState(() => {
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("besmindo_admin_sidebar_collapsed");
+            if (saved !== null) {
+                return saved === "true";
+            }
+        }
+        return false;
+    });
 
     // Kalau dipakai bersama AdminLayout, state berasal dari parent.
     // Kalau belum ada AdminLayout, sidebar tetap bisa berjalan sendiri.
@@ -55,7 +62,12 @@ function AdminSidebar({
             if (window.innerWidth <= 900) {
                 setInternalCollapsed(true);
             } else {
-                setInternalCollapsed(false);
+                const saved = localStorage.getItem("besmindo_admin_sidebar_collapsed");
+                if (saved !== null) {
+                    setInternalCollapsed(saved === "true");
+                } else {
+                    setInternalCollapsed(false);
+                }
             }
         };
 
@@ -186,7 +198,13 @@ function AdminSidebar({
             return;
         }
 
-        setInternalCollapsed((prev) => !prev);
+        setInternalCollapsed((prev) => {
+            const next = !prev;
+            if (typeof window !== "undefined") {
+                localStorage.setItem("besmindo_admin_sidebar_collapsed", String(next));
+            }
+            return next;
+        });
     };
 
     // Beri tahu layout/global page lebar sidebar saat berubah.
@@ -195,6 +213,7 @@ function AdminSidebar({
             "--admin-sidebar-width",
             collapsed ? "68px" : "215px"
         );
+        window.dispatchEvent(new CustomEvent("admin-sidebar-resize", { detail: { collapsed } }));
     }, [collapsed]);
 
     return (
@@ -228,6 +247,8 @@ function AdminSidebar({
                     boxSizing: "border-box",
 
                     overflow: "visible",
+
+                    transition: "width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
             >
                 {/* =====================================================
@@ -571,39 +592,41 @@ function AdminSidebar({
 
                                         padding:
                                             collapsed
-                                                ? "11px 8px"
-                                                : "11px 12px",
+                                                ? "10px 8px"
+                                                : "10px 14px",
 
                                         marginBottom:
                                             "4px",
 
                                         borderRadius:
-                                            "6px",
+                                            "10px",
 
                                         textDecoration:
                                             "none",
 
-                                        backgroundColor:
+                                        background:
                                             active
-                                                ? "#00583b"
+                                                ? "#004d32"
                                                 : "transparent",
 
                                         color:
                                             active
-                                                ? "#ffffff"
-                                                : "#475569",
+                                                ? "#efff00"
+                                                : "#334155",
+
+                                        border:
+                                            active
+                                                ? "1px solid #efff00"
+                                                : "1px solid transparent",
 
                                         fontSize:
-                                            "10px",
+                                            "12.5px",
 
                                         fontWeight:
-                                            "700",
-
-                                        textTransform:
-                                            "uppercase",
+                                            active ? "800" : "600",
 
                                         letterSpacing:
-                                            "0.08em",
+                                            "-0.01em",
 
                                         minHeight:
                                             "40px",
@@ -611,8 +634,13 @@ function AdminSidebar({
                                         overflow:
                                             "hidden",
 
+                                        boxShadow:
+                                            active
+                                                ? "0 0 14px rgba(239, 255, 0, 0.35), inset 0 0 8px rgba(239, 255, 0, 0.15)"
+                                                : "none",
+
                                         transition:
-                                            "all 0.15s ease",
+                                            "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                                     }}
                                 >
                                     {/* MENU ICON */}
@@ -639,21 +667,21 @@ function AdminSidebar({
                                             marginRight:
                                                 collapsed
                                                     ? "0"
-                                                    : "8px",
+                                                    : "10px",
 
                                             color:
                                                 active
                                                     ? "#efff00"
-                                                    : "#006b45",
+                                                    : "#004d32",
 
                                             flexShrink:
                                                 0,
                                         }}
                                     >
                                         <Icon
-                                            size={16}
+                                            size={17}
                                             strokeWidth={
-                                                2.2
+                                                active ? 2.6 : 2
                                             }
                                         />
                                     </span>
@@ -664,6 +692,10 @@ function AdminSidebar({
                                             style={{
                                                 whiteSpace:
                                                     "nowrap",
+                                                textShadow:
+                                                    active
+                                                        ? "0 0 10px rgba(239, 255, 0, 0.5)"
+                                                        : "none",
                                             }}
                                         >
                                             {

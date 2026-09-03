@@ -32,41 +32,42 @@ const LAGGING_INDICATORS = [
 ];
 
 const LEADING_INDICATORS = [
-    "OBSERVASI PERILAKU (PEKA)",
-    "IDENTIFIKASI BAHAYA (HAZID / 5M NTRISK ASSESSMENT)",
+    "OBSERVASI PERILAKU (PEKA) *)",
+    "IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)",
     "SWA REPORT",
-    "INSPEKSI SAFETY EQUIPMENT & APD",
+    "INSPEKSI SAFETY EQUIPMENT & APD *) (Eye wash, Shower, Fire, P3K, Tandu, FBH, SCBA)",
     "EKSTERNAL INSPEKSI LR COLOR CODE",
-    "INSPEKSI BENDA JATUH / DROPS",
+    "INSPEKSI BENDA JATUH / DROPS **)",
     "INTERNAL INSPEKSI / V&V OLEH TEAM",
     "INSPEKSI / AUDIT SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR",
-    "SPOT CHECK KENDARAAN",
-    "AUDIT INTERNAL & EKSTERNAL",
-    "MONITORING KEPATUHAN PENGEMUDI",
-    "LAPORAN INSPEKSI KENDARAAN (PTI)",
-    "SPESIFIK MCU RANDOM",
-    "PRA MCU",
-    "TOP MANAGEMENT VISIT / MWT",
-    "MANAGEMENT VISIT / MWT",
+    "SPOT CHECK KENDARAAN *) **)",
+    "AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)",
+    "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)",
+    "Laporan Inspeksi Kendaraan (PTI)",
+    "SPESIFIK MCU RANDOM : (NAPZA & MIRAS TEST *)",
+    "PRA MCU (MCU TAHUNAN BAGI YANG KONSULTASI TAHUN SEBELUMNYA)",
+    "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)",
+    "MANAGEMENT VISIT / MWT (Level Coord level s/d Manager *)",
     "RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)",
     "PRE HITCH MEETING",
-    "RAPAT/FORUM BERSAMA LEADER BMS DAN PHR",
-    "SAFETY TALK MONTHLY MEETING",
-    "LEADERSHIP FORUM",
-    "KAMPANYE KESELAMATAN",
-    "REVIEW, TINJAUAN MANAJEMEN",
-    "HYGIENE MONITORING: NOISE & LUX MONITORING",
-    "HYGIENE MONITORING: MESS, CATERING, DAMP",
-    "INSPEKSI HOUSEKEEPING RIG",
-    "PENGHARGAAN: KONTES HOUSEKEEPING RIG",
+    "RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.",
+    "SAFETY TALK MONTHLY MEETING : SUPPORT YARD & RIG",
+    "LEADERSHIP FORUM ***)",
+    "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK) *)",
+    "REVIEW, TINJAUAN MANAJEMEN *)",
+    "HYGIENE MONITORING : NOISE & LUX MONITORING **)",
+    "HYGIENE MONITORING : Mess, Catering, DAM*)",
+    "INSPEKSI \"HOUSEKEEPING RIG\"",
+    "PENGHARGAAN: KONTES \"HOUSEKEEPING RIG\" *)",
     "PELAPORAN LINGKUNGAN KE DINAS LH",
-    "PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL",
+    "PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL **)",
     "PENGHARGAAN THE BEST BBS / PEKA",
     "PENGHARGAAN THE BEST DRIVER",
     "PENGHARGAAN: PENCAPAIAN KERJA SELAMAT TAHUNAN",
     "PENGHARGAAN HES REFRESHING",
-    "ON SITE TRAINING / DI LOKASI",
-    "ERP DRILL RIG",
+    "\"ON SITE TRAINING\" DI LOKASI *)",
+    "ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)",
+    "ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)",
 ];
 
 const INITIAL_FORM = {
@@ -349,7 +350,9 @@ export default function InputData() {
 
             <main
                 style={{
-                    marginLeft: "260px",
+                    marginLeft: "var(--admin-sidebar-width, 215px)",
+                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
                 }}
             >
@@ -679,12 +682,12 @@ export default function InputData() {
                                 style={{
                                     padding: "11px 22px",
                                     backgroundColor: "#ffffff",
-                                    border: "1px solid #cbd7d2",
-                                    borderRadius: "5px",
+                                    border: "1px solid #004d32",
+                                    borderRadius: "8px",
                                     cursor: "pointer",
-                                    color: "#395149",
-                                    fontWeight: "600",
-                                    fontSize: "14px",
+                                    color: "#004d32",
+                                    fontWeight: "700",
+                                    fontSize: "13px",
                                 }}
                             >
                                 Reset
@@ -694,13 +697,14 @@ export default function InputData() {
                                 type="submit"
                                 style={{
                                     padding: "11px 25px",
-                                    backgroundColor: "#005b45",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "5px",
+                                    backgroundColor: "#004d32",
+                                    color: "#efff00",
+                                    border: "1px solid #efff00",
+                                    borderRadius: "8px",
                                     cursor: "pointer",
-                                    fontWeight: "600",
-                                    fontSize: "14px",
+                                    fontWeight: "800",
+                                    fontSize: "13px",
+                                    boxShadow: "0 0 10px rgba(239, 255, 0, 0.25)",
                                 }}
                             >
                                 Save HSE Data
@@ -723,8 +727,8 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
             <div
                 style={{
                     overflowX: "auto",
-                    border: "1px solid #dbe4e0",
-                    borderRadius: "6px",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "10px",
                 }}
             >
                 <table
@@ -737,8 +741,9 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                     <thead>
                         <tr
                             style={{
-                                backgroundColor: "#005b45",
+                                backgroundColor: "#004d32",
                                 color: "#ffffff",
+                                borderBottom: "2px solid #efff00",
                             }}
                         >
                             <th style={tableHeaderStyle}>No</th>
@@ -762,19 +767,37 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                     <tbody>
                         {indicators.map((indicator, index) => {
                             const value = values[indicator] || {
-                                actual: 0,
                                 plan: 0,
+                                actual: 0,
                             };
 
                             return (
-                                <tr key={indicator}>
-                                    <td style={tableCellStyle}>{index + 1}</td>
+                                <tr
+                                    key={indicator}
+                                    style={{
+                                        backgroundColor:
+                                            index % 2 === 0
+                                                ? "#ffffff"
+                                                : "#fcfdfd",
+                                        borderBottom: "1px solid #f1f5f9",
+                                    }}
+                                >
+                                    <td
+                                        style={{
+                                            ...tableCellStyle,
+                                            fontWeight: "700",
+                                            color: "#004d32",
+                                        }}
+                                    >
+                                        {index + 1}
+                                    </td>
 
                                     <td
                                         style={{
                                             ...tableCellStyle,
                                             textAlign: "left",
-                                            fontWeight: "600",
+                                            color: "#1e293b",
+                                            fontWeight: "500",
                                         }}
                                     >
                                         {indicator}
@@ -818,7 +841,7 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                 style={{
                     margin: "10px 0 0",
                     fontSize: "12px",
-                    color: "#71807a",
+                    color: "#64748b",
                 }}
             >
                 Isi nilai <strong>Plan</strong> sesuai target implementasi pada
@@ -844,16 +867,18 @@ function Step({ number, title, active }) {
         >
             <div
                 style={{
-                    width: "28px",
-                    height: "28px",
+                    width: "30px",
+                    height: "30px",
                     borderRadius: "50%",
-                    backgroundColor: active ? "#005b45" : "#e4e9e7",
-                    color: active ? "white" : "#53635d",
+                    backgroundColor: active ? "#004d32" : "#e2e8f0",
+                    color: active ? "#efff00" : "#64748b",
+                    border: active ? "1px solid #efff00" : "1px solid transparent",
+                    boxShadow: active ? "0 0 8px rgba(239, 255, 0, 0.3)" : "none",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontWeight: "700",
-                    fontSize: "14px",
+                    fontWeight: "800",
+                    fontSize: "13px",
                 }}
             >
                 {number}
@@ -862,10 +887,11 @@ function Step({ number, title, active }) {
             <div>
                 <div
                     style={{
-                        fontSize: "13px",
-                        fontWeight: "700",
-                        color: "#52645e",
+                        fontSize: "12px",
+                        fontWeight: "800",
+                        color: active ? "#004d32" : "#64748b",
                         textTransform: "uppercase",
+                        letterSpacing: "0.04em",
                     }}
                 >
                     {title}
@@ -884,19 +910,35 @@ function Section({ title, children }) {
         <section
             style={{
                 backgroundColor: "#ffffff",
-                border: "1px solid #d4ded9",
-                borderRadius: "7px",
-                padding: "18px",
-                marginBottom: "14px",
+                border: "1px solid #e2e8f0",
+                borderRadius: "14px",
+                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.06)",
+                padding: "24px",
+                marginBottom: "20px",
+                boxSizing: "border-box",
+                position: "relative",
+                overflow: "hidden",
             }}
         >
+            <div
+                style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "3px",
+                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
+                }}
+            />
+
             <h2
                 style={{
-                    margin: "0 0 15px",
-                    paddingBottom: "10px",
-                    borderBottom: "1px solid #e3e9e6",
-                    fontSize: "19px",
-                    color: "#12342b",
+                    margin: "0 0 18px",
+                    paddingBottom: "12px",
+                    borderBottom: "1px solid #f1f5f9",
+                    fontSize: "16px",
+                    fontWeight: "800",
+                    color: "#004d32",
                 }}
             >
                 {title}

@@ -1,688 +1,940 @@
 import React, { useMemo, useState } from "react";
+import { usePage } from "@inertiajs/react";
 import AdminSidebar from "../../Components/AdminSidebar";
+import {
+    Target,
+    CheckCircle2,
+    TrendingUp,
+    Award,
+    Activity,
+    Calendar,
+    Filter,
+    Download,
+    Eye,
+    Search,
+    Shield,
+    ShieldAlert,
+    ShieldCheck,
+    Layers,
+    ChevronLeft,
+    ChevronRight,
+    SlidersHorizontal,
+    Sparkles,
+    BarChart3,
+    Clock,
+    Check,
+    ArrowUpRight,
+    X,
+    FileSpreadsheet,
+    Bell,
+    HelpCircle,
+    UserCheck,
+    Flame,
+    AlertTriangle,
+    Zap,
+    Briefcase
+} from "lucide-react";
+
+/* ============================================================
+   MASTER DEFINITIONS FOR KPI
+============================================================ */
+
+const LAGGING_MASTER = [
+    { key: "fatality", name: "Lost Time Incidents (LTI) - Fatality", category: "Lagging", isLagging: true },
+    { key: "serious_lost_time_injury", name: "Serious Lost Time Injury (>21 Days)", category: "Lagging", isLagging: true },
+    { key: "restricted_work_case", name: "Restricted Work Case (RWC)", category: "Lagging", isLagging: true },
+    { key: "medical_treatment_case", name: "Medical Treatment Case (MTC)", category: "Lagging", isLagging: true },
+    { key: "total_recordable_injury", name: "Total Recordable Injury (TRI)", category: "Lagging", isLagging: true },
+    { key: "motor_vehicle_crash", name: "Motor Vehicle Crash (MVC)", category: "Lagging", isLagging: true },
+    { key: "oil_spill", name: "Environmental Spills (Oil Spill)", category: "Lagging", isLagging: true },
+    { key: "fire_incident", name: "Fire Incidents", category: "Lagging", isLagging: true },
+    { key: "property_damage", name: "Property Damage Incident", category: "Lagging", isLagging: true },
+    { key: "security_incident", name: "Security Incidents", category: "Lagging", isLagging: true },
+    { key: "occupational_illness", name: "Occupational Illness", category: "Lagging", isLagging: true },
+    { key: "first_aid_case", name: "First Aid Cases", category: "Lagging", isLagging: true },
+];
+
+const LEADING_MASTER = [
+    { key: "peka", name: "Safety Observations (PEKA)", category: "Leading" },
+    { key: "hazid", name: "Hazard Identification (HAZID)", category: "Leading" },
+    { key: "swa", name: "Stop Work Authority (SWA)", category: "Leading" },
+    { key: "safety_equipment", name: "Safety Equipment & APD Inspection", category: "Leading" },
+    { key: "drops", name: "Drops Inspection Program", category: "Leading" },
+    { key: "vv_inspection", name: "Inspeksi V&V Operation", category: "Leading" },
+    { key: "audit_smk3l", name: "Safety Audits Completed (SMK3L)", category: "Leading" },
+    { key: "spot_check", name: "Vehicle & Rig Spot Check", category: "Leading" },
+    { key: "monitoring_kepatuhan", name: "Driver Compliance Monitoring", category: "Leading" },
+    { key: "pti", name: "Pre-Task Identification (PTI)", category: "Leading" },
+    { key: "mcu", name: "Medical Check Up (MCU)", category: "Leading" },
+    { key: "management_visit", name: "Management Walkthrough / MWT", category: "Leading" },
+    { key: "rapat_keselamatan", name: "Safety Committee Meetings", category: "Leading" },
+    { key: "pre_hitch", name: "Pre-Hitch Safety Meetings", category: "Leading" },
+    { key: "safety_talk", name: "Toolbox Talks & Safety Talks", category: "Leading" },
+    { key: "forum_kampanye", name: "HSE Campaigns & Forums", category: "Leading" },
+    { key: "hygiene", name: "Industrial Hygiene Monitoring", category: "Leading" },
+    { key: "housekeeping", name: "Rig Site Housekeeping 5S", category: "Leading" },
+    { key: "penghargaan", name: "HSE Recognition & Awards", category: "Leading" },
+    { key: "on_site_training", name: "HSE Training & Development", category: "Leading" },
+    { key: "erp_drill_rig", name: "Emergency Response Drill (Rig)", category: "Leading" },
+    { key: "erp_drill_yard", name: "Emergency Response Drill (Yard)", category: "Leading" },
+];
+
+function normalizeReport(report) {
+    const manHoursData = report?.man_hours || report?.manHours || null;
+    return {
+        ...report,
+        manHours: Array.isArray(manHoursData) ? manHoursData[0] || null : manHoursData,
+        laggingIndicators: Array.isArray(report?.lagging_indicators)
+            ? report.lagging_indicators
+            : Array.isArray(report?.laggingIndicators)
+              ? report.laggingIndicators
+              : [],
+        leadingIndicators: Array.isArray(report?.leading_indicators)
+            ? report.leading_indicators
+            : Array.isArray(report?.leadingIndicators)
+              ? report.leadingIndicators
+              : [],
+    };
+}
+
+function getReportYear(report) {
+    const rawDate = report?.report_date || report?.issued_date || report?.created_at;
+    if (!rawDate) return new Date().getFullYear();
+    const parsed = new Date(rawDate);
+    return isNaN(parsed.getFullYear()) ? new Date().getFullYear() : parsed.getFullYear();
+}
+
+function getReportMonth(report) {
+    const rawDate = report?.report_date || report?.issued_date || report?.created_at;
+    if (!rawDate) return 0;
+    const parsed = new Date(rawDate);
+    return isNaN(parsed.getMonth()) ? 0 : parsed.getMonth();
+}
+
+function getQuarterMonths(quarter) {
+    switch (quarter) {
+        case "Q1": return [0, 1, 2];
+        case "Q2": return [3, 4, 5];
+        case "Q3": return [6, 7, 8];
+        case "Q4": return [9, 10, 11];
+        default: return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    }
+}
 
 export default function KPIPerRig() {
+    const { reports: rawReports = [] } = usePage().props;
+
+    const reports = useMemo(() => {
+        return Array.isArray(rawReports) ? rawReports.map(normalizeReport) : [];
+    }, [rawReports]);
+
     // =====================================================
-    // STATE
+    // FILTER OPTIONS FROM DATABASE
     // =====================================================
 
-    const [rig, setRig] = useState("Rig-04 Sector Alpha");
-    const [contract, setContract] = useState("CT-2023-XY");
-    const [year, setYear] = useState("2024");
-    const [period, setPeriod] = useState("Q3");
+    const availableYears = useMemo(() => {
+        const years = [...new Set(reports.map((r) => getReportYear(r)).filter(Boolean))];
+        if (years.length === 0) years.push(new Date().getFullYear());
+        return years.sort((a, b) => b - a);
+    }, [reports]);
 
-    const [performanceMode, setPerformanceMode] =
-        useState("Monthly");
+    const availableRigs = useMemo(() => {
+        return [...new Set(reports.map((r) => r.rig_no).filter(Boolean))].sort();
+    }, [reports]);
 
+    const availableContracts = useMemo(() => {
+        return [...new Set(reports.map((r) => r.contract_no).filter(Boolean))].sort();
+    }, [reports]);
+
+    // =====================================================
+    // FILTER STATE
+    // =====================================================
+
+    const [rig, setRig] = useState("All Rigs");
+    const [contract, setContract] = useState("All Contracts");
+    const [year, setYear] = useState(String(availableYears[0] || "2024"));
+    const [period, setPeriod] = useState("All");
+
+    const [performanceMode, setPerformanceMode] = useState("Monthly");
+    const [tableCategory, setTableCategory] = useState("All"); // All | Leading | Lagging
     const [currentPage, setCurrentPage] = useState(1);
-
     const [selectedKpi, setSelectedKpi] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
 
-    const rowsPerPage = 5;
-
-    // =====================================================
-    // DATA KPI
-    // =====================================================
-
-    const kpiData = [
-        {
-            indicator: "Lost Time Incidents (LTI)",
-            target: 0,
-            actual: 0,
-            variance: 0,
-            status: "Achieved",
-        },
-        {
-            indicator: "Safety Audits Completed",
-            target: 24,
-            actual: 22,
-            variance: -2,
-            status: "Below Target",
-        },
-        {
-            indicator: "Toolbox Talks",
-            target: 90,
-            actual: 95,
-            variance: 5,
-            status: "Achieved",
-        },
-        {
-            indicator: "Near Miss Reporting",
-            target: 15,
-            actual: 14,
-            variance: -1,
-            status: "Below Target",
-        },
-        {
-            indicator: "Safety Observations",
-            target: 120,
-            actual: 118,
-            variance: -2,
-            status: "Below Target",
-        },
-        {
-            indicator: "HSE Training",
-            target: 50,
-            actual: 52,
-            variance: 2,
-            status: "Achieved",
-        },
-        {
-            indicator: "Equipment Inspection",
-            target: 40,
-            actual: 40,
-            variance: 0,
-            status: "Achieved",
-        },
-        {
-            indicator: "Hazard Identification",
-            target: 30,
-            actual: 28,
-            variance: -2,
-            status: "Below Target",
-        },
-    ];
+    const rowsPerPage = 6;
 
     // =====================================================
-    // FILTER DATA
+    // FILTERED REPORTS
     // =====================================================
 
-    const filteredData = useMemo(() => {
-        return kpiData;
-    }, []);
+    const filteredReports = useMemo(() => {
+        return reports.filter((r) => {
+            if (String(getReportYear(r)) !== String(year)) return false;
+            if (rig !== "All Rigs" && r.rig_no !== rig) return false;
+            if (contract !== "All Contracts" && r.contract_no !== contract) return false;
+            return true;
+        });
+    }, [reports, year, rig, contract]);
 
     // =====================================================
-    // PAGINATION
+    // AGGREGATE KPI METRICS FOR SELECTED PERIOD
     // =====================================================
 
-    const totalPages = Math.ceil(
-        filteredData.length / rowsPerPage
-    );
+    const targetMonths = useMemo(() => getQuarterMonths(period), [period]);
 
-    const currentData = filteredData.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage
-    );
+    const kpiMetrics = useMemo(() => {
+        const list = [];
+
+        // 1. Lagging Indicators (12 Indicators)
+        LAGGING_MASTER.forEach((def) => {
+            let targetSum = 0;
+            let actualSum = 0;
+
+            filteredReports.forEach((rep) => {
+                const repMonth = getReportMonth(rep);
+                if (targetMonths.includes(repMonth)) {
+                    const found = rep.laggingIndicators?.find((item) => {
+                        const name = (item.indicator_name || item.name || "").toLowerCase();
+                        return name.includes(def.key) || def.name.toLowerCase().includes(name);
+                    });
+                    targetSum += Number(found?.plan_value || found?.target || 0);
+                    actualSum += Number(found?.actual_value || found?.actual || 0);
+                }
+            });
+
+            const variance = actualSum - targetSum;
+            const status = actualSum === 0 ? "Achieved" : "Below Target";
+
+            list.push({
+                indicator: def.name,
+                category: "Lagging",
+                target: targetSum,
+                actual: actualSum,
+                variance,
+                status,
+                isLagging: true,
+            });
+        });
+
+        // 2. Leading Indicators (22 Indicators)
+        LEADING_MASTER.forEach((def) => {
+            let targetSum = 0;
+            let actualSum = 0;
+
+            filteredReports.forEach((rep) => {
+                const repMonth = getReportMonth(rep);
+                if (targetMonths.includes(repMonth)) {
+                    const found = rep.leadingIndicators?.find((item) => {
+                        const name = (item.indicator_name || item.name || "").toLowerCase();
+                        return name.includes(def.key) || def.name.toLowerCase().includes(name);
+                    });
+                    targetSum += Number(found?.plan_value || found?.target || 0);
+                    actualSum += Number(found?.actual_value || found?.actual || 0);
+                }
+            });
+
+            const variance = actualSum - targetSum;
+            let status = "Achieved";
+            if (targetSum > 0 && actualSum < targetSum) {
+                status = "Below Target";
+            }
+
+            list.push({
+                indicator: def.name,
+                category: "Leading",
+                target: targetSum,
+                actual: actualSum,
+                variance,
+                status,
+                isLagging: false,
+            });
+        });
+
+        return list;
+    }, [filteredReports, targetMonths]);
 
     // =====================================================
-    // HANDLER
+    // TOP 4 EXECUTIVE SUMMARY CARDS (DYNAMIC FROM DATABASE)
     // =====================================================
 
-    const handleFilter = () => {
+    const summaryCards = useMemo(() => {
+        let totalTarget = 0;
+        let totalActual = 0;
+        let laggingIncidents = 0;
+
+        kpiMetrics.forEach((m) => {
+            if (m.isLagging) {
+                laggingIncidents += Number(m.actual || 0);
+            } else {
+                totalTarget += Number(m.target || 0);
+                totalActual += Number(m.actual || 0);
+            }
+        });
+
+        const achievement = totalTarget > 0 ? (totalActual / totalTarget) * 100 : (totalActual > 0 ? 100 : 0);
+        let status = "On Track";
+        if (laggingIncidents > 0) {
+            status = "Attention Needed";
+        } else if (totalTarget > 0 && achievement < 85) {
+            status = "Below Target";
+        }
+
+        return {
+            target: totalTarget.toLocaleString(),
+            actual: totalActual.toLocaleString(),
+            achievement: achievement.toFixed(1) + "%",
+            status,
+            rawAchievement: achievement,
+        };
+    }, [kpiMetrics]);
+
+    // =====================================================
+    // TARGET VS ACTUAL QUARTERLY DATA (DYNAMIC FROM DATABASE)
+    // =====================================================
+
+    const quarterlyChartData = useMemo(() => {
+        const quarters = [
+            { label: "Q1", months: [0, 1, 2] },
+            { label: "Q2", months: [3, 4, 5] },
+            { label: "Q3", months: [6, 7, 8] },
+            { label: "Q4", months: [9, 10, 11] },
+        ];
+
+        return quarters.map((q) => {
+            let target = 0;
+            let actual = 0;
+
+            filteredReports.forEach((rep) => {
+                const repMonth = getReportMonth(rep);
+                if (q.months.includes(repMonth)) {
+                    rep.leadingIndicators?.forEach((item) => {
+                        target += Number(item.plan_value || item.target || 0);
+                        actual += Number(item.actual_value || item.actual || 0);
+                    });
+                }
+            });
+
+            return {
+                label: q.label,
+                target: target,
+                actual: actual,
+            };
+        });
+    }, [filteredReports]);
+
+    // =====================================================
+    // PERFORMANCE TREND BARS (DYNAMIC FROM DATABASE)
+    // =====================================================
+
+    const performanceBars = useMemo(() => {
+        if (performanceMode === "Monthly") {
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return months.map((m, idx) => {
+                let actual = 0;
+                let target = 0;
+                filteredReports.forEach((rep) => {
+                    if (getReportMonth(rep) === idx) {
+                        rep.leadingIndicators?.forEach((item) => {
+                            target += Number(item.plan_value || item.target || 0);
+                            actual += Number(item.actual_value || item.actual || 0);
+                        });
+                    }
+                });
+                const percentage = target > 0 ? Math.min(100, Math.round((actual / target) * 100)) : (actual > 0 ? 100 : 0);
+                return { label: m, value: percentage };
+            });
+        }
+
+        if (performanceMode === "Quarterly") {
+            return quarterlyChartData.map((q) => {
+                const percentage = q.target > 0 ? Math.min(100, Math.round((q.actual / q.target) * 100)) : (q.actual > 0 ? 100 : 0);
+                return {
+                    label: q.label,
+                    value: percentage,
+                };
+            });
+        }
+
+        // YTD
+        let ytdTarget = 0;
+        let ytdActual = 0;
+        filteredReports.forEach((rep) => {
+            rep.leadingIndicators?.forEach((item) => {
+                ytdTarget += Number(item.plan_value || item.target || 0);
+                ytdActual += Number(item.actual_value || item.actual || 0);
+            });
+        });
+        const ytdPercentage = ytdTarget > 0 ? Math.min(100, Math.round((ytdActual / ytdTarget) * 100)) : (ytdActual > 0 ? 100 : 0);
+
+        return [
+            { label: "Q1 YTD", value: quarterlyChartData[0].target > 0 ? Math.min(100, Math.round((quarterlyChartData[0].actual / quarterlyChartData[0].target) * 100)) : 0 },
+            { label: "Q2 YTD", value: quarterlyChartData[1].target > 0 ? Math.min(100, Math.round((quarterlyChartData[1].actual / quarterlyChartData[1].target) * 100)) : 0 },
+            { label: "Q3 YTD", value: quarterlyChartData[2].target > 0 ? Math.min(100, Math.round((quarterlyChartData[2].actual / quarterlyChartData[2].target) * 100)) : 0 },
+            { label: "Full YTD", value: ytdPercentage },
+        ];
+    }, [performanceMode, filteredReports, quarterlyChartData]);
+
+    // =====================================================
+    // FILTERED TABLE & PAGINATION
+    // =====================================================
+
+    const displayTableData = useMemo(() => {
+        let result = kpiMetrics;
+
+        if (tableCategory === "Leading") {
+            result = result.filter((item) => item.category === "Leading");
+        } else if (tableCategory === "Lagging") {
+            result = result.filter((item) => item.category === "Lagging");
+        }
+
+        if (searchTerm.trim()) {
+            result = result.filter((item) =>
+                item.indicator.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        return result;
+    }, [kpiMetrics, tableCategory, searchTerm]);
+
+    const totalPages = Math.max(1, Math.ceil(displayTableData.length / rowsPerPage));
+
+    const currentData = useMemo(() => {
+        return displayTableData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+    }, [displayTableData, currentPage, rowsPerPage]);
+
+    // =====================================================
+    // HANDLERS
+    // =====================================================
+
+    const handleFilterSubmit = () => {
         setCurrentPage(1);
-
-        alert(
-            `Filter KPI diterapkan\n\nRig: ${rig}\nContract: ${contract}\nYear: ${year}\nPeriod: ${period}`
-        );
     };
 
     const handlePrevious = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
+        if (currentPage > 1) setCurrentPage(currentPage - 1);
     };
 
     const handleNext = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
+        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
 
     const handleExport = () => {
-        alert(
-            `Export KPI Report\n\nRig: ${rig}\nContract: ${contract}\nYear: ${year}\nPeriod: ${period}`
-        );
+        const headers = ["Indicator", "Category", "Target", "Actual", "Variance", "Status"];
+        const rows = displayTableData.map((row) => [
+            `"${row.indicator}"`,
+            `"${row.category}"`,
+            row.target,
+            row.actual,
+            row.variance > 0 ? `+${row.variance}` : row.variance,
+            `"${row.status}"`,
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `KPI_Report_${rig}_${year}_${period}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const handleChartClick = (label) => {
-        alert(`Detail KPI: ${label}`);
+        setSelectedKpi({
+            indicator: `Performance Breakdown (${label})`,
+            target: "100%",
+            actual: "95.4%",
+            variance: "+2.1%",
+            status: "Achieved",
+            category: "Performance Trend",
+        });
     };
-
-    // =====================================================
-    // STYLE
-    // =====================================================
-
-    const green = "#004d32";
-    const green2 = "#00583b";
-    const background = "#f4f7fb";
-    const border = "#d9e1e8";
-    const text = "#102033";
-    const muted = "#64748b";
-
-    const selectStyle = {
-        height: "35px",
-        padding: "0 8px",
-        border: `1px solid ${border}`,
-        borderRadius: "3px",
-        backgroundColor: "#ffffff",
-        color: text,
-        fontSize: "13px",
-        outline: "none",
-        cursor: "pointer",
-    };
-
-    // =====================================================
-    // RENDER
-    // =====================================================
 
     return (
         <div
             style={{
                 minHeight: "100vh",
-                backgroundColor: background,
-                fontFamily: "Arial, sans-serif",
-                color: text,
+                backgroundColor: "#f4f7f6",
+                fontFamily: "'Instrument Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+                color: "#0f172a",
+                backgroundImage: "radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(4, 120, 87, 0.04) 0px, transparent 50%)",
             }}
         >
-            {/* =================================================
-                SIDEBAR
-            ================================================= */}
-
+            {/* SIDEBAR */}
             <AdminSidebar />
 
-            {/* =================================================
-                MAIN
-            ================================================= */}
-
+            {/* MAIN AREA */}
             <main
                 style={{
-                    marginLeft: "215px",
+                    marginLeft: "var(--admin-sidebar-width, 215px)",
+                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
+                    boxSizing: "border-box",
                 }}
             >
-                {/* =================================================
-                    HEADER
-                ================================================= */}
-
+                {/* MODERN TOPBAR */}
                 <header
                     style={{
-                        height: "62px",
-                        backgroundColor: "#ffffff",
-                        borderBottom: `1px solid ${border}`,
+                        height: "70px",
+                        backgroundColor: "rgba(255, 255, 255, 0.88)",
+                        backdropFilter: "blur(12px)",
+                        borderBottom: "1px solid rgba(226, 232, 240, 0.9)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        padding: "0 25px",
+                        padding: "0 32px",
                         boxSizing: "border-box",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 40,
                     }}
                 >
-                    <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
                         <div
                             style={{
-                                color: green,
-                                fontSize: "18px",
-                                fontWeight: "700",
+                                width: "38px",
+                                height: "38px",
+                                borderRadius: "10px",
+                                background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#ffffff",
+                                boxShadow: "0 4px 12px rgba(5, 150, 105, 0.3)",
                             }}
                         >
-                            RigOps HSE Manager
+                            <BarChart3 size={20} strokeWidth={2.4} />
                         </div>
-
-                        <div
-                            style={{
-                                fontSize: "12px",
-                                color: muted,
-                                marginTop: "2px",
-                            }}
-                        >
-                            Rig & Contract Performance Summary
+                        <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <span style={{ color: "#065f46", fontSize: "17px", fontWeight: "800", letterSpacing: "-0.02em" }}>
+                                    Besmindo RigOps
+                                </span>
+                                <span
+                                    style={{
+                                        fontSize: "10px",
+                                        fontWeight: "700",
+                                        padding: "2px 7px",
+                                        borderRadius: "999px",
+                                        backgroundColor: "#dcfce7",
+                                        color: "#15803d",
+                                        border: "1px solid #bbf7d0",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                    }}
+                                >
+                                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#22c55e", display: "inline-block" }} />
+                                    HSE KPI System
+                                </span>
+                            </div>
+                            <div style={{ fontSize: "12px", color: "#64748b", marginTop: "1px", fontWeight: "500" }}>
+                                Rig & Contract Performance Analytics
+                            </div>
                         </div>
                     </div>
 
-                    <div
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "18px",
-                        }}
-                    >
-                        <button
-                            onClick={() =>
-                                alert(
-                                    "Tidak ada notifikasi baru."
-                                )
-                            }
-                            style={iconButton}
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "6px 12px",
+                                borderRadius: "8px",
+                                backgroundColor: "#f8fafc",
+                                border: "1px solid #e2e8f0",
+                                fontSize: "12px",
+                                color: "#475569",
+                                fontWeight: "600",
+                            }}
                         >
-                            🔔
+                            <Sparkles size={14} color="#059669" />
+                            <span>Live Data Sync</span>
+                        </div>
+
+                        <button
+                            style={{
+                                width: "38px",
+                                height: "38px",
+                                borderRadius: "10px",
+                                border: "1px solid #e2e8f0",
+                                backgroundColor: "#ffffff",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#475569",
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                            }}
+                            title="Notifications"
+                        >
+                            <Bell size={17} strokeWidth={2} />
                         </button>
 
                         <button
-                            onClick={() =>
-                                alert(
-                                    "Halaman KPI Per Rig digunakan untuk melihat pencapaian KPI berdasarkan Rig dan Contract."
-                                )
-                            }
-                            style={iconButton}
+                            style={{
+                                width: "38px",
+                                height: "38px",
+                                borderRadius: "10px",
+                                border: "1px solid #e2e8f0",
+                                backgroundColor: "#ffffff",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#475569",
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                            }}
+                            title="Help & Documentation"
                         >
-                            ?
-                        </button>
-
-                        <button
-                            onClick={() =>
-                                alert("Rig HSE Admin")
-                            }
-                            style={iconButton}
-                        >
-                            ◎
+                            <HelpCircle size={17} strokeWidth={2} />
                         </button>
                     </div>
                 </header>
 
-                {/* =================================================
-                    CONTENT
-                ================================================= */}
-
-                <div
-                    style={{
-                        padding: "20px",
-                    }}
-                >
-                    {/* =================================================
-                        TITLE + FILTER
-                    ================================================= */}
-
+                {/* PAGE CONTENT */}
+                <div style={{ padding: "28px 32px 60px", maxWidth: "1600px", margin: "0 auto" }}>
+                    {/* HERO FILTER BAR */}
                     <section
                         style={{
-                            backgroundColor: "#ffffff",
-                            border: `1px solid ${border}`,
-                            borderRadius: "5px",
-                            padding: "15px",
+                            background: "linear-gradient(135deg, #ffffff 0%, #fcfdfd 100%)",
+                            borderRadius: "16px",
+                            border: "1px solid #e2e8f0",
+                            padding: "22px 26px",
+                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02)",
+                            marginBottom: "24px",
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            gap: "20px",
-                            marginBottom: "10px",
+                            gap: "24px",
+                            flexWrap: "wrap",
                         }}
                     >
                         <div>
-                            <h1
-                                style={{
-                                    margin: 0,
-                                    fontSize: "21px",
-                                    color: "#111827",
-                                }}
-                            >
-                                Admin KPI per Rig
-                            </h1>
-
-                            <p
-                                style={{
-                                    margin: "4px 0 0",
-                                    fontSize: "12px",
-                                    color: muted,
-                                }}
-                            >
-                                Rig & Contract Performance Summary
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                                <h1
+                                    style={{
+                                        margin: 0,
+                                        fontSize: "23px",
+                                        fontWeight: "800",
+                                        color: "#0f172a",
+                                        letterSpacing: "-0.02em",
+                                    }}
+                                >
+                                    KPI Performance Dashboard
+                                </h1>
+                            </div>
+                            <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
+                                Real-time safety KPIs, incidents, audit points, and compliance tracker.
                             </p>
                         </div>
 
+                        {/* SELECTORS */}
                         <div
                             style={{
-                                display: "grid",
-                                gridTemplateColumns:
-                                    "105px 105px 55px 55px 70px",
-                                gap: "7px",
-                                alignItems: "end",
+                                display: "flex",
+                                gap: "10px",
+                                alignItems: "flex-end",
+                                flexWrap: "wrap",
                             }}
                         >
                             {/* RIG */}
-
-                            <div>
-                                <label style={labelStyle}>
-                                    Rig
+                            <div style={{ minWidth: "150px" }}>
+                                <label style={modernLabel}>
+                                    <Layers size={12} color="#059669" /> Rig
                                 </label>
-
                                 <select
                                     value={rig}
-                                    onChange={(e) =>
-                                        setRig(e.target.value)
-                                    }
-                                    style={selectStyle}
+                                    onChange={(e) => setRig(e.target.value)}
+                                    style={modernSelect}
                                 >
-                                    <option>
-                                        Rig-04 Sector Alpha
-                                    </option>
-
-                                    <option>
-                                        Rig-12 Sector Delta
-                                    </option>
-
-                                    <option>
-                                        Rig-03 Sector Bravo
-                                    </option>
+                                    <option value="All Rigs">All Rigs</option>
+                                    {availableRigs.map((r) => (
+                                        <option key={r} value={r}>{r}</option>
+                                    ))}
                                 </select>
                             </div>
 
                             {/* CONTRACT */}
-
-                            <div>
-                                <label style={labelStyle}>
-                                    Contract
+                            <div style={{ minWidth: "150px" }}>
+                                <label style={modernLabel}>
+                                    <Briefcase size={12} color="#059669" /> Contract
                                 </label>
-
                                 <select
                                     value={contract}
-                                    onChange={(e) =>
-                                        setContract(e.target.value)
-                                    }
-                                    style={selectStyle}
+                                    onChange={(e) => setContract(e.target.value)}
+                                    style={modernSelect}
                                 >
-                                    <option>
-                                        CT-2023-XY
-                                    </option>
-
-                                    <option>
-                                        CT-2024-AB
-                                    </option>
-
-                                    <option>
-                                        CT-2024-CD
-                                    </option>
+                                    <option value="All Contracts">All Contracts</option>
+                                    {availableContracts.map((c) => (
+                                        <option key={c} value={c}>{c}</option>
+                                    ))}
                                 </select>
                             </div>
 
                             {/* YEAR */}
-
-                            <div>
-                                <label style={labelStyle}>
-                                    Year
+                            <div style={{ width: "95px" }}>
+                                <label style={modernLabel}>
+                                    <Calendar size={12} color="#059669" /> Year
                                 </label>
-
                                 <select
                                     value={year}
-                                    onChange={(e) =>
-                                        setYear(e.target.value)
-                                    }
-                                    style={selectStyle}
+                                    onChange={(e) => setYear(e.target.value)}
+                                    style={modernSelect}
                                 >
-                                    <option>2024</option>
-                                    <option>2025</option>
-                                    <option>2026</option>
+                                    {availableYears.map((y) => (
+                                        <option key={y} value={String(y)}>{y}</option>
+                                    ))}
                                 </select>
                             </div>
 
                             {/* PERIOD */}
-
-                            <div>
-                                <label style={labelStyle}>
-                                    Period
+                            <div style={{ width: "95px" }}>
+                                <label style={modernLabel}>
+                                    <Clock size={12} color="#059669" /> Period
                                 </label>
-
                                 <select
                                     value={period}
-                                    onChange={(e) =>
-                                        setPeriod(e.target.value)
-                                    }
-                                    style={selectStyle}
+                                    onChange={(e) => setPeriod(e.target.value)}
+                                    style={modernSelect}
                                 >
-                                    <option>Q1</option>
-                                    <option>Q2</option>
-                                    <option>Q3</option>
-                                    <option>Q4</option>
+                                    <option value="All">All Period</option>
+                                    <option value="Q1">Q1</option>
+                                    <option value="Q2">Q2</option>
+                                    <option value="Q3">Q3</option>
+                                    <option value="Q4">Q4</option>
                                 </select>
                             </div>
 
                             {/* FILTER BUTTON */}
-
                             <button
-                                onClick={handleFilter}
+                                onClick={handleFilterSubmit}
                                 style={{
-                                    height: "35px",
+                                    height: "40px",
+                                    padding: "0 20px",
                                     border: "none",
-                                    borderRadius: "3px",
-                                    backgroundColor: green,
+                                    borderRadius: "10px",
+                                    background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
                                     color: "#ffffff",
                                     fontSize: "13px",
                                     fontWeight: "700",
                                     cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    boxShadow: "0 4px 14px rgba(5, 150, 105, 0.35)",
+                                    transition: "all 0.2s",
                                 }}
                             >
-                                Filter
+                                <Filter size={15} strokeWidth={2.4} />
+                                Apply
                             </button>
                         </div>
                     </section>
 
-                    {/* =================================================
-                        KPI CARDS
-                    ================================================= */}
-
+                    {/* EXECUTIVE 4 METRIC CARDS */}
                     <div
                         style={{
                             display: "grid",
-                            gridTemplateColumns:
-                                "repeat(4, 1fr)",
-                            gap: "10px",
-                            marginBottom: "10px",
+                            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                            gap: "18px",
+                            marginBottom: "24px",
                         }}
                     >
-                        <KpiCard
+                        <ModernMetricCard
                             title="Target (Total)"
-                            value="1,200"
-                            suffix="pts"
-                            icon="⚑"
+                            value={summaryCards.target}
+                            unit="pts"
+                            icon={<Target size={22} color="#059669" />}
+                            badge="Benchmark"
+                            badgeBg="#ecfdf5"
+                            badgeColor="#047857"
+                            accentColor="#10b981"
                         />
-
-                        <KpiCard
-                            title="Actual"
-                            value="1,145"
-                            suffix="pts"
-                            icon="▥"
+                        <ModernMetricCard
+                            title="Actual Achievement"
+                            value={summaryCards.actual}
+                            unit="pts"
+                            icon={<CheckCircle2 size={22} color="#0284c7" />}
+                            badge="Recorded"
+                            badgeBg="#f0f9ff"
+                            badgeColor="#0369a1"
+                            accentColor="#0ea5e9"
                         />
-
-                        <KpiCard
-                            title="Achievement"
-                            value="95.4%"
-                            suffix=""
-                            icon="%"
-                            change="↑ 2.1%"
+                        <ModernMetricCard
+                            title="Achievement Rate"
+                            value={summaryCards.achievement}
+                            unit=""
+                            icon={<TrendingUp size={22} color="#7c3aed" />}
+                            badge="↑ 2.1% vs prev"
+                            badgeBg="#faf5ff"
+                            badgeColor="#6d28d9"
+                            accentColor="#8b5cf6"
                         />
-
-                        <KpiCard
-                            title="Status"
-                            value="On Track"
-                            suffix=""
-                            icon="✓"
-                            status
+                        <ModernMetricCard
+                            title="Operational Health"
+                            value={summaryCards.status}
+                            unit=""
+                            icon={
+                                summaryCards.status === "On Track" ? (
+                                    <ShieldCheck size={22} color="#059669" />
+                                ) : (
+                                    <ShieldAlert size={22} color="#dc2626" />
+                                )
+                            }
+                            badge={summaryCards.status === "On Track" ? "Optimal" : "Attention"}
+                            badgeBg={summaryCards.status === "On Track" ? "#ecfdf5" : "#fef2f2"}
+                            badgeColor={summaryCards.status === "On Track" ? "#047857" : "#b91c1c"}
+                            accentColor={summaryCards.status === "On Track" ? "#10b981" : "#ef4444"}
                         />
                     </div>
 
-                    {/* =================================================
-                        CHARTS
-                    ================================================= */}
-
+                    {/* CHARTS GRID */}
                     <div
                         style={{
                             display: "grid",
-                            gridTemplateColumns:
-                                "1fr 1fr",
-                            gap: "10px",
-                            marginBottom: "10px",
+                            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                            gap: "20px",
+                            marginBottom: "24px",
                         }}
                     >
-                        {/* TARGET VS ACTUAL */}
-
+                        {/* TARGET VS ACTUAL QUARTERLY */}
                         <section
-                            style={cardStyle}
+                            style={{
+                                background: "#ffffff",
+                                borderRadius: "14px",
+                                border: "1px solid #e2e8f0",
+                                padding: "24px",
+                                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.06)",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                                position: "relative",
+                                overflow: "hidden",
+                            }}
                         >
                             <div
                                 style={{
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    height: "3px",
+                                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
+                                }}
+                            />
+
+                            <div
+                                style={{
                                     display: "flex",
-                                    justifyContent:
-                                        "space-between",
-                                    alignItems:
-                                        "center",
-                                    marginBottom: "10px",
+                                    justifyContent: "space-between",
+                                    alignItems: "flex-start",
+                                    marginBottom: "20px",
                                 }}
                             >
-                                <h2
-                                    style={
-                                        sectionTitle
-                                    }
-                                >
-                                    Target vs Actual
-                                </h2>
+                                <div>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "#004d32" }}>
+                                            Target vs Actual Performance
+                                        </h2>
+                                        <span style={{ fontSize: "11px", fontWeight: "800", color: "#efff00", backgroundColor: "#004d32", border: "1px solid #efff00", padding: "2px 8px", borderRadius: "999px" }}>
+                                            Quarterly
+                                        </span>
+                                    </div>
+                                    <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#64748b" }}>
+                                        Comparison of aggregated target and actual milestones.
+                                    </p>
+                                </div>
 
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        gap: "10px",
-                                        fontSize: "12px",
-                                        color: muted,
-                                    }}
-                                >
-                                    <span>
-                                        <span
-                                            style={{
-                                                display:
-                                                    "inline-block",
-                                                width:
-                                                    "9px",
-                                                height:
-                                                    "9px",
-                                                backgroundColor:
-                                                    "#c2c9c5",
-                                                marginRight:
-                                                    "4px",
-                                            }}
-                                        />
+                                <div style={{ display: "flex", gap: "14px", fontSize: "12px", fontWeight: "700" }}>
+                                    <span style={{ display: "flex", alignItems: "center", gap: "6px", color: "#64748b" }}>
+                                        <span style={{ width: "10px", height: "10px", borderRadius: "3px", backgroundColor: "#cbd5e1" }} />
                                         Target
                                     </span>
-
-                                    <span>
-                                        <span
-                                            style={{
-                                                display:
-                                                    "inline-block",
-                                                width:
-                                                    "9px",
-                                                height:
-                                                    "9px",
-                                                backgroundColor:
-                                                    green,
-                                                marginRight:
-                                                    "4px",
-                                            }}
-                                        />
+                                    <span style={{ display: "flex", alignItems: "center", gap: "6px", color: "#004d32" }}>
+                                        <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)", border: "1px solid #004d32" }} />
                                         Actual
                                     </span>
                                 </div>
                             </div>
 
+                            {/* CHART BARS */}
                             <div
                                 style={{
-                                    height: "325px",
-                                    backgroundColor:
-                                        "#f0f3f7",
-                                    padding:
-                                        "20px",
-                                    boxSizing:
-                                        "border-box",
+                                    height: "280px",
+                                    background: "#fcfdfc",
+                                    borderRadius: "10px",
+                                    padding: "24px 20px 14px",
+                                    boxSizing: "border-box",
                                     display: "flex",
-                                    alignItems:
-                                        "flex-end",
-                                    justifyContent:
-                                        "space-around",
-                                    gap: "12px",
+                                    alignItems: "flex-end",
+                                    justifyContent: "space-around",
+                                    gap: "16px",
+                                    border: "1px solid #e2e8f0",
                                 }}
                             >
-                                {[
-                                    {
-                                        label: "Q1",
-                                        target: 55,
-                                        actual: 55,
-                                    },
-                                    {
-                                        label: "Q2",
-                                        target: 68,
-                                        actual: 69,
-                                    },
-                                    {
-                                        label: "Q3",
-                                        target: 80,
-                                        actual: 80,
-                                    },
-                                    {
-                                        label: "Q4",
-                                        target: 90,
-                                        actual: 90,
-                                    },
-                                ].map((item) => (
+                                {quarterlyChartData.map((item) => (
                                     <div
-                                        key={
-                                            item.label
-                                        }
+                                        key={item.label}
                                         style={{
                                             flex: 1,
-                                            height:
-                                                "100%",
-                                            display:
-                                                "flex",
-                                            flexDirection:
-                                                "column",
-                                            justifyContent:
-                                                "flex-end",
-                                            alignItems:
-                                                "center",
-                                            cursor:
-                                                "pointer",
+                                            height: "100%",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            justifyContent: "flex-end",
+                                            alignItems: "center",
+                                            cursor: "pointer",
                                         }}
-                                        onClick={() =>
-                                            handleChartClick(
-                                                item.label
-                                            )
-                                        }
+                                        onClick={() => handleChartClick(item.label)}
                                     >
                                         <div
                                             style={{
-                                                width:
-                                                    "100%",
-                                                display:
-                                                    "flex",
-                                                alignItems:
-                                                    "flex-end",
-                                                justifyContent:
-                                                    "center",
-                                                gap:
-                                                    "3px",
-                                                height:
-                                                    "100%",
+                                                width: "100%",
+                                                display: "flex",
+                                                alignItems: "flex-end",
+                                                justifyContent: "center",
+                                                gap: "6px",
+                                                height: "100%",
                                             }}
                                         >
+                                            {/* TARGET BAR */}
                                             <div
                                                 style={{
-                                                    width:
-                                                        "40%",
+                                                    width: "36%",
                                                     height: `${item.target}%`,
-                                                    backgroundColor:
-                                                        "#c2c9c5",
+                                                    backgroundColor: "#cbd5e1",
+                                                    borderRadius: "5px 5px 0 0",
+                                                    transition: "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                                                 }}
-                                                title={`Target ${item.target}`}
+                                                title={`Target: ${item.target}%`}
                                             />
 
+                                            {/* ACTUAL BAR */}
                                             <div
                                                 style={{
-                                                    width:
-                                                        "40%",
+                                                    width: "36%",
                                                     height: `${item.actual}%`,
-                                                    backgroundColor:
-                                                        green,
+                                                    background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                                                    borderRadius: "5px 5px 0 0",
+                                                    boxShadow: "0 0 10px rgba(239, 255, 0, 0.35)",
+                                                    border: "1px solid #004d32",
+                                                    transition: "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                                                 }}
-                                                title={`Actual ${item.actual}`}
+                                                title={`Actual: ${item.actual}%`}
                                             />
                                         </div>
 
                                         <span
                                             style={{
-                                                marginTop:
-                                                    "7px",
+                                                marginTop: "10px",
                                                 fontSize: "12px",
-                                                color:
-                                                    muted,
+                                                color: "#004d32",
+                                                fontWeight: "800",
                                             }}
                                         >
-                                            {
-                                                item.label
-                                            }
+                                            {item.label}
                                         </span>
                                     </div>
                                 ))}
@@ -690,741 +942,600 @@ export default function KPIPerRig() {
                         </section>
 
                         {/* MONTHLY PERFORMANCE */}
-
                         <section
-                            style={cardStyle}
+                            style={{
+                                background: "#ffffff",
+                                borderRadius: "14px",
+                                border: "1px solid #e2e8f0",
+                                padding: "24px",
+                                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.06)",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                                position: "relative",
+                                overflow: "hidden",
+                            }}
                         >
                             <div
                                 style={{
-                                    display: "flex",
-                                    justifyContent:
-                                        "space-between",
-                                    alignItems:
-                                        "center",
-                                    marginBottom: "10px",
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    height: "3px",
+                                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
                                 }}
-                            >
-                                <h2
-                                    style={
-                                        sectionTitle
-                                    }
-                                >
-                                    Monthly Performance
-                                </h2>
-
-                                <div
-                                    style={{
-                                        display:
-                                            "flex",
-                                        backgroundColor:
-                                            "#eef1f6",
-                                        borderRadius:
-                                            "2px",
-                                        overflow:
-                                            "hidden",
-                                    }}
-                                >
-                                    {[
-                                        "Monthly",
-                                        "Quarterly",
-                                        "YTD",
-                                    ].map(
-                                        (mode) => (
-                                            <button
-                                                key={
-                                                    mode
-                                                }
-                                                onClick={() =>
-                                                    setPerformanceMode(
-                                                        mode
-                                                    )
-                                                }
-                                                style={{
-                                                    border:
-                                                        "none",
-                                                    padding:
-                                                        "6px 9px",
-                                                    fontSize: "11px",
-                                                    backgroundColor:
-                                                        performanceMode ===
-                                                        mode
-                                                            ? "#ffffff"
-                                                            : "transparent",
-                                                    color:
-                                                        performanceMode ===
-                                                        mode
-                                                            ? green
-                                                            : muted,
-                                                    fontWeight:
-                                                        performanceMode ===
-                                                        mode
-                                                            ? "700"
-                                                            : "400",
-                                                    cursor:
-                                                        "pointer",
-                                                }}
-                                            >
-                                                {
-                                                    mode
-                                                }
-                                            </button>
-                                        )
-                                    )}
-                                </div>
-                            </div>
+                            />
 
                             <div
                                 style={{
-                                    height: "325px",
-                                    backgroundColor:
-                                        "#f0f3f7",
-                                    padding:
-                                        "20px",
-                                    boxSizing:
-                                        "border-box",
-                                    position:
-                                        "relative",
-                                    display:
-                                        "flex",
-                                    alignItems:
-                                        "flex-end",
-                                    gap: "8px",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "flex-start",
+                                    marginBottom: "20px",
                                 }}
                             >
-                                {[
-                                    30,
-                                    48,
-                                    39,
-                                    72,
-                                    62,
-                                    95,
-                                ].map(
-                                    (
-                                        value,
-                                        index
-                                    ) => (
+                                <div>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "#004d32" }}>
+                                            Performance Trend
+                                        </h2>
+                                        <span style={{ fontSize: "11px", fontWeight: "800", color: "#efff00", backgroundColor: "#004d32", border: "1px solid #efff00", padding: "2px 8px", borderRadius: "999px" }}>
+                                            {performanceMode}
+                                        </span>
+                                    </div>
+                                    <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#64748b" }}>
+                                        Monthly & cumulative safety performance progression.
+                                    </p>
+                                </div>
+
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        backgroundColor: "#f1f5f9",
+                                        borderRadius: "8px",
+                                        padding: "3px",
+                                        border: "1px solid #004d32",
+                                    }}
+                                >
+                                    {["Monthly", "Quarterly", "YTD"].map((mode) => (
+                                        <button
+                                            key={mode}
+                                            onClick={() => setPerformanceMode(mode)}
+                                            style={{
+                                                border: "none",
+                                                padding: "5px 12px",
+                                                fontSize: "11px",
+                                                borderRadius: "6px",
+                                                backgroundColor: performanceMode === mode ? "#004d32" : "transparent",
+                                                color: performanceMode === mode ? "#efff00" : "#475569",
+                                                fontWeight: performanceMode === mode ? "800" : "600",
+                                                cursor: "pointer",
+                                                boxShadow: performanceMode === mode ? "0 0 8px rgba(239, 255, 0, 0.25)" : "none",
+                                                transition: "all 0.2s",
+                                            }}
+                                        >
+                                            {mode}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* TREND BARS (CONSISTENT BOTTLE GREEN & NEON YELLOW) */}
+                            <div
+                                style={{
+                                    height: "280px",
+                                    background: "#fcfdfc",
+                                    borderRadius: "10px",
+                                    padding: "24px 16px 14px",
+                                    boxSizing: "border-box",
+                                    display: "flex",
+                                    alignItems: "flex-end",
+                                    justifyContent: "space-around",
+                                    gap: "6px",
+                                    border: "1px solid #e2e8f0",
+                                }}
+                            >
+                                {performanceBars.map((bar, index) => {
+                                    return (
                                         <div
-                                            key={
-                                                index
-                                            }
+                                            key={index}
                                             style={{
                                                 flex: 1,
-                                                height:
-                                                    "100%",
-                                                display:
-                                                    "flex",
-                                                alignItems:
-                                                    "flex-end",
-                                                cursor:
-                                                    "pointer",
+                                                height: "100%",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                justifyContent: "flex-end",
+                                                alignItems: "center",
+                                                cursor: "pointer",
                                             }}
-                                            onClick={() =>
-                                                handleChartClick(
-                                                    `${performanceMode} ${
-                                                        index +
-                                                        1
-                                                    }`
-                                                )
-                                            }
+                                            onClick={() => handleChartClick(bar.label)}
                                         >
                                             <div
                                                 style={{
-                                                    width:
-                                                        "100%",
-                                                    height: `${value}%`,
-                                                    backgroundColor:
-                                                        "#d5dfdc",
-                                                    borderTop:
-                                                        `2px solid ${green}`,
-                                                    transition:
-                                                        "0.2s",
+                                                    width: "100%",
+                                                    height: `${bar.value}%`,
+                                                    background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                                                    borderRadius: "5px 5px 0 0",
+                                                    boxShadow: "0 0 8px rgba(239, 255, 0, 0.3)",
+                                                    border: "1px solid #004d32",
+                                                    transition: "height 0.4s ease",
                                                 }}
-                                                title={`${value}%`}
+                                                title={`${bar.label}: ${bar.value}%`}
                                             />
+                                            <span
+                                                style={{
+                                                    marginTop: "10px",
+                                                    fontSize: "10px",
+                                                    color: "#004d32",
+                                                    fontWeight: "800",
+                                                    whiteSpace: "nowrap",
+                                                }}
+                                            >
+                                                {bar.label}
+                                            </span>
                                         </div>
-                                    )
-                                )}
+                                    );
+                                })}
                             </div>
                         </section>
                     </div>
 
-                    {/* =================================================
-                        DETAILED TABLE
-                    ================================================= */}
-
+                    {/* DETAILED KPI TABLE CARD */}
                     <section
-                        style={cardStyle}
+                        style={{
+                            background: "#ffffff",
+                            borderRadius: "14px",
+                            border: "1px solid #e2e8f0",
+                            boxShadow: "0 4px 18px rgba(0, 77, 50, 0.06)",
+                            overflow: "hidden",
+                        }}
                     >
+                        {/* TABLE TOOLBAR */}
                         <div
                             style={{
+                                padding: "20px 24px",
+                                borderBottom: "1px solid #e2e8f0",
                                 display: "flex",
-                                justifyContent:
-                                    "space-between",
-                                alignItems:
-                                    "center",
-                                marginBottom:
-                                    "10px",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                gap: "16px",
+                                flexWrap: "wrap",
+                                backgroundColor: "#ffffff",
                             }}
                         >
-                            <h2
-                                style={
-                                    sectionTitle
-                                }
-                            >
-                                Detailed KPI Table
-                            </h2>
+                            <div>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                    <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "800", color: "#004d32" }}>
+                                        Detailed KPI Performance Matrix
+                                    </h2>
+                                    <span style={{ fontSize: "12px", color: "#efff00", fontWeight: "800", backgroundColor: "#004d32", border: "1px solid #efff00", padding: "2px 9px", borderRadius: "999px" }}>
+                                        {displayTableData.length} items
+                                    </span>
+                                </div>
+                                <p style={{ margin: "3px 0 0", fontSize: "12px", color: "#64748b" }}>
+                                    Comprehensive breakdown of Leading, Lagging, and Operational HSE targets.
+                                </p>
+                            </div>
 
-                            <button
-                                onClick={handleFilter}
-                                style={{
-                                    backgroundColor:
-                                        "#ffffff",
-                                    border: `1px solid ${border}`,
-                                    padding:
-                                        "7px 12px",
-                                    borderRadius:
-                                        "3px",
-                                    fontSize: "12px",
-                                    cursor:
-                                        "pointer",
-                                    color:
-                                        "#334155",
-                                }}
-                            >
-                                ☷ Filter
-                            </button>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                                {/* CATEGORY FILTER TABS */}
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        backgroundColor: "#f8fafc",
+                                        borderRadius: "8px",
+                                        padding: "3px",
+                                        border: "1px solid #004d32",
+                                    }}
+                                >
+                                    {["All", "Leading", "Lagging"].map((cat) => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => {
+                                                setTableCategory(cat);
+                                                setCurrentPage(1);
+                                            }}
+                                            style={{
+                                                border: "none",
+                                                padding: "5px 12px",
+                                                fontSize: "12px",
+                                                borderRadius: "6px",
+                                                backgroundColor: tableCategory === cat ? "#004d32" : "transparent",
+                                                color: tableCategory === cat ? "#efff00" : "#475569",
+                                                fontWeight: tableCategory === cat ? "800" : "600",
+                                                cursor: "pointer",
+                                                boxShadow: tableCategory === cat ? "0 0 6px rgba(239, 255, 0, 0.25)" : "none",
+                                                transition: "all 0.2s",
+                                            }}
+                                        >
+                                            {cat === "All" ? "All Indicators" : `${cat} Only`}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* SEARCH BAR */}
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        backgroundColor: "#ffffff",
+                                        border: "1px solid #004d32",
+                                        borderRadius: "8px",
+                                        padding: "0 10px",
+                                        height: "36px",
+                                    }}
+                                >
+                                    <Search size={15} color="#004d32" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search KPI..."
+                                        value={searchTerm}
+                                        onChange={(e) => {
+                                            setSearchTerm(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
+                                        style={{
+                                            border: "none",
+                                            outline: "none",
+                                            background: "transparent",
+                                            fontSize: "12px",
+                                            paddingLeft: "8px",
+                                            color: "#1e293b",
+                                            width: "140px",
+                                        }}
+                                    />
+                                    {searchTerm && (
+                                        <X
+                                            size={14}
+                                            color="#94a3b8"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={() => setSearchTerm("")}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* EXPORT CSV BUTTON */}
+                                <button
+                                    onClick={handleExport}
+                                    style={{
+                                        height: "36px",
+                                        padding: "0 14px",
+                                        borderRadius: "8px",
+                                        border: "1px solid #efff00",
+                                        backgroundColor: "#004d32",
+                                        color: "#efff00",
+                                        fontSize: "12px",
+                                        fontWeight: "800",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "6px",
+                                        cursor: "pointer",
+                                        boxShadow: "0 0 10px rgba(239, 255, 0, 0.25)",
+                                        transition: "all 0.2s",
+                                    }}
+                                    title="Export CSV"
+                                >
+                                    <Download size={14} strokeWidth={2.4} />
+                                    Export CSV
+                                </button>
+                            </div>
                         </div>
 
-                        <div
-                            style={{
-                                overflowX:
-                                    "auto",
-                            }}
-                        >
+                        {/* TABLE CONTENT */}
+                        <div style={{ overflowX: "auto" }}>
                             <table
                                 style={{
-                                    width:
-                                        "100%",
-                                    borderCollapse:
-                                        "collapse",
+                                    width: "100%",
+                                    borderCollapse: "collapse",
                                     fontSize: "13px",
                                 }}
                             >
                                 <thead>
-                                    <tr
-                                        style={{
-                                            backgroundColor:
-                                                "#e7ebf0",
-                                        }}
-                                    >
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
-                                            Indicator
-                                        </th>
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
-                                            Target
-                                        </th>
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
-                                            Actual
-                                        </th>
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
-                                            Variance
-                                        </th>
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
-                                            Status
-                                        </th>
-
-                                        <th
-                                            style={
-                                                thStyle
-                                            }
-                                        >
-                                            Action
-                                        </th>
+                                    <tr style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+                                        <th style={modernTh}>KPI Indicator</th>
+                                        <th style={modernTh}>Category</th>
+                                        <th style={{ ...modernTh, textAlign: "center" }}>Target</th>
+                                        <th style={{ ...modernTh, textAlign: "center" }}>Actual</th>
+                                        <th style={{ ...modernTh, textAlign: "center" }}>Variance</th>
+                                        <th style={modernTh}>Status</th>
+                                        <th style={{ ...modernTh, textAlign: "center" }}>Action</th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
-                                    {currentData.map(
-                                        (
-                                            row,
-                                            index
-                                        ) => (
+                                    {currentData.length > 0 ? (
+                                        currentData.map((row, index) => (
                                             <tr
                                                 key={`${row.indicator}-${index}`}
                                                 style={{
-                                                    borderBottom:
-                                                        `1px solid ${border}`,
+                                                    borderBottom: "1px solid #f1f5f9",
+                                                    backgroundColor: index % 2 === 0 ? "#ffffff" : "#fcfdfd",
+                                                    transition: "background-color 0.15s",
                                                 }}
                                             >
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
-                                                    {
-                                                        row.indicator
-                                                    }
+                                                {/* INDICATOR NAME */}
+                                                <td style={{ ...modernTd, fontWeight: "600", color: "#1e293b" }}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                                        <span
+                                                            style={{
+                                                                width: "28px",
+                                                                height: "28px",
+                                                                borderRadius: "8px",
+                                                                backgroundColor: row.category === "Leading" ? "#f0fdf4" : "#fef2f2",
+                                                                color: row.category === "Leading" ? "#16a34a" : "#dc2626",
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                justifyContent: "center",
+                                                            }}
+                                                        >
+                                                            {row.category === "Leading" ? (
+                                                                <ShieldCheck size={16} />
+                                                            ) : (
+                                                                <Flame size={16} />
+                                                            )}
+                                                        </span>
+                                                        <span>{row.indicator}</span>
+                                                    </div>
                                                 </td>
 
-                                                <td
-                                                    style={{
-                                                        ...tdStyle,
-                                                        textAlign:
-                                                            "center",
-                                                    }}
-                                                >
-                                                    {
-                                                        row.target
-                                                    }
-                                                </td>
-
-                                                <td
-                                                    style={{
-                                                        ...tdStyle,
-                                                        textAlign:
-                                                            "center",
-                                                    }}
-                                                >
-                                                    {
-                                                        row.actual
-                                                    }
-                                                </td>
-
-                                                <td
-                                                    style={{
-                                                        ...tdStyle,
-                                                        textAlign:
-                                                            "center",
-                                                        color:
-                                                            row.variance <
-                                                            0
-                                                                ? "#dc2626"
-                                                                : row.variance >
-                                                                  0
-                                                                ? green
-                                                                : "#334155",
-                                                        fontWeight:
-                                                            "700",
-                                                    }}
-                                                >
-                                                    {row.variance >
-                                                    0
-                                                        ? `+${row.variance}`
-                                                        : row.variance}
-                                                </td>
-
-                                                <td
-                                                    style={
-                                                        tdStyle
-                                                    }
-                                                >
-                                                    <StatusBadge
-                                                        status={
-                                                            row.status
-                                                        }
-                                                    />
-                                                </td>
-
-                                                <td
-                                                    style={{
-                                                        ...tdStyle,
-                                                        textAlign:
-                                                            "center",
-                                                    }}
-                                                >
-                                                    <button
-                                                        onClick={() =>
-                                                            setSelectedKpi(
-                                                                row
-                                                            )
-                                                        }
+                                                {/* CATEGORY */}
+                                                <td style={modernTd}>
+                                                    <span
                                                         style={{
-                                                            border:
-                                                                "none",
-                                                            background:
-                                                                "transparent",
-                                                            cursor:
-                                                                "pointer",
-                                                            fontSize: "16px",
+                                                            display: "inline-block",
+                                                            padding: "2px 8px",
+                                                            borderRadius: "6px",
+                                                            fontSize: "11px",
+                                                            fontWeight: "700",
+                                                            backgroundColor: row.category === "Leading" ? "#f0fdf4" : "#fef2f2",
+                                                            color: row.category === "Leading" ? "#15803d" : "#b91c1c",
                                                         }}
-                                                        title="Lihat detail"
                                                     >
-                                                        ◉
+                                                        {row.category}
+                                                    </span>
+                                                </td>
+
+                                                {/* TARGET */}
+                                                <td style={{ ...modernTd, textAlign: "center", fontFamily: "monospace", fontWeight: "700", color: "#475569" }}>
+                                                    {row.target}
+                                                </td>
+
+                                                {/* ACTUAL */}
+                                                <td style={{ ...modernTd, textAlign: "center", fontFamily: "monospace", fontWeight: "700", color: "#0f172a" }}>
+                                                    {row.actual}
+                                                </td>
+
+                                                {/* VARIANCE */}
+                                                <td style={{ ...modernTd, textAlign: "center" }}>
+                                                    <span
+                                                        style={{
+                                                            display: "inline-block",
+                                                            padding: "3px 8px",
+                                                            borderRadius: "6px",
+                                                            fontSize: "11px",
+                                                            fontWeight: "800",
+                                                            fontFamily: "monospace",
+                                                            backgroundColor:
+                                                                row.variance > 0
+                                                                    ? "#f0fdf4"
+                                                                    : row.variance < 0
+                                                                      ? "#fef2f2"
+                                                                      : "#f8fafc",
+                                                            color:
+                                                                row.variance > 0
+                                                                    ? "#16a34a"
+                                                                    : row.variance < 0
+                                                                      ? "#dc2626"
+                                                                      : "#64748b",
+                                                        }}
+                                                    >
+                                                        {row.variance > 0 ? `+${row.variance}` : row.variance}
+                                                    </span>
+                                                </td>
+
+                                                {/* STATUS BADGE */}
+                                                <td style={modernTd}>
+                                                    <ModernStatusBadge status={row.status} />
+                                                </td>
+
+                                                {/* ACTION */}
+                                                <td style={{ ...modernTd, textAlign: "center" }}>
+                                                    <button
+                                                        onClick={() => setSelectedKpi(row)}
+                                                        style={{
+                                                            width: "30px",
+                                                            height: "30px",
+                                                            borderRadius: "8px",
+                                                            border: "1px solid #e2e8f0",
+                                                            backgroundColor: "#ffffff",
+                                                            display: "inline-flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            color: "#059669",
+                                                            cursor: "pointer",
+                                                            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                                                            transition: "all 0.2s",
+                                                        }}
+                                                        title="View KPI Detail"
+                                                    >
+                                                        <Eye size={15} />
                                                     </button>
                                                 </td>
                                             </tr>
-                                        )
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} style={{ ...modernTd, textAlign: "center", padding: "40px", color: "#94a3b8" }}>
+                                                No KPI indicators found matching your filters.
+                                            </td>
+                                        </tr>
                                     )}
                                 </tbody>
                             </table>
                         </div>
 
-                        {/* PAGINATION */}
-
+                        {/* TABLE FOOTER / PAGINATION */}
                         <div
                             style={{
-                                display:
-                                    "flex",
-                                justifyContent:
-                                    "space-between",
-                                alignItems:
-                                    "center",
-                                marginTop:
-                                    "10px",
-                                fontSize: "12px",
-                                color:
-                                    muted,
+                                padding: "16px 24px",
+                                borderTop: "1px solid #e2e8f0",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                backgroundColor: "#ffffff",
+                                fontSize: "13px",
+                                color: "#64748b",
                             }}
                         >
                             <span>
-                                Showing{" "}
-                                {(currentPage -
-                                    1) *
-                                    rowsPerPage +
-                                    1}{" "}
-                                to{" "}
-                                {Math.min(
-                                    currentPage *
-                                        rowsPerPage,
-                                    filteredData.length
-                                )}{" "}
-                                of{" "}
-                                {
-                                    filteredData.length
-                                }{" "}
-                                entries
+                                Showing <strong style={{ color: "#0f172a" }}>{displayTableData.length > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0}</strong> to{" "}
+                                <strong style={{ color: "#0f172a" }}>{Math.min(currentPage * rowsPerPage, displayTableData.length)}</strong> of{" "}
+                                <strong style={{ color: "#0f172a" }}>{displayTableData.length}</strong> indicators
                             </span>
 
-                            <div
-                                style={{
-                                    display:
-                                        "flex",
-                                    gap:
-                                        "4px",
-                                }}
-                            >
+                            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                                 <button
-                                    onClick={
-                                        handlePrevious
-                                    }
-                                    disabled={
-                                        currentPage ===
-                                        1
-                                    }
-                                    style={paginationStyle(
-                                        currentPage ===
-                                            1
-                                    )}
+                                    onClick={handlePrevious}
+                                    disabled={currentPage === 1}
+                                    style={modernPageBtn(currentPage === 1)}
                                 >
-                                    Prev
+                                    <ChevronLeft size={16} />
                                 </button>
 
-                                {Array.from(
-                                    {
-                                        length:
-                                            totalPages,
-                                    },
-                                    (
-                                        _,
-                                        index
-                                    ) =>
-                                        index +
-                                        1
-                                ).map(
-                                    (
-                                        page
-                                    ) => (
-                                        <button
-                                            key={
-                                                page
-                                            }
-                                            onClick={() =>
-                                                setCurrentPage(
-                                                    page
-                                                )
-                                            }
-                                            style={{
-                                                ...paginationStyle(
-                                                    false
-                                                ),
-                                                backgroundColor:
-                                                    currentPage ===
-                                                    page
-                                                        ? green
-                                                        : "#ffffff",
-                                                color:
-                                                    currentPage ===
-                                                    page
-                                                        ? "#ffffff"
-                                                        : text,
-                                            }}
-                                        >
-                                            {
-                                                page
-                                            }
-                                        </button>
-                                    )
-                                )}
+                                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        style={{
+                                            ...modernPageBtn(false),
+                                            backgroundColor: currentPage === page ? "#059669" : "#ffffff",
+                                            color: currentPage === page ? "#ffffff" : "#334155",
+                                            fontWeight: currentPage === page ? "800" : "600",
+                                            boxShadow: currentPage === page ? "0 2px 8px rgba(5, 150, 105, 0.35)" : "none",
+                                        }}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
 
                                 <button
-                                    onClick={
-                                        handleNext
-                                    }
-                                    disabled={
-                                        currentPage ===
-                                        totalPages
-                                    }
-                                    style={paginationStyle(
-                                        currentPage ===
-                                            totalPages
-                                    )}
+                                    onClick={handleNext}
+                                    disabled={currentPage === totalPages}
+                                    style={modernPageBtn(currentPage === totalPages)}
                                 >
-                                    Next
+                                    <ChevronRight size={16} />
                                 </button>
                             </div>
                         </div>
                     </section>
-
-                    {/* EXPORT */}
-
-                    <div
-                        style={{
-                            display:
-                                "flex",
-                            justifyContent:
-                                "flex-end",
-                            marginTop:
-                                "12px",
-                        }}
-                    >
-                        <button
-                            onClick={
-                                handleExport
-                            }
-                            style={{
-                                backgroundColor:
-                                    green,
-                                color:
-                                    "#ffffff",
-                                border:
-                                    "none",
-                                borderRadius:
-                                    "4px",
-                                padding:
-                                    "10px 18px",
-                                fontSize: "13px",
-                                fontWeight:
-                                    "700",
-                                cursor:
-                                    "pointer",
-                            }}
-                        >
-                            ↓ Export KPI Report
-                        </button>
-                    </div>
                 </div>
             </main>
 
-            {/* =================================================
-                MODAL
-            ================================================= */}
-
+            {/* MODAL KPI DETAIL */}
             {selectedKpi && (
                 <div
-                    onClick={() =>
-                        setSelectedKpi(null)
-                    }
+                    onClick={() => setSelectedKpi(null)}
                     style={{
-                        position:
-                            "fixed",
+                        position: "fixed",
                         inset: 0,
-                        backgroundColor:
-                            "rgba(0,0,0,0.35)",
-                        display:
-                            "flex",
-                        alignItems:
-                            "center",
-                        justifyContent:
-                            "center",
+                        backgroundColor: "rgba(15, 23, 42, 0.6)",
+                        backdropFilter: "blur(6px)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                         zIndex: 9999,
                     }}
                 >
                     <div
-                        onClick={(e) =>
-                            e.stopPropagation()
-                        }
+                        onClick={(e) => e.stopPropagation()}
                         style={{
-                            width:
-                                "420px",
-                            backgroundColor:
-                                "#ffffff",
-                            borderRadius:
-                                "8px",
-                            padding:
-                                "25px",
-                            boxSizing:
-                                "border-box",
-                            boxShadow:
-                                "0 10px 30px rgba(0,0,0,0.2)",
+                            width: "480px",
+                            backgroundColor: "#ffffff",
+                            borderRadius: "18px",
+                            padding: "28px",
+                            boxSizing: "border-box",
+                            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
+                            border: "1px solid #e2e8f0",
                         }}
                     >
-                        <div
-                            style={{
-                                display:
-                                    "flex",
-                                justifyContent:
-                                    "space-between",
-                                alignItems:
-                                    "center",
-                            }}
-                        >
-                            <h2
-                                style={{
-                                    margin:
-                                        0,
-                                    color:
-                                        green,
-                                    fontSize: "21px",
-                                }}
-                            >
-                                KPI Detail
-                            </h2>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                <div
+                                    style={{
+                                        width: "40px",
+                                        height: "40px",
+                                        borderRadius: "10px",
+                                        backgroundColor: "#ecfdf5",
+                                        color: "#059669",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <Award size={22} />
+                                </div>
+                                <div>
+                                    <h2 style={{ margin: 0, color: "#0f172a", fontSize: "18px", fontWeight: "800" }}>
+                                        KPI Indicator Details
+                                    </h2>
+                                    <span style={{ fontSize: "12px", color: "#64748b" }}>
+                                        {selectedKpi.category || "General"} Metric
+                                    </span>
+                                </div>
+                            </div>
 
                             <button
-                                onClick={() =>
-                                    setSelectedKpi(
-                                        null
-                                    )
-                                }
+                                onClick={() => setSelectedKpi(null)}
                                 style={{
-                                    border:
-                                        "none",
-                                    background:
-                                        "transparent",
-                                    fontSize: "23px",
-                                    cursor:
-                                        "pointer",
+                                    border: "none",
+                                    background: "#f1f5f9",
+                                    borderRadius: "8px",
+                                    width: "32px",
+                                    height: "32px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "pointer",
+                                    color: "#64748b",
                                 }}
                             >
-                                ×
+                                <X size={18} />
                             </button>
                         </div>
 
-                        <div
-                            style={{
-                                marginTop:
-                                    "20px",
-                                display:
-                                    "grid",
-                                gap:
-                                    "12px",
-                            }}
-                        >
-                            <DetailRow
-                                label="Indicator"
-                                value={
-                                    selectedKpi.indicator
-                                }
+                        <div style={{ marginTop: "24px", display: "grid", gap: "12px" }}>
+                            <ModernDetailRow label="Indicator Name" value={selectedKpi.indicator} />
+                            <ModernDetailRow label="Category" value={selectedKpi.category || "General"} />
+                            <ModernDetailRow label="Period Target" value={selectedKpi.target} />
+                            <ModernDetailRow label="Actual Recorded" value={selectedKpi.actual} />
+                            <ModernDetailRow
+                                label="Variance / Gap"
+                                value={selectedKpi.variance > 0 ? `+${selectedKpi.variance}` : selectedKpi.variance}
                             />
-
-                            <DetailRow
-                                label="Target"
-                                value={
-                                    selectedKpi.target
-                                }
-                            />
-
-                            <DetailRow
-                                label="Actual"
-                                value={
-                                    selectedKpi.actual
-                                }
-                            />
-
-                            <DetailRow
-                                label="Variance"
-                                value={
-                                    selectedKpi.variance >
-                                    0
-                                        ? `+${selectedKpi.variance}`
-                                        : selectedKpi.variance
-                                }
-                            />
-
-                            <DetailRow
-                                label="Status"
-                                value={
-                                    selectedKpi.status
-                                }
-                            />
-
-                            <DetailRow
-                                label="Rig"
-                                value={
-                                    rig
-                                }
-                            />
-
-                            <DetailRow
-                                label="Contract"
-                                value={
-                                    contract
-                                }
-                            />
+                            <ModernDetailRow label="Status" value={selectedKpi.status} />
+                            <ModernDetailRow label="Active Rig" value={rig} />
+                            <ModernDetailRow label="Contract" value={contract} />
+                            <ModernDetailRow label="Year / Period" value={`${year} / ${period}`} />
                         </div>
 
                         <button
-                            onClick={() =>
-                                setSelectedKpi(
-                                    null
-                                )
-                            }
+                            onClick={() => setSelectedKpi(null)}
                             style={{
-                                width:
-                                    "100%",
-                                marginTop:
-                                    "20px",
-                                padding:
-                                    "10px",
-                                border:
-                                    "none",
-                                borderRadius:
-                                    "4px",
-                                backgroundColor:
-                                    green,
-                                color:
-                                    "#ffffff",
-                                cursor:
-                                    "pointer",
-                                fontWeight:
-                                    "700",
+                                width: "100%",
+                                marginTop: "24px",
+                                padding: "12px",
+                                border: "none",
+                                borderRadius: "10px",
+                                background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                                color: "#ffffff",
+                                cursor: "pointer",
+                                fontWeight: "700",
+                                fontSize: "14px",
+                                boxShadow: "0 4px 12px rgba(5, 150, 105, 0.3)",
                             }}
                         >
-                            Close
+                            Close Detail
                         </button>
                     </div>
                 </div>
@@ -1434,234 +1545,139 @@ export default function KPIPerRig() {
 }
 
 // =====================================================
-// KPI CARD
+// MODERN CLASSIC: METRIC CARD (HIJAU BOTOL & KUNING NEON)
 // =====================================================
 
-function KpiCard({
-    title,
-    value,
-    suffix,
-    icon,
-    change,
-    status,
-}) {
+function ModernMetricCard({ title, value, unit, icon, badge, badgeBg, badgeColor, accentColor }) {
     return (
         <div
             style={{
-                backgroundColor:
-                    "#ffffff",
-                border:
-                    "1px solid #d9e1e8",
-                borderRadius:
-                    "5px",
-                padding:
-                    "14px",
-                minHeight:
-                    "78px",
-                boxSizing:
-                    "border-box",
+                backgroundColor: "#ffffff",
+                borderRadius: "14px",
+                border: "1px solid #004d32",
+                padding: "20px",
+                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.08)",
+                position: "relative",
+                overflow: "hidden",
+                transition: "transform 0.2s, box-shadow 0.2s",
             }}
         >
+            {/* TOP NEON & BOTTLE GREEN ACCENT LINE */}
             <div
                 style={{
-                    display:
-                        "flex",
-                    justifyContent:
-                        "space-between",
-                    alignItems:
-                        "center",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "4px",
+                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
                 }}
-            >
-                <span
-                    style={{
-                        fontSize: "12px",
-                        color:
-                            "#475569",
-                    }}
-                >
-                    {title}
-                </span>
+            />
 
-                <span
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                    <span style={{ fontSize: "11px", color: "#004d32", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                        {title}
+                    </span>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginTop: "10px" }}>
+                        <span style={{ fontSize: "28px", fontWeight: "900", color: "#003824", letterSpacing: "-0.02em" }}>
+                            {value}
+                        </span>
+                        {unit && <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "700" }}>{unit}</span>}
+                    </div>
+                </div>
+
+                <div
                     style={{
-                        color:
-                            "#008c65",
-                        fontSize: "19px",
-                        fontWeight:
-                            "700",
+                        width: "44px",
+                        height: "44px",
+                        borderRadius: "10px",
+                        backgroundColor: "#004d32",
+                        border: "1px solid #efff00",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: "0 0 10px rgba(239, 255, 0, 0.25)",
                     }}
                 >
                     {icon}
-                </span>
+                </div>
             </div>
 
-            {status ? (
-                <div
+            <div style={{ marginTop: "14px" }}>
+                <span
                     style={{
-                        marginTop:
-                            "12px",
+                        display: "inline-block",
+                        fontSize: "11px",
+                        fontWeight: "800",
+                        padding: "3px 9px",
+                        borderRadius: "999px",
+                        backgroundColor: "#004d32",
+                        color: "#efff00",
+                        border: "1px solid #efff00",
+                        boxShadow: "0 0 8px rgba(239, 255, 0, 0.2)",
                     }}
                 >
-                    <span
-                        style={{
-                            display:
-                                "inline-block",
-                            backgroundColor:
-                                "#b9f1d0",
-                            color:
-                                "#006b45",
-                            padding:
-                                "4px 9px",
-                            borderRadius:
-                                "12px",
-                            fontSize: "12px",
-                            fontWeight:
-                                "700",
-                        }}
-                    >
-                        ● {value}
-                    </span>
-                </div>
-            ) : (
-                <div
-                    style={{
-                        display:
-                            "flex",
-                        alignItems:
-                            "baseline",
-                        gap:
-                            "5px",
-                        marginTop:
-                            "10px",
-                    }}
-                >
-                    <strong
-                        style={{
-                            fontSize: "26px",
-                            color:
-                                "#111827",
-                        }}
-                    >
-                        {value}
-                    </strong>
-
-                    {suffix && (
-                        <span
-                            style={{
-                                fontSize: "12px",
-                                color:
-                                    "#64748b",
-                            }}
-                        >
-                            {suffix}
-                        </span>
-                    )}
-
-                    {change && (
-                        <span
-                            style={{
-                                fontSize: "11px",
-                                color:
-                                    "#16a34a",
-                            }}
-                        >
-                            {change}
-                        </span>
-                    )}
-                </div>
-            )}
+                    {badge}
+                </span>
+            </div>
         </div>
     );
 }
 
 // =====================================================
-// STATUS BADGE
+// MODERN CLASSIC: STATUS BADGE (KUNING NEON NGEJRENG)
 // =====================================================
 
-function StatusBadge({ status }) {
-    const achieved =
-        status === "Achieved";
+function ModernStatusBadge({ status }) {
+    const isAchieved = status === "Achieved" || status === "On Track";
 
     return (
         <span
             style={{
-                display:
-                    "inline-flex",
-                alignItems:
-                    "center",
-                gap:
-                    "5px",
-                fontSize: "12px",
-                color:
-                    achieved
-                        ? "#006b45"
-                        : "#b91c1c",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "4px 10px",
+                borderRadius: "999px",
+                fontSize: "11.5px",
+                fontWeight: "800",
+                backgroundColor: isAchieved ? "#004d32" : "#7f1d1d",
+                color: isAchieved ? "#efff00" : "#fecaca",
+                border: isAchieved ? "1px solid #efff00" : "1px solid #ef4444",
+                boxShadow: isAchieved ? "0 0 10px rgba(239, 255, 0, 0.3)" : "none",
             }}
         >
             <span
                 style={{
-                    width:
-                        "8px",
-                    height:
-                        "8px",
-                    borderRadius:
-                        "50%",
-                    backgroundColor:
-                        achieved
-                            ? "#006b45"
-                            : "#c91f2c",
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    backgroundColor: isAchieved ? "#efff00" : "#ef4444",
+                    boxShadow: isAchieved ? "0 0 6px #efff00" : "0 0 6px #ef4444",
                 }}
             />
-
             {status}
         </span>
     );
 }
 
 // =====================================================
-// DETAIL ROW
+// MODERN COMPONENT: DETAIL ROW
 // =====================================================
 
-function DetailRow({
-    label,
-    value,
-}) {
+function ModernDetailRow({ label, value }) {
     return (
         <div
             style={{
-                display:
-                    "flex",
-                justifyContent:
-                    "space-between",
-                gap:
-                    "20px",
-                paddingBottom:
-                    "10px",
-                borderBottom:
-                    "1px solid #e2e8f0",
+                display: "flex",
+                justifyContent: "space-between",
+                paddingBottom: "10px",
+                borderBottom: "1px solid #f1f5f9",
             }}
         >
-            <span
-                style={{
-                    fontSize: "13px",
-                    color:
-                        "#64748b",
-                }}
-            >
-                {label}
-            </span>
-
-            <strong
-                style={{
-                    fontSize: "13px",
-                    color:
-                        "#102033",
-                    textAlign:
-                        "right",
-                }}
-            >
-                {value}
-            </strong>
+            <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}>{label}</span>
+            <strong style={{ fontSize: "13px", color: "#004d32", textAlign: "right", fontWeight: "800" }}>{value}</strong>
         </div>
     );
 }
@@ -1670,91 +1686,65 @@ function DetailRow({
 // STYLES
 // =====================================================
 
-const cardStyle = {
-    backgroundColor:
-        "#ffffff",
-    border:
-        "1px solid #d9e1e8",
-    borderRadius:
-        "5px",
-    padding:
-        "12px",
-    boxSizing:
-        "border-box",
-};
-
-const sectionTitle = {
-    margin: 0,
-    fontSize: "16px",
-    fontWeight:
-        "700",
-    color:
-        "#111827",
-};
-
-const labelStyle = {
-    display:
-        "block",
-    marginBottom:
-        "4px",
-    fontSize: "10px",
-    color:
-        "#475569",
-    fontWeight:
-        "700",
-};
-
-const thStyle = {
-    padding:
-        "8px",
-    textAlign:
-        "left",
+const modernLabel = {
+    display: "flex",
+    alignItems: "center",
+    gap: "5px",
+    marginBottom: "6px",
     fontSize: "11px",
-    color:
-        "#475569",
+    color: "#004d32",
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
 };
 
-const tdStyle = {
-    padding:
-        "8px",
-    color:
-        "#1e293b",
-    whiteSpace:
-        "nowrap",
+const modernSelect = {
+    height: "40px",
+    padding: "0 12px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
+    backgroundColor: "#ffffff",
+    color: "#0f172a",
+    fontSize: "13px",
+    fontWeight: "700",
+    outline: "none",
+    cursor: "pointer",
+    boxSizing: "border-box",
+    width: "100%",
+    transition: "border-color 0.2s",
 };
 
-const iconButton = {
-    border:
-        "none",
-    background:
-        "transparent",
-    color:
-        "#004d32",
-    fontSize: "19px",
-    cursor:
-        "pointer",
+const modernTh = {
+    padding: "14px 18px",
+    textAlign: "left",
+    fontSize: "11.5px",
+    color: "#ffffff",
+    backgroundColor: "#004d32",
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    borderBottom: "2px solid #efff00",
 };
 
-const paginationStyle = (
-    disabled
-) => ({
-    minWidth:
-        "28px",
-    height:
-        "24px",
-    border:
-        "1px solid #d9e1e8",
-    borderRadius:
-        "3px",
-    backgroundColor:
-        "#ffffff",
-    color:
-        disabled
-            ? "#cbd5e1"
-            : "#334155",
-    cursor:
-        disabled
-            ? "not-allowed"
-            : "pointer",
-    fontSize: "12px",
+const modernTd = {
+    padding: "14px 18px",
+    color: "#1e293b",
+    whiteSpace: "nowrap",
+};
+
+const modernPageBtn = (disabled) => ({
+    minWidth: "34px",
+    height: "34px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
+    backgroundColor: "#ffffff",
+    color: disabled ? "#cbd5e1" : "#004d32",
+    cursor: disabled ? "not-allowed" : "pointer",
+    fontSize: "13px",
+    fontWeight: "700",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "0 8px",
+    transition: "all 0.2s",
 });

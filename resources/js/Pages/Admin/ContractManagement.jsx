@@ -345,7 +345,9 @@ export default function ContractManagement() {
 
             <main
                 style={{
-                    marginLeft: "200px",
+                    marginLeft: "var(--admin-sidebar-width, 215px)",
+                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
                 }}
             >
@@ -1538,7 +1540,7 @@ export default function ContractManagement() {
 }
 
 // =====================================================
-// SUMMARY CARD
+// MODERN CLASSIC: SUMMARY CARD (HIJAU BOTOL & KUNING NEON)
 // =====================================================
 
 function SummaryCard({
@@ -1551,22 +1553,39 @@ function SummaryCard({
         <div
             style={{
                 backgroundColor: "#ffffff",
-                border: "1px solid #d9e1e8",
-                borderLeft: border
-                    ? `3px solid ${border}`
-                    : "1px solid #d9e1e8",
-                borderRadius: "5px",
-                padding: "15px",
-                minHeight: "75px",
+                border: "1px solid #004d32",
+                borderRadius: "14px",
+                padding: "20px",
+                minHeight: "105px",
                 boxSizing: "border-box",
+                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.08)",
+                position: "relative",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                transition: "transform 0.2s, box-shadow 0.2s",
             }}
         >
+            <div
+                style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "4px",
+                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
+                }}
+            />
+
             <span
                 style={{
                     display: "block",
-                    fontSize: "13px",
-                    color: "#667085",
-                    marginBottom: "8px",
+                    fontSize: "11px",
+                    fontWeight: "800",
+                    color: "#004d32",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
                 }}
             >
                 {title}
@@ -1575,10 +1594,11 @@ function SummaryCard({
             <strong
                 style={{
                     display: "block",
-                    fontSize: "28px",
-                    color:
-                        numberColor ||
-                        "#101828",
+                    fontSize: "26px",
+                    fontWeight: "900",
+                    color: numberColor || "#003824",
+                    letterSpacing: "-0.02em",
+                    marginTop: "8px",
                 }}
             >
                 {number}
@@ -1588,84 +1608,102 @@ function SummaryCard({
 }
 
 // =====================================================
-// STYLES
+// MODERN CLASSIC: STYLES
 // =====================================================
 
 const iconButton = {
-    border: "none",
-    background: "transparent",
-    color: "#00583b",
+    width: "36px",
+    height: "36px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
+    backgroundColor: "#ffffff",
+    color: "#004d32",
+    fontSize: "16px",
     cursor: "pointer",
-    fontSize: "19px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
 };
 
 const primaryButton = {
-    border: "none",
-    backgroundColor: "#00583b",
-    color: "#ffffff",
-    padding: "0 15px",
+    border: "1px solid #efff00",
+    background: "#004d32",
+    color: "#efff00",
+    padding: "0 18px",
     height: "38px",
-    borderRadius: "4px",
+    borderRadius: "8px",
     fontSize: "13px",
-    fontWeight: "700",
+    fontWeight: "800",
     cursor: "pointer",
+    boxShadow: "0 0 10px rgba(239, 255, 0, 0.25)",
 };
 
 const secondaryButton = {
-    border: "1px solid #d0d5dd",
+    border: "1px solid #004d32",
     backgroundColor: "#ffffff",
-    color: "#344054",
-    padding: "0 15px",
+    color: "#004d32",
+    padding: "0 18px",
     height: "38px",
-    borderRadius: "4px",
+    borderRadius: "8px",
     fontSize: "13px",
-    fontWeight: "600",
+    fontWeight: "700",
     cursor: "pointer",
 };
 
 const tableHeader = {
-    padding: "11px 12px",
+    padding: "14px 16px",
     textAlign: "left",
-    fontSize: "11px",
-    color: "#475467",
-    fontWeight: "700",
+    fontSize: "11.5px",
+    color: "#ffffff",
+    backgroundColor: "#004d32",
+    fontWeight: "800",
     whiteSpace: "nowrap",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+    borderBottom: "2px solid #efff00",
 };
 
 const tableCell = {
-    padding: "12px",
+    padding: "14px 16px",
     fontSize: "13px",
-    color: "#344054",
+    color: "#1e293b",
     whiteSpace: "nowrap",
+    fontWeight: "500",
 };
 
 const actionButton = {
-    border: "none",
-    background: "transparent",
-    color: "#00583b",
-    fontSize: "12px",
+    border: "1px solid #004d32",
+    background: "#004d32",
+    color: "#efff00",
+    fontSize: "11px",
+    borderRadius: "6px",
     cursor: "pointer",
-    padding: "4px 6px",
-    fontWeight: "600",
+    padding: "5px 10px",
+    fontWeight: "800",
+    transition: "all 0.15s",
 };
 
 const modalLabel = {
     display: "block",
-    fontSize: "12px",
-    fontWeight: "700",
-    color: "#344054",
-    marginBottom: "6px",
+    fontSize: "11px",
+    fontWeight: "800",
+    color: "#004d32",
+    marginBottom: "5px",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em",
 };
 
 const modalInput = {
     width: "100%",
     height: "38px",
     boxSizing: "border-box",
-    border: "1px solid #d0d5dd",
-    borderRadius: "4px",
+    border: "1px solid #004d32",
+    borderRadius: "8px",
     padding: "0 10px",
     marginBottom: "14px",
     outline: "none",
     fontSize: "13px",
+    fontWeight: "600",
     backgroundColor: "#ffffff",
 };
