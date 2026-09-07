@@ -1,6 +1,17 @@
-import React, { useMemo, useState, useEffect } from "react";
-import AdminSidebar from "../../Components/AdminSidebar";
+import UserSidebar from "../../Components/UserSidebar";
+import { useMemo, useState, useEffect } from "react";
 import { usePage } from "@inertiajs/react";
+import {
+    ClipboardList,
+    CheckCircle2,
+    RotateCcw,
+    ShieldAlert,
+    TrendingUp,
+    Info,
+    Calendar,
+    FileSpreadsheet,
+    User,
+} from "lucide-react";
 
 const MONTHS = [
     { value: "01", label: "Jan-26" },
@@ -120,7 +131,7 @@ function createIndicatorValues(names) {
 const DEFAULT_LAGGING = createIndicatorValues(LAGGING_INDICATORS);
 const DEFAULT_LEADING = createIndicatorValues(LEADING_INDICATORS);
 
-export default function InputData() {
+export default function UserInputData() {
     const { auth } = usePage().props;
     const currentUser = auth?.user;
 
@@ -132,7 +143,7 @@ export default function InputData() {
         leading: DEFAULT_LEADING,
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (currentUser) {
             setForm((prev) => ({
                 ...prev,
@@ -142,15 +153,16 @@ export default function InputData() {
         }
     }, [currentUser]);
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
+
     const selectedMonthLabel = useMemo(() => {
         const month = MONTHS.find((item) => item.value === form.period);
-
         return month ? month.label : "Bulan belum dipilih";
     }, [form.period]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
         setForm((previous) => ({
             ...previous,
             [name]: value,
@@ -172,331 +184,363 @@ export default function InputData() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
+        setSubmitSuccess(false);
 
         try {
-            // ==========================================
-            // UBAH DATA REACT MENJADI DATA YANG
-            // SESUAI DENGAN CONTROLLER LARAVEL
-            // ==========================================
-
             const payload = {
-                // =========================
-                // IDENTIFICATION
-                // =========================
-
                 date: form.date,
-
-                // Contract No
                 contractNo: form.contractNo,
-
-                // Rig
                 rigNo: form.rigNo,
-
-                // Location / Daerah
                 locationDistrict: form.locationDistrict,
-
-                // Periode
                 period: form.period,
-
                 submitterName: form.submitterName,
                 submitterEmail: form.submitterEmail,
 
-                // =========================
-                // MAN HOURS
-                // =========================
-
                 manHoursPremisesPlan: Number(form.manHoursPremisesPlan) || 0,
-
-                manHoursNonPremisesPlan:
-                    Number(form.manHoursNonPremisesPlan) || 0,
-
-                manHoursPremisesActual:
-                    Number(form.manHoursPremisesActual) || 0,
-
-                manHoursNonPremisesActual:
-                    Number(form.manHoursNonPremisesActual) || 0,
-
-                // =========================
-                // EXPOSURE
-                // =========================
+                manHoursNonPremisesPlan: Number(form.manHoursNonPremisesPlan) || 0,
+                manHoursPremisesActual: Number(form.manHoursPremisesActual) || 0,
+                manHoursNonPremisesActual: Number(form.manHoursNonPremisesActual) || 0,
 
                 totalEmployees: Number(form.employees) || 0,
-
                 totalVehicles: Number(form.totalVehicles) || 0,
 
-                // =========================
-                // KM DRIVEN
-                // =========================
-
                 kilometerPremisesPlan: Number(form.kilometerPremisesPlan) || 0,
-
-                kilometerNonPremisesPlan:
-                    Number(form.kilometerNonPremisesPlan) || 0,
-
-                kilometerPremisesActual:
-                    Number(form.kilometerPremisesActual) || 0,
-
-                kilometerNonPremisesActual:
-                    Number(form.kilometerNonPremisesActual) || 0,
-
-                // =========================
-                // LAGGING
-                // =========================
+                kilometerNonPremisesPlan: Number(form.kilometerNonPremisesPlan) || 0,
+                kilometerPremisesActual: Number(form.kilometerPremisesActual) || 0,
+                kilometerNonPremisesActual: Number(form.kilometerNonPremisesActual) || 0,
 
                 lagging: Object.entries(form.lagging).map(
                     ([name, values], index) => ({
                         name: name,
                         indicator_name: name,
                         indicator_no: index + 1,
-
                         plan: Number(values.plan) || 0,
-
                         actual: Number(values.actual) || 0,
                     }),
                 ),
-
-                // =========================
-                // LEADING
-                // =========================
 
                 leading: Object.entries(form.leading).map(
                     ([name, values], index) => ({
                         name: name,
                         indicator_name: name,
                         indicator_no: index + 1,
-
                         plan: Number(values.plan) || 0,
-
                         actual: Number(values.actual) || 0,
                     }),
                 ),
 
-                // =========================
-                // REMARKS
-                // =========================
-
                 remarks: form.remarks,
             };
-
-            console.log("DATA YANG DIKIRIM:", payload);
-
-            // ==========================================
-            // CSRF TOKEN
-            // ==========================================
 
             const csrfToken = document
                 .querySelector('meta[name="csrf-token"]')
                 ?.getAttribute("content");
 
-            if (!csrfToken) {
-                alert("CSRF token tidak ditemukan. Silakan cek app.blade.php.");
-                return;
-            }
-
-            // ==========================================
-            // KIRIM KE LARAVEL
-            // ==========================================
-
-            const response = await fetch("/admin/hse-report", {
+            const response = await fetch("/hse-report", {
                 method: "POST",
-
                 headers: {
                     "Content-Type": "application/json",
                     Accept: "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
+                    "X-CSRF-TOKEN": csrfToken || "",
                     "X-Requested-With": "XMLHttpRequest",
                 },
-
                 credentials: "same-origin",
-
                 body: JSON.stringify(payload),
             });
 
-            const result = await response.json();
-
-            console.log("RESPONSE SERVER:", result);
-
-            // ==========================================
-            // JIKA GAGAL
-            // ==========================================
+            const result = await response.json().catch(() => null);
 
             if (!response.ok) {
-                console.error("ERROR SERVER:", result);
-
-                if (result.errors) {
-                    console.error("VALIDATION ERRORS:", result.errors);
+                let errorMsg = (result && result.message) ? result.message : "Data HSE gagal disimpan. Periksa kembali form input Anda.";
+                if (result && result.errors) {
+                    const firstError = Object.values(result.errors)[0];
+                    if (firstError && firstError.length > 0) {
+                        errorMsg = firstError[0];
+                    }
                 }
-
-                alert(result.message || "Data HSE gagal disimpan.");
-
+                alert(errorMsg);
+                setIsSubmitting(false);
                 return;
             }
 
-            // ==========================================
-            // JIKA BERHASIL
-            // ==========================================
-
-            alert(
-                `Data HSE ${selectedMonthLabel} berhasil dikirim! Status saat ini: PENDING (Menunggu Persetujuan / Approval dari Admin via Email atau Menu Approval).`,
-            );
-
-            console.log("REPORT BERHASIL DISIMPAN:", result.data);
+            setSubmitSuccess(true);
+            alert(`Data HSE periode ${selectedMonthLabel} berhasil dikirim! Status saat ini: PENDING (Menunggu Persetujuan / Approval dari Admin via Email atau Menu Approval).`);
+            window.scrollTo({ top: 0, behavior: "smooth" });
         } catch (error) {
             console.error("ERROR SUBMIT HSE:", error);
-
-            alert(
-                "Terjadi kesalahan saat menyimpan data HSE. Silakan cek Console.",
-            );
+            alert("Terjadi kendala saat mengirim data HSE: " + (error?.message || "Silakan periksa koneksi."));
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleReset = () => {
-        setForm({
-            ...INITIAL_FORM,
-            lagging: createIndicatorValues(LAGGING_INDICATORS),
-            leading: createIndicatorValues(LEADING_INDICATORS),
-        });
+        if (window.confirm("Apakah Anda yakin ingin mengosongkan seluruh isian formulir?")) {
+            setForm({
+                ...INITIAL_FORM,
+                lagging: createIndicatorValues(LAGGING_INDICATORS),
+                leading: createIndicatorValues(LEADING_INDICATORS),
+            });
+            setSubmitSuccess(false);
+        }
     };
 
     return (
         <div
             style={{
                 minHeight: "100vh",
-                backgroundColor: "#f4f7f9",
-                fontFamily: "Arial, Helvetica, sans-serif",
-                color: "#12342b",
+                backgroundColor: "#f8fafc",
+                fontFamily:
+                    "'Instrument Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+                color: "#1e293b",
             }}
         >
-            <AdminSidebar />
+            <UserSidebar />
 
             <main
                 style={{
                     marginLeft: "var(--admin-sidebar-width, 215px)",
                     width: "calc(100% - var(--admin-sidebar-width, 215px))",
-                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    transition:
+                        "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
                 }}
             >
+                {/* =====================================================
+                    TOPBAR
+                ===================================================== */}
                 <header
                     style={{
                         height: "64px",
                         backgroundColor: "#ffffff",
-                        borderBottom: "1px solid #d9e2de",
+                        borderBottom: "1px solid #e2e8f0",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        padding: "0 28px",
+                        padding: "0 32px",
+                        boxSizing: "border-box",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 90,
                     }}
                 >
-                    <strong
-                        style={{
-                            fontSize: "25px",
-                            color: "#004f3d",
-                        }}
-                    >
-                        RigOps HSE Manager
-                    </strong>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div
+                            style={{
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "8px",
+                                backgroundColor: "#004d32",
+                                border: "1px solid #efff00",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#efff00",
+                                boxShadow: "0 0 8px rgba(239, 255, 0, 0.25)",
+                            }}
+                        >
+                            <ClipboardList size={18} strokeWidth={2.5} />
+                        </div>
+                        <span
+                            style={{
+                                fontSize: "16px",
+                                fontWeight: "800",
+                                color: "#004d32",
+                                letterSpacing: "-0.01em",
+                            }}
+                        >
+                            HSE Field Data Input
+                        </span>
+                    </div>
 
-                    <div
-                        style={{
-                            fontSize: "15px",
-                            color: "#60716b",
-                        }}
-                    >
-                        Input Data HSE
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "5px 12px",
+                                borderRadius: "20px",
+                                backgroundColor: "#ecfdf5",
+                                border: "1px solid #a7f3d0",
+                                color: "#004d32",
+                                fontSize: "11.5px",
+                                fontWeight: "700",
+                            }}
+                        >
+                            <span
+                                style={{
+                                    width: "8px",
+                                    height: "8px",
+                                    borderRadius: "50%",
+                                    backgroundColor: "#10b981",
+                                    boxShadow: "0 0 6px #10b981",
+                                }}
+                            />
+                            Field User Mode
+                        </div>
                     </div>
                 </header>
 
-                <div
-                    style={{
-                        padding: "25px 30px 50px",
-                    }}
-                >
+                {/* =====================================================
+                    PAGE BODY
+                ===================================================== */}
+                <div style={{ padding: "28px 32px 60px", maxWidth: "1400px", margin: "0 auto" }}>
+                    {/* HERO BANNER */}
                     <div
                         style={{
-                            marginBottom: "22px",
+                            backgroundColor: "#004d32",
+                            borderRadius: "16px",
+                            padding: "24px 28px",
+                            color: "#ffffff",
+                            marginBottom: "24px",
+                            position: "relative",
+                            overflow: "hidden",
+                            boxShadow: "0 10px 25px rgba(0, 77, 50, 0.15)",
+                            border: "1px solid rgba(239, 255, 0, 0.3)",
                         }}
                     >
                         <div
                             style={{
-                                fontSize: "15px",
-                                color: "#71807a",
-                                marginBottom: "10px",
+                                position: "absolute",
+                                top: "-40px",
+                                right: "-40px",
+                                width: "160px",
+                                height: "160px",
+                                borderRadius: "50%",
+                                backgroundColor: "rgba(239, 255, 0, 0.08)",
+                                pointerEvents: "none",
                             }}
-                        >
-                            ▣ &nbsp; Input Data HSE (Admin)
+                        />
+
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                            <span
+                                style={{
+                                    padding: "3px 8px",
+                                    borderRadius: "4px",
+                                    backgroundColor: "rgba(239, 255, 0, 0.2)",
+                                    border: "1px solid #efff00",
+                                    color: "#efff00",
+                                    fontSize: "11px",
+                                    fontWeight: "800",
+                                    letterSpacing: "0.05em",
+                                    textTransform: "uppercase",
+                                }}
+                            >
+                                Field Portal
+                            </span>
+                            <span style={{ color: "#a7f3d0", fontSize: "12px", fontWeight: "600" }}>
+                                PT Besmindo HSE Operations
+                            </span>
                         </div>
 
-                        <h1
-                            style={{
-                                margin: 0,
-                                fontSize: "32px",
-                                color: "#111827",
-                            }}
-                        >
-                            Input HSE Data
+                        <h1 style={{ margin: "0 0 6px", fontSize: "24px", fontWeight: "900", letterSpacing: "-0.02em" }}>
+                            Formulir Penginputan Data HSE
                         </h1>
-
-                        <p
-                            style={{
-                                marginTop: "7px",
-                                color: "#60716b",
-                                fontSize: "15px",
-                            }}
-                        >
-                            Masukkan data HSE berdasarkan periode dan KPI pada dokumen KPI.
+                        <p style={{ margin: "0 0 16px", color: "#d1fae5", fontSize: "13.5px", maxWidth: "720px", lineHeight: "1.5" }}>
+                            Silakan input realisasi kinerja keselamatan kerja (HSE) untuk rig dan periode yang bersangkutan. Data yang Anda simpan akan secara otomatis terintegrasi ke seluruh laporan dan matriks KPI per Rig.
                         </p>
 
+                        {/* SUBMITTER IDENTITY CARD */}
                         <div
                             style={{
-                                marginTop: "12px",
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: "10px",
-                                backgroundColor: "#ecfdf5",
-                                border: "1px solid #a7f3d0",
-                                borderRadius: "8px",
-                                padding: "6px 14px",
-                                fontSize: "12.5px",
-                                color: "#065f46",
+                                gap: "12px",
+                                backgroundColor: "rgba(0, 0, 0, 0.3)",
+                                border: "1.5px solid #efff00",
+                                borderRadius: "10px",
+                                padding: "8px 16px",
+                                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
                             }}
                         >
-                            <span style={{ fontWeight: "700" }}>Diinput oleh (Admin):</span>
-                            <span style={{ fontWeight: "800", color: "#004d32" }}>{currentUser?.name || "HSE Administrator"}</span>
-                            <span style={{ color: "#047857" }}>({currentUser?.email || "admin@besmindo.com"})</span>
+                            <div
+                                style={{
+                                    width: "30px",
+                                    height: "30px",
+                                    borderRadius: "50%",
+                                    backgroundColor: "#efff00",
+                                    color: "#004d32",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontWeight: "900",
+                                    fontSize: "13px",
+                                    boxShadow: "0 0 10px rgba(239, 255, 0, 0.6)",
+                                    flexShrink: 0,
+                                }}
+                            >
+                                {(form.submitterName || currentUser?.name || "P").charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div style={{ fontSize: "11px", color: "#a7f3d0", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                                    Petugas Penginput (PIC Terautentikasi):
+                                </div>
+                                <div style={{ fontSize: "13.5px", fontWeight: "800", color: "#ffffff", marginTop: "1px" }}>
+                                    {form.submitterName || currentUser?.name || "User Lapangan"}{" "}
+                                    <span style={{ color: "#efff00", fontWeight: "600", fontSize: "12px" }}>
+                                        ({form.submitterEmail || currentUser?.email || "user@besmindo.com"})
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
+                    {/* SUCCESS NOTIFICATION */}
+                    {submitSuccess && (
+                        <div
+                            style={{
+                                backgroundColor: "#ecfdf5",
+                                border: "1px solid #34d399",
+                                borderRadius: "12px",
+                                padding: "14px 18px",
+                                marginBottom: "20px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "12px",
+                                color: "#065f46",
+                                fontSize: "13.5px",
+                                fontWeight: "700",
+                            }}
+                        >
+                            <CheckCircle2 size={20} color="#059669" />
+                            <span>Data HSE berhasil disimpan dan disinkronkan ke database sistem!</span>
+                        </div>
+                    )}
+
+                    {/* STEP WIZARD BAR */}
                     <div
                         style={{
                             backgroundColor: "#ffffff",
-                            border: "1px solid #d4ded9",
-                            borderRadius: "7px",
-                            padding: "18px 25px",
-                            marginBottom: "20px",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "14px",
+                            padding: "16px 24px",
+                            marginBottom: "24px",
                             display: "grid",
                             gridTemplateColumns: "1fr 1fr 1fr",
                             gap: "20px",
+                            boxShadow: "0 4px 18px rgba(0, 77, 50, 0.04)",
                         }}
                     >
-                        <Step number="1" title="Draft" active />
-
-                        <Step number="2" title="Validation" />
-
-                        <Step number="3" title="Approved" />
+                        <Step number="1" title="Input Data HSE" active />
+                        <Step number="2" title="Simpan ke Database" />
+                        <Step number="3" title="Sinkronisasi KPI & Report" />
                     </div>
 
+                    {/* FORM CONTAINER */}
                     <form onSubmit={handleSubmit}>
-                        <Section title="Identification">
+                        {/* 1. IDENTIFICATION */}
+                        <Section title="1. Data Identifikasi Rig & Periode">
                             <div
                                 style={{
                                     display: "grid",
-                                    gridTemplateColumns: "repeat(4, 1fr)",
-                                    gap: "14px",
+                                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                                    gap: "16px",
                                 }}
                             >
                                 <InputField
-                                    label="Date"
+                                    label="Tanggal Laporan"
                                     name="date"
                                     type="date"
                                     required
@@ -505,7 +549,7 @@ export default function InputData() {
                                 />
 
                                 <InputField
-                                    label="Contract No"
+                                    label="Nomor Kontrak"
                                     name="contractNo"
                                     placeholder="Contoh: SPHR01097C"
                                     value={form.contractNo}
@@ -514,7 +558,7 @@ export default function InputData() {
                                 />
 
                                 <InputField
-                                    label="Location / Daerah"
+                                    label="Lokasi / Distrik Wilayah"
                                     name="locationDistrict"
                                     placeholder="Contoh: AREA WK ROKAN - RIAU"
                                     value={form.locationDistrict}
@@ -523,7 +567,7 @@ export default function InputData() {
                                 />
 
                                 <SelectField
-                                    label="Rig No"
+                                    label="Nomor Rig"
                                     name="rigNo"
                                     value={form.rigNo}
                                     onChange={handleChange}
@@ -537,23 +581,20 @@ export default function InputData() {
                                 />
 
                                 <SelectField
-                                    label="Periode Kinerja"
+                                    label="Periode Bulan"
                                     name="period"
                                     value={form.period}
                                     onChange={handleChange}
                                     options={MONTHS.map((month) => month.value)}
-                                    optionLabels={MONTHS.reduce(
-                                        (result, month) => {
-                                            result[month.value] = month.label;
-                                            return result;
-                                        },
-                                        {},
-                                    )}
+                                    optionLabels={MONTHS.reduce((result, month) => {
+                                        result[month.value] = month.label;
+                                        return result;
+                                    }, {})}
                                     required
                                 />
 
                                 <InputField
-                                    label="Nama Petugas Penginput (PIC / Admin)"
+                                    label="Nama Petugas Penginput (PIC)"
                                     name="submitterName"
                                     placeholder="Contoh: Budi Santoso"
                                     value={form.submitterName}
@@ -562,10 +603,10 @@ export default function InputData() {
                                 />
 
                                 <InputField
-                                    label="Email Petugas Penginput"
+                                    label="Email Petugas Penginput (PIC)"
                                     name="submitterEmail"
                                     type="email"
-                                    placeholder="Contoh: admin@besmindo.com"
+                                    placeholder="Contoh: budi@besmindo.com"
                                     value={form.submitterEmail}
                                     onChange={handleChange}
                                     required
@@ -573,18 +614,15 @@ export default function InputData() {
                             </div>
                         </Section>
 
-                        <Section title="Exposure Metrics">
+                        {/* 2. EXPOSURE METRICS */}
+                        <Section title="2. Metrik Exposure & Jam Kerja (Man Hours)">
                             <div
                                 style={{
                                     display: "grid",
-                                    gridTemplateColumns: "repeat(4, 1fr)",
-                                    gap: "14px",
+                                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                                    gap: "16px",
                                 }}
                             >
-                                {/* =========================
-            MAN HOURS PLAN
-        ========================= */}
-
                                 <NumberField
                                     label="Man Hours Premises - Plan"
                                     name="manHoursPremisesPlan"
@@ -600,10 +638,6 @@ export default function InputData() {
                                     onChange={handleChange}
                                     required
                                 />
-
-                                {/* =========================
-            MAN HOURS ACTUAL
-        ========================= */}
 
                                 <NumberField
                                     label="Man Hours Premises - Actual"
@@ -621,12 +655,8 @@ export default function InputData() {
                                     required
                                 />
 
-                                {/* =========================
-            EMPLOYEE & VEHICLE
-        ========================= */}
-
                                 <NumberField
-                                    label="Total Employees"
+                                    label="Total Karyawan (Employees)"
                                     name="employees"
                                     value={form.employees}
                                     onChange={handleChange}
@@ -634,16 +664,12 @@ export default function InputData() {
                                 />
 
                                 <NumberField
-                                    label="Total Vehicles"
+                                    label="Total Kendaraan (Vehicles)"
                                     name="totalVehicles"
                                     value={form.totalVehicles}
                                     onChange={handleChange}
                                     required
                                 />
-
-                                {/* =========================
-            KM DRIVEN PLAN
-        ========================= */}
 
                                 <NumberField
                                     label="KM Driven Premises - Plan"
@@ -660,10 +686,6 @@ export default function InputData() {
                                     onChange={handleChange}
                                     required
                                 />
-
-                                {/* =========================
-            KM DRIVEN ACTUAL
-        ========================= */}
 
                                 <NumberField
                                     label="KM Driven Premises - Actual"
@@ -683,69 +705,76 @@ export default function InputData() {
                             </div>
                         </Section>
 
+                        {/* 3. LAGGING INDICATORS */}
                         <IndicatorSection
-                            title="⚠ Lagging Indicators"
+                            title="3. ⚠ Lagging Indicators (Insiden Keselamatan)"
                             type="lagging"
                             indicators={LAGGING_INDICATORS}
                             values={form.lagging}
                             onChange={handleIndicatorChange}
                         />
 
+                        {/* 4. LEADING INDICATORS */}
                         <IndicatorSection
-                            title="↗ Leading Indicators"
+                            title="4. ↗ Leading Indicators (Aktivitas Pencegahan)"
                             type="leading"
                             indicators={LEADING_INDICATORS}
                             values={form.leading}
                             onChange={handleIndicatorChange}
                         />
 
-                        <Section title="Documentation">
+                        {/* 5. DOCUMENTATION / REMARKS */}
+                        <Section title="5. Catatan / Executive Remarks">
                             <label
                                 style={{
                                     display: "block",
-                                    fontSize: "13px",
-                                    fontWeight: "600",
-                                    marginBottom: "7px",
-                                    color: "#3f514b",
+                                    fontSize: "12.5px",
+                                    fontWeight: "700",
+                                    marginBottom: "8px",
+                                    color: "#334155",
                                 }}
                             >
-                                Remarks / Executive Summary <span style={{ color: "#dc2626" }}>*</span>
+                                Catatan Tambahan / Ringkasan Realisasi Lapangan <span style={{ color: "#dc2626" }}>*</span>
                             </label>
 
                             <textarea
                                 name="remarks"
                                 value={form.remarks}
                                 onChange={handleChange}
-                                placeholder="Enter key notes or context for this period's data..."
-                                rows={5}
+                                placeholder="Tuliskan catatan penting operasional atau penjelasan kendala lapangan pada periode ini..."
+                                rows={4}
                                 required
                                 style={{
                                     width: "100%",
                                     boxSizing: "border-box",
-                                    border: "1px solid #ccd8d3",
-                                    borderRadius: "5px",
+                                    border: "1px solid #cbd5e1",
+                                    borderRadius: "8px",
                                     padding: "12px",
                                     resize: "vertical",
                                     outline: "none",
-                                    fontFamily: "Arial",
-                                    fontSize: "15px",
+                                    fontSize: "13.5px",
+                                    color: "#1e293b",
                                 }}
                             />
                         </Section>
 
+                        {/* ACTIONS BAR */}
                         <div
                             style={{
                                 display: "flex",
                                 justifyContent: "flex-end",
-                                gap: "10px",
-                                marginTop: "20px",
+                                alignItems: "center",
+                                gap: "12px",
+                                marginTop: "24px",
+                                paddingBottom: "30px",
                             }}
                         >
                             <button
                                 type="button"
                                 onClick={handleReset}
                                 style={{
-                                    padding: "11px 22px",
+                                    height: "42px",
+                                    padding: "0 22px",
                                     backgroundColor: "#ffffff",
                                     border: "1px solid #004d32",
                                     borderRadius: "8px",
@@ -753,26 +782,39 @@ export default function InputData() {
                                     color: "#004d32",
                                     fontWeight: "700",
                                     fontSize: "13px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                    transition: "all 0.2s",
                                 }}
                             >
-                                Reset
+                                <RotateCcw size={15} />
+                                Reset Form
                             </button>
 
                             <button
                                 type="submit"
+                                disabled={isSubmitting}
                                 style={{
-                                    padding: "11px 25px",
+                                    height: "42px",
+                                    padding: "0 26px",
                                     backgroundColor: "#004d32",
                                     color: "#efff00",
                                     border: "1px solid #efff00",
                                     borderRadius: "8px",
-                                    cursor: "pointer",
+                                    cursor: isSubmitting ? "not-allowed" : "pointer",
                                     fontWeight: "800",
-                                    fontSize: "13px",
-                                    boxShadow: "0 0 10px rgba(239, 255, 0, 0.25)",
+                                    fontSize: "13.5px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                    boxShadow: "0 0 12px rgba(239, 255, 0, 0.25)",
+                                    opacity: isSubmitting ? 0.7 : 1,
+                                    transition: "all 0.2s",
                                 }}
                             >
-                                Save HSE Data
+                                <CheckCircle2 size={16} strokeWidth={2.6} />
+                                {isSubmitting ? "Menyimpan Data..." : "Simpan Data HSE Lapangan"}
                             </button>
                         </div>
                     </form>
@@ -782,9 +824,9 @@ export default function InputData() {
     );
 }
 
-/* =========================
-   INDICATOR SECTION
-========================= */
+/* ============================================================
+   SUB-COMPONENTS
+============================================================ */
 
 function IndicatorSection({ title, type, indicators, values, onChange }) {
     return (
@@ -812,20 +854,17 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                             }}
                         >
                             <th style={tableHeaderStyle}>No</th>
-
                             <th
                                 style={{
                                     ...tableHeaderStyle,
                                     textAlign: "left",
-                                    minWidth: "390px",
+                                    minWidth: "380px",
                                 }}
                             >
-                                Point yang Diukur
+                                Point yang Diukur / Indikator
                             </th>
-
-                            <th style={tableHeaderStyle}>Plan</th>
-
-                            <th style={tableHeaderStyle}>Actual</th>
+                            <th style={tableHeaderStyle}>Target / Plan</th>
+                            <th style={tableHeaderStyle}>Realisasi / Actual</th>
                         </tr>
                     </thead>
 
@@ -852,6 +891,7 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                                             ...tableCellStyle,
                                             fontWeight: "700",
                                             color: "#004d32",
+                                            width: "50px",
                                         }}
                                     >
                                         {index + 1}
@@ -868,7 +908,7 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                                         {indicator}
                                     </td>
 
-                                    <td style={tableCellStyle}>
+                                    <td style={{ ...tableCellStyle, width: "140px" }}>
                                         <NumberTableField
                                             value={value.plan}
                                             onChange={(event) =>
@@ -882,7 +922,7 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                                         />
                                     </td>
 
-                                    <td style={tableCellStyle}>
+                                    <td style={{ ...tableCellStyle, width: "140px" }}>
                                         <NumberTableField
                                             value={value.actual}
                                             onChange={(event) =>
@@ -904,22 +944,16 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
 
             <p
                 style={{
-                    margin: "10px 0 0",
+                    margin: "12px 0 0",
                     fontSize: "12px",
                     color: "#64748b",
                 }}
             >
-                Isi nilai <strong>Plan</strong> sesuai target implementasi pada
-                dokumen KPI, lalu isi <strong>Actual</strong> sesuai realisasi
-                bulan yang dipilih.
+                Isi nilai <strong>Plan</strong> sesuai target yang ditentukan, lalu isi <strong>Actual</strong> sesuai realisasi pada bulan berjalan.
             </p>
         </Section>
     );
 }
-
-/* =========================
-   STEP
-========================= */
 
 function Step({ number, title, active }) {
     return (
@@ -966,10 +1000,6 @@ function Step({ number, title, active }) {
     );
 }
 
-/* =========================
-   SECTION
-========================= */
-
 function Section({ title, children }) {
     return (
         <section
@@ -977,7 +1007,7 @@ function Section({ title, children }) {
                 backgroundColor: "#ffffff",
                 border: "1px solid #e2e8f0",
                 borderRadius: "14px",
-                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.06)",
+                boxShadow: "0 4px 18px rgba(0, 77, 50, 0.04)",
                 padding: "24px",
                 marginBottom: "20px",
                 boxSizing: "border-box",
@@ -1001,7 +1031,7 @@ function Section({ title, children }) {
                     margin: "0 0 18px",
                     paddingBottom: "12px",
                     borderBottom: "1px solid #f1f5f9",
-                    fontSize: "16px",
+                    fontSize: "15.5px",
                     fontWeight: "800",
                     color: "#004d32",
                 }}
@@ -1013,10 +1043,6 @@ function Section({ title, children }) {
         </section>
     );
 }
-
-/* =========================
-   INPUT
-========================= */
 
 function InputField({
     label,
@@ -1032,24 +1058,14 @@ function InputField({
             <label
                 style={{
                     display: "block",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    marginBottom: "7px",
-                    color: "#53645d",
+                    fontSize: "12.5px",
+                    fontWeight: "700",
+                    marginBottom: "6px",
+                    color: "#334155",
                 }}
             >
                 {label}
-
-                {required && (
-                    <span
-                        style={{
-                            color: "#dc2626",
-                            marginLeft: "3px",
-                        }}
-                    >
-                        *
-                    </span>
-                )}
+                {required && <span style={{ color: "#dc2626", marginLeft: "4px" }}>*</span>}
             </label>
 
             <input
@@ -1063,22 +1079,18 @@ function InputField({
                     width: "100%",
                     height: "38px",
                     boxSizing: "border-box",
-                    border: "1px solid #ccd8d3",
-                    borderRadius: "5px",
-                    padding: "0 10px",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "8px",
+                    padding: "0 12px",
                     outline: "none",
-                    backgroundColor: "#f8fafb",
-                    fontSize: "14px",
-                    color: "#263b34",
+                    backgroundColor: "#ffffff",
+                    fontSize: "13px",
+                    color: "#1e293b",
                 }}
             />
         </div>
     );
 }
-
-/* =========================
-   NUMBER
-========================= */
 
 function NumberField({ label, name, value, onChange, required }) {
     return (
@@ -1086,24 +1098,14 @@ function NumberField({ label, name, value, onChange, required }) {
             <label
                 style={{
                     display: "block",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    marginBottom: "7px",
-                    color: "#3f514b",
+                    fontSize: "12.5px",
+                    fontWeight: "700",
+                    marginBottom: "6px",
+                    color: "#334155",
                 }}
             >
                 {label}
-
-                {required && (
-                    <span
-                        style={{
-                            color: "#dc2626",
-                            marginLeft: "3px",
-                        }}
-                    >
-                        *
-                    </span>
-                )}
+                {required && <span style={{ color: "#dc2626", marginLeft: "4px" }}>*</span>}
             </label>
 
             <input
@@ -1116,25 +1118,21 @@ function NumberField({ label, name, value, onChange, required }) {
                 required={required}
                 style={{
                     width: "100%",
-                    height: "36px",
+                    height: "38px",
                     boxSizing: "border-box",
-                    border: "1px solid #ccd8d3",
-                    borderRadius: "4px",
-                    padding: "0 10px",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "8px",
+                    padding: "0 12px",
                     outline: "none",
-                    backgroundColor: "#f8fafb",
+                    backgroundColor: "#ffffff",
                     textAlign: "right",
-                    fontSize: "14px",
-                    color: "#263b34",
+                    fontSize: "13px",
+                    color: "#1e293b",
                 }}
             />
         </div>
     );
 }
-
-/* =========================
-   NUMBER TABLE
-========================= */
 
 function NumberTableField({ value, onChange }) {
     return (
@@ -1150,22 +1148,18 @@ function NumberTableField({ value, onChange }) {
                 minWidth: "90px",
                 height: "32px",
                 boxSizing: "border-box",
-                border: "1px solid #ccd8d3",
-                borderRadius: "4px",
+                border: "1px solid #cbd5e1",
+                borderRadius: "6px",
                 padding: "0 8px",
                 outline: "none",
-                backgroundColor: "#f8fafb",
+                backgroundColor: "#f8fafc",
                 textAlign: "right",
                 fontSize: "13px",
-                color: "#263b34",
+                color: "#1e293b",
             }}
         />
     );
 }
-
-/* =========================
-   SELECT
-========================= */
 
 function SelectField({
     label,
@@ -1181,24 +1175,14 @@ function SelectField({
             <label
                 style={{
                     display: "block",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    marginBottom: "7px",
-                    color: "#53645d",
+                    fontSize: "12.5px",
+                    fontWeight: "700",
+                    marginBottom: "6px",
+                    color: "#334155",
                 }}
             >
                 {label}
-
-                {required && (
-                    <span
-                        style={{
-                            color: "#dc2626",
-                            marginLeft: "3px",
-                        }}
-                    >
-                        *
-                    </span>
-                )}
+                {required && <span style={{ color: "#dc2626", marginLeft: "4px" }}>*</span>}
             </label>
 
             <select
@@ -1210,17 +1194,17 @@ function SelectField({
                     width: "100%",
                     height: "38px",
                     boxSizing: "border-box",
-                    border: "1px solid #ccd8d3",
-                    borderRadius: "5px",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "8px",
                     padding: "0 10px",
                     outline: "none",
-                    backgroundColor: "#f8fafb",
-                    fontSize: "14px",
-                    color: "#263b34",
+                    backgroundColor: "#ffffff",
+                    fontSize: "13px",
+                    color: "#1e293b",
                 }}
             >
                 <option value="">
-                    {name === "period" ? "Pilih Periode" : "Select Rig"}
+                    {name === "period" ? "Pilih Periode Bulan" : "Pilih Rig"}
                 </option>
 
                 {options.map((option) => (
@@ -1233,21 +1217,19 @@ function SelectField({
     );
 }
 
-/* =========================
-   TABLE STYLE
-========================= */
-
 const tableHeaderStyle = {
-    padding: "10px 8px",
-    border: "1px solid rgba(255,255,255,0.2)",
-    fontSize: "13px",
+    padding: "10px 12px",
+    fontSize: "12px",
+    fontWeight: "800",
     textAlign: "center",
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
 };
 
 const tableCellStyle = {
-    padding: "7px 8px",
-    border: "1px solid #dbe4e0",
-    fontSize: "13px",
+    padding: "8px 12px",
+    border: "1px solid #f1f5f9",
+    fontSize: "12.5px",
     textAlign: "center",
-    color: "#263b34",
+    color: "#334155",
 };

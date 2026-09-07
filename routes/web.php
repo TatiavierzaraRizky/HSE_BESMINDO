@@ -2,21 +2,72 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HseReportController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\SettingController;
 
 /*
 |--------------------------------------------------------------------------
-| LOGIN
+| LOGIN & AUTHENTICATION
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return Inertia::render('Login');
+Route::get('/', [AuthController::class, 'showLogin']);
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.attempt');
+Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
+
+// FORGOT & RESET PASSWORD
+Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
+/*
+|--------------------------------------------------------------------------
+| EMAIL APPROVAL CALLBACKS (DIRECT FROM EMAIL CLIENT)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/hse-report/approve/{id}/{token}', [
+    HseReportController::class,
+    'emailApprove',
+])->name('hse-report.email-approve');
+
+Route::get('/hse-report/reject/{id}/{token}', [
+    HseReportController::class,
+    'emailReject',
+])->name('hse-report.email-reject');
+
+
+/*
+|--------------------------------------------------------------------------
+| USER (FIELD OPERATOR / PIC)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('user')->middleware(['role:user,admin'])->group(function () {
+    Route::get('/', function () {
+        return redirect()->route('user.input-data');
+    });
+
+    Route::get('/input-data', function () {
+        return Inertia::render('User/InputData');
+    })->name('user.input-data');
+
+    Route::post('/hse-report', [
+        HseReportController::class,
+        'store'
+    ])->name('user.hse-report.store');
 });
 
-Route::get('/login', function () {
-    return Inertia::render('Login');
-});
+Route::post('/hse-report', [
+    HseReportController::class,
+    'store'
+])->middleware(['role:user,admin'])->name('hse-report.store');
 
 
 /*
@@ -25,7 +76,7 @@ Route::get('/login', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware(['role:admin'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
@@ -138,9 +189,15 @@ Route::prefix('admin')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/approval', function () {
-        return Inertia::render('Admin/Approval');
-    })->name('admin.approval');
+    Route::get('/approval', [
+        HseReportController::class,
+        'approvalIndex',
+    ])->name('admin.approval');
+
+    Route::post('/approval/{id}', [
+        HseReportController::class,
+        'updateApprovalStatus',
+    ])->name('admin.approval.update');
 
 
     /*
@@ -199,8 +256,21 @@ Route::prefix('admin')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/users', function () {
-        return Inertia::render('Admin/UserManagement');
-    })->name('admin.users');
+    Route::get('/users', [UserController::class, 'index'])->name('admin.users');
+    Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
+    Route::patch('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('admin.users.toggle-status');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SETTINGS & PROFILE MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/settings', [SettingController::class, 'index'])->name('admin.settings');
+    Route::post('/settings/profile', [SettingController::class, 'updateProfile'])->name('admin.settings.profile');
+    Route::post('/settings/password', [SettingController::class, 'updatePassword'])->name('admin.settings.password');
 
 });

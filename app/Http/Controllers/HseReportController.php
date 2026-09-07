@@ -8,6 +8,7 @@ use App\Models\HseManHour;
 use App\Models\HseReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class HseReportController extends Controller
@@ -220,38 +221,41 @@ class HseReportController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
-            'contractNo' => ['nullable', 'string', 'max:100'],
-            'rigNo' => ['nullable', 'string', 'max:100'],
+            'contractNo' => ['required', 'string', 'max:100'],
+            'rigNo' => ['required', 'string', 'max:100'],
             'workPeriod' => ['nullable', 'string', 'max:100'],
             'period' => ['required', 'string', 'max:10'],
             'focusProject' => ['nullable', 'string', 'max:150'],
-            'locationDistrict' => ['nullable', 'string', 'max:150'],
+            'locationDistrict' => ['required', 'string', 'max:150'],
             'issuedDate' => ['nullable', 'date'],
             'revisionNo' => ['nullable', 'string', 'max:50'],
             'programReference' => ['nullable', 'string'],
+            'submitterRole' => ['nullable', 'string'],
+            'submitterName' => ['nullable', 'string', 'max:255'],
+            'submitterEmail' => ['nullable', 'string', 'max:255'],
 
-            'manHoursPremisesPlan' => ['nullable', 'numeric', 'min:0'],
-            'manHoursNonPremisesPlan' => ['nullable', 'numeric', 'min:0'],
-            'manHoursPremisesActual' => ['nullable', 'numeric', 'min:0'],
-            'manHoursNonPremisesActual' => ['nullable', 'numeric', 'min:0'],
+            'manHoursPremisesPlan' => ['required', 'numeric', 'min:0'],
+            'manHoursNonPremisesPlan' => ['required', 'numeric', 'min:0'],
+            'manHoursPremisesActual' => ['required', 'numeric', 'min:0'],
+            'manHoursNonPremisesActual' => ['required', 'numeric', 'min:0'],
 
-            'totalEmployees' => ['nullable', 'integer', 'min:0'],
-            'totalVehicles' => ['nullable', 'integer', 'min:0'],
+            'totalEmployees' => ['required', 'numeric', 'min:0'],
+            'totalVehicles' => ['required', 'numeric', 'min:0'],
 
-            'kilometerPremisesPlan' => ['nullable', 'numeric', 'min:0'],
-            'kilometerNonPremisesPlan' => ['nullable', 'numeric', 'min:0'],
-            'kilometerPremisesActual' => ['nullable', 'numeric', 'min:0'],
-            'kilometerNonPremisesActual' => ['nullable', 'numeric', 'min:0'],
+            'kilometerPremisesPlan' => ['required', 'numeric', 'min:0'],
+            'kilometerNonPremisesPlan' => ['required', 'numeric', 'min:0'],
+            'kilometerPremisesActual' => ['required', 'numeric', 'min:0'],
+            'kilometerNonPremisesActual' => ['required', 'numeric', 'min:0'],
 
             'lagging' => ['nullable', 'array'],
             'lagging.*.indicator_name' => ['required', 'string', 'max:255'],
             'lagging.*.indicator_no' => ['nullable', 'integer'],
             'lagging.*.definition' => ['nullable', 'string'],
             'lagging.*.unit' => ['nullable', 'string', 'max:100'],
-            'lagging.*.plan' => ['nullable', 'numeric', 'min:0'],
-            'lagging.*.actual' => ['nullable', 'numeric', 'min:0'],
+            'lagging.*.plan' => ['required', 'numeric', 'min:0'],
+            'lagging.*.actual' => ['required', 'numeric', 'min:0'],
             'lagging.*.frequency_rate' => ['nullable', 'numeric', 'min:0'],
             'lagging.*.notes' => ['nullable', 'string'],
 
@@ -262,31 +266,48 @@ class HseReportController extends Controller
             'leading.*.unit' => ['nullable', 'string', 'max:100'],
             'leading.*.target_month' => ['nullable', 'numeric', 'min:0'],
             'leading.*.target_year' => ['nullable', 'numeric', 'min:0'],
-            'leading.*.plan' => ['nullable', 'numeric', 'min:0'],
-            'leading.*.actual' => ['nullable', 'numeric', 'min:0'],
+            'leading.*.plan' => ['required', 'numeric', 'min:0'],
+            'leading.*.actual' => ['required', 'numeric', 'min:0'],
             'leading.*.notes' => ['nullable', 'string'],
 
             'remarks' => ['nullable', 'string'],
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first() ?: 'Validasi data gagal. Silakan periksa kembali isian formulir.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+
         try {
-            $report = DB::transaction(function () use ($validated) {
+            $report = DB::transaction(function () use ($validated, $request) {
                 $year = (int) date('Y', strtotime($validated['date']));
                 $month = (int) date('n', strtotime($validated['date']));
+                $approvalToken = \Illuminate\Support\Str::random(40);
+                $submitterRole = $validated['submitterRole'] ?? ($request->is('admin/*') ? 'admin' : 'user');
 
                 $report = HseReport::create([
                     'report_date' => $validated['date'],
-                    'contract_no' => $validated['contractNo'] ?? null,
-                    'rig_no' => $validated['rigNo'] ?? null,
+                    'contract_no' => $validated['contractNo'],
+                    'rig_no' => $validated['rigNo'],
                     'work_period' => $validated['workPeriod'] ?? null,
                     'year' => $year,
                     'period' => $validated['period'],
-                    'focus_project' => $validated['focusProject'] ?? ($validated['contractNo'] ?? null),
-                    'location_district' => $validated['locationDistrict'] ?? null,
+                    'focus_project' => $validated['focusProject'] ?? $validated['contractNo'],
+                    'location_district' => $validated['locationDistrict'],
                     'issued_date' => $validated['issuedDate'] ?? $validated['date'],
                     'revision_no' => $validated['revisionNo'] ?? '00',
                     'program_reference' => $validated['programReference'] ?? null,
-                    'status' => 'draft',
+                    'status' => 'pending',
+                    'approval_token' => $approvalToken,
+                    'remarks' => $validated['remarks'],
+                    'submitter_role' => $submitterRole,
+                    'submitter_name' => $validated['submitterName'] ?? (auth()->user()?->name ?? 'User Lapangan'),
+                    'submitter_email' => $validated['submitterEmail'] ?? (auth()->user()?->email ?? null),
                     'created_by' => auth()->id(),
                 ]);
 
@@ -600,10 +621,19 @@ class HseReportController extends Controller
                 return $report;
             });
 
+            // Kirim email permohonan approval ke admin
+            $adminEmail = config('hse.admin_email', env('ADMIN_HSE_EMAIL', 'admin@besmindo.com'));
+            try {
+                if ($adminEmail) {
+                    \Illuminate\Support\Facades\Mail::to($adminEmail)->send(new \App\Mail\HseReportApprovalMail($report));
+                }
+            } catch (\Throwable $mailError) {
+                \Illuminate\Support\Facades\Log::warning('HSE Approval Email could not be sent: ' . $mailError->getMessage());
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Data HSE berhasil disimpan ke database.',
-
+                'message' => 'Data HSE berhasil disimpan dan dikirimkan untuk permohonan approval admin.',
                 'data' => $report->load([
                     'manHours',
                     'laggingIndicators',
@@ -612,13 +642,109 @@ class HseReportController extends Controller
             ], 201);
 
         } catch (\Throwable $e) {
-
             return response()->json([
                 'success' => false,
                 'message' => 'Data HSE gagal disimpan.',
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Handle approval langsung dari link email.
+     */
+    public function emailApprove($id, $token)
+    {
+        $report = HseReport::where('id', $id)
+            ->where('approval_token', $token)
+            ->firstOrFail();
+
+        $report->update([
+            'status' => 'approved',
+            'approved_at' => now(),
+            'approved_by' => auth()->id() ?? 1,
+        ]);
+
+        return view('emails.approval_result', [
+            'title' => 'Laporan HSE Berhasil Disetujui!',
+            'message' => "Laporan HSE Rig {$report->rig_no} Periode Bulan {$report->period} ({$report->year}) telah disetujui. Data kini aktif di seluruh dashboard dan laporan.",
+            'status' => 'approved',
+        ]);
+    }
+
+    /**
+     * Handle penolakan langsung dari link email.
+     */
+    public function emailReject($id, $token)
+    {
+        $report = HseReport::where('id', $id)
+            ->where('approval_token', $token)
+            ->firstOrFail();
+
+        $report->update([
+            'status' => 'rejected',
+            'rejected_at' => now(),
+        ]);
+
+        return view('emails.approval_result', [
+            'title' => 'Laporan HSE Ditolak',
+            'message' => "Laporan HSE Rig {$report->rig_no} Periode Bulan {$report->period} ({$report->year}) telah ditandai sebagai Ditolak.",
+            'status' => 'rejected',
+        ]);
+    }
+
+    /**
+     * Menampilkan halaman Approval di Admin Dashboard.
+     */
+    public function approvalIndex(Request $request)
+    {
+        $reports = HseReport::with([
+            'manHours',
+            'laggingIndicators',
+            'leadingIndicators',
+            'approver',
+            'creator',
+        ])
+        ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'draft' THEN 2 WHEN status = 'approved' THEN 3 ELSE 4 END")
+        ->orderByDesc('created_at')
+        ->get();
+
+        return Inertia::render('Admin/Approval', [
+            'reports' => $reports,
+        ]);
+    }
+
+    /**
+     * Update status approval via Admin UI dashboard.
+     */
+    public function updateApprovalStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => ['required', 'in:approved,rejected,pending'],
+            'rejection_reason' => ['nullable', 'string'],
+        ]);
+
+        $report = HseReport::findOrFail($id);
+
+        $updateData = [
+            'status' => $validated['status'],
+        ];
+
+        if ($validated['status'] === 'approved') {
+            $updateData['approved_at'] = now();
+            $updateData['approved_by'] = auth()->id() ?? 1;
+        } elseif ($validated['status'] === 'rejected') {
+            $updateData['rejected_at'] = now();
+            $updateData['rejection_reason'] = $validated['rejection_reason'] ?? 'Ditolak oleh administrator';
+        }
+
+        $report->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Status laporan HSE berhasil diubah menjadi {$validated['status']}.",
+            'data' => $report,
+        ]);
     }
 
     /**

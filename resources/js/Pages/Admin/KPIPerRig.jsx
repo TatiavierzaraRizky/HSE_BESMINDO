@@ -32,7 +32,7 @@ import {
     Flame,
     AlertTriangle,
     Zap,
-    Briefcase
+    Briefcase,
 } from "lucide-react";
 
 /* ============================================================
@@ -40,50 +40,180 @@ import {
 ============================================================ */
 
 const LAGGING_MASTER = [
-    { key: "fatality", name: "Lost Time Incidents (LTI) - Fatality", category: "Lagging", isLagging: true },
-    { key: "serious_lost_time_injury", name: "Serious Lost Time Injury (>21 Days)", category: "Lagging", isLagging: true },
-    { key: "restricted_work_case", name: "Restricted Work Case (RWC)", category: "Lagging", isLagging: true },
-    { key: "medical_treatment_case", name: "Medical Treatment Case (MTC)", category: "Lagging", isLagging: true },
-    { key: "total_recordable_injury", name: "Total Recordable Injury (TRI)", category: "Lagging", isLagging: true },
-    { key: "motor_vehicle_crash", name: "Motor Vehicle Crash (MVC)", category: "Lagging", isLagging: true },
-    { key: "oil_spill", name: "Environmental Spills (Oil Spill)", category: "Lagging", isLagging: true },
-    { key: "fire_incident", name: "Fire Incidents", category: "Lagging", isLagging: true },
-    { key: "property_damage", name: "Property Damage Incident", category: "Lagging", isLagging: true },
-    { key: "security_incident", name: "Security Incidents", category: "Lagging", isLagging: true },
-    { key: "occupational_illness", name: "Occupational Illness", category: "Lagging", isLagging: true },
-    { key: "first_aid_case", name: "First Aid Cases", category: "Lagging", isLagging: true },
+    {
+        key: "fatality",
+        name: "Lost Time Incidents (LTI) - Fatality",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "serious_lost_time_injury",
+        name: "Serious Lost Time Injury (>21 Days)",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "restricted_work_case",
+        name: "Restricted Work Case (RWC)",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "medical_treatment_case",
+        name: "Medical Treatment Case (MTC)",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "total_recordable_injury",
+        name: "Total Recordable Injury (TRI)",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "motor_vehicle_crash",
+        name: "Motor Vehicle Crash (MVC)",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "oil_spill",
+        name: "Environmental Spills (Oil Spill)",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "fire_incident",
+        name: "Fire Incidents",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "property_damage",
+        name: "Property Damage Incident",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "security_incident",
+        name: "Security Incidents",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "occupational_illness",
+        name: "Occupational Illness",
+        category: "Lagging",
+        isLagging: true,
+    },
+    {
+        key: "first_aid_case",
+        name: "First Aid Cases",
+        category: "Lagging",
+        isLagging: true,
+    },
 ];
 
 const LEADING_MASTER = [
     { key: "peka", name: "Safety Observations (PEKA)", category: "Leading" },
-    { key: "hazid", name: "Hazard Identification (HAZID)", category: "Leading" },
+    {
+        key: "hazid",
+        name: "Hazard Identification (HAZID)",
+        category: "Leading",
+    },
     { key: "swa", name: "Stop Work Authority (SWA)", category: "Leading" },
-    { key: "safety_equipment", name: "Safety Equipment & APD Inspection", category: "Leading" },
+    {
+        key: "safety_equipment",
+        name: "Safety Equipment & APD Inspection",
+        category: "Leading",
+    },
     { key: "drops", name: "Drops Inspection Program", category: "Leading" },
-    { key: "vv_inspection", name: "Inspeksi V&V Operation", category: "Leading" },
-    { key: "audit_smk3l", name: "Safety Audits Completed (SMK3L)", category: "Leading" },
-    { key: "spot_check", name: "Vehicle & Rig Spot Check", category: "Leading" },
-    { key: "monitoring_kepatuhan", name: "Driver Compliance Monitoring", category: "Leading" },
+    {
+        key: "vv_inspection",
+        name: "Inspeksi V&V Operation",
+        category: "Leading",
+    },
+    {
+        key: "audit_smk3l",
+        name: "Safety Audits Completed (SMK3L)",
+        category: "Leading",
+    },
+    {
+        key: "spot_check",
+        name: "Vehicle & Rig Spot Check",
+        category: "Leading",
+    },
+    {
+        key: "monitoring_kepatuhan",
+        name: "Driver Compliance Monitoring",
+        category: "Leading",
+    },
     { key: "pti", name: "Pre-Task Identification (PTI)", category: "Leading" },
     { key: "mcu", name: "Medical Check Up (MCU)", category: "Leading" },
-    { key: "management_visit", name: "Management Walkthrough / MWT", category: "Leading" },
-    { key: "rapat_keselamatan", name: "Safety Committee Meetings", category: "Leading" },
-    { key: "pre_hitch", name: "Pre-Hitch Safety Meetings", category: "Leading" },
-    { key: "safety_talk", name: "Toolbox Talks & Safety Talks", category: "Leading" },
-    { key: "forum_kampanye", name: "HSE Campaigns & Forums", category: "Leading" },
-    { key: "hygiene", name: "Industrial Hygiene Monitoring", category: "Leading" },
-    { key: "housekeeping", name: "Rig Site Housekeeping 5S", category: "Leading" },
-    { key: "penghargaan", name: "HSE Recognition & Awards", category: "Leading" },
-    { key: "on_site_training", name: "HSE Training & Development", category: "Leading" },
-    { key: "erp_drill_rig", name: "Emergency Response Drill (Rig)", category: "Leading" },
-    { key: "erp_drill_yard", name: "Emergency Response Drill (Yard)", category: "Leading" },
+    {
+        key: "management_visit",
+        name: "Management Walkthrough / MWT",
+        category: "Leading",
+    },
+    {
+        key: "rapat_keselamatan",
+        name: "Safety Committee Meetings",
+        category: "Leading",
+    },
+    {
+        key: "pre_hitch",
+        name: "Pre-Hitch Safety Meetings",
+        category: "Leading",
+    },
+    {
+        key: "safety_talk",
+        name: "Toolbox Talks & Safety Talks",
+        category: "Leading",
+    },
+    {
+        key: "forum_kampanye",
+        name: "HSE Campaigns & Forums",
+        category: "Leading",
+    },
+    {
+        key: "hygiene",
+        name: "Industrial Hygiene Monitoring",
+        category: "Leading",
+    },
+    {
+        key: "housekeeping",
+        name: "Rig Site Housekeeping 5S",
+        category: "Leading",
+    },
+    {
+        key: "penghargaan",
+        name: "HSE Recognition & Awards",
+        category: "Leading",
+    },
+    {
+        key: "on_site_training",
+        name: "HSE Training & Development",
+        category: "Leading",
+    },
+    {
+        key: "erp_drill_rig",
+        name: "Emergency Response Drill (Rig)",
+        category: "Leading",
+    },
+    {
+        key: "erp_drill_yard",
+        name: "Emergency Response Drill (Yard)",
+        category: "Leading",
+    },
 ];
 
 function normalizeReport(report) {
     const manHoursData = report?.man_hours || report?.manHours || null;
     return {
         ...report,
-        manHours: Array.isArray(manHoursData) ? manHoursData[0] || null : manHoursData,
+        manHours: Array.isArray(manHoursData)
+            ? manHoursData[0] || null
+            : manHoursData,
         laggingIndicators: Array.isArray(report?.lagging_indicators)
             ? report.lagging_indicators
             : Array.isArray(report?.laggingIndicators)
@@ -98,14 +228,18 @@ function normalizeReport(report) {
 }
 
 function getReportYear(report) {
-    const rawDate = report?.report_date || report?.issued_date || report?.created_at;
+    const rawDate =
+        report?.report_date || report?.issued_date || report?.created_at;
     if (!rawDate) return new Date().getFullYear();
     const parsed = new Date(rawDate);
-    return isNaN(parsed.getFullYear()) ? new Date().getFullYear() : parsed.getFullYear();
+    return isNaN(parsed.getFullYear())
+        ? new Date().getFullYear()
+        : parsed.getFullYear();
 }
 
 function getReportMonth(report) {
-    const rawDate = report?.report_date || report?.issued_date || report?.created_at;
+    const rawDate =
+        report?.report_date || report?.issued_date || report?.created_at;
     if (!rawDate) return 0;
     const parsed = new Date(rawDate);
     return isNaN(parsed.getMonth()) ? 0 : parsed.getMonth();
@@ -113,11 +247,16 @@ function getReportMonth(report) {
 
 function getQuarterMonths(quarter) {
     switch (quarter) {
-        case "Q1": return [0, 1, 2];
-        case "Q2": return [3, 4, 5];
-        case "Q3": return [6, 7, 8];
-        case "Q4": return [9, 10, 11];
-        default: return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+        case "Q1":
+            return [0, 1, 2];
+        case "Q2":
+            return [3, 4, 5];
+        case "Q3":
+            return [6, 7, 8];
+        case "Q4":
+            return [9, 10, 11];
+        default:
+            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
     }
 }
 
@@ -133,17 +272,23 @@ export default function KPIPerRig() {
     // =====================================================
 
     const availableYears = useMemo(() => {
-        const years = [...new Set(reports.map((r) => getReportYear(r)).filter(Boolean))];
+        const years = [
+            ...new Set(reports.map((r) => getReportYear(r)).filter(Boolean)),
+        ];
         if (years.length === 0) years.push(new Date().getFullYear());
         return years.sort((a, b) => b - a);
     }, [reports]);
 
     const availableRigs = useMemo(() => {
-        return [...new Set(reports.map((r) => r.rig_no).filter(Boolean))].sort();
+        return [
+            ...new Set(reports.map((r) => r.rig_no).filter(Boolean)),
+        ].sort();
     }, [reports]);
 
     const availableContracts = useMemo(() => {
-        return [...new Set(reports.map((r) => r.contract_no).filter(Boolean))].sort();
+        return [
+            ...new Set(reports.map((r) => r.contract_no).filter(Boolean)),
+        ].sort();
     }, [reports]);
 
     // =====================================================
@@ -169,9 +314,11 @@ export default function KPIPerRig() {
 
     const filteredReports = useMemo(() => {
         return reports.filter((r) => {
+            if (r.status && r.status !== "approved") return false;
             if (String(getReportYear(r)) !== String(year)) return false;
             if (rig !== "All Rigs" && r.rig_no !== rig) return false;
-            if (contract !== "All Contracts" && r.contract_no !== contract) return false;
+            if (contract !== "All Contracts" && r.contract_no !== contract)
+                return false;
             return true;
         });
     }, [reports, year, rig, contract]);
@@ -194,11 +341,22 @@ export default function KPIPerRig() {
                 const repMonth = getReportMonth(rep);
                 if (targetMonths.includes(repMonth)) {
                     const found = rep.laggingIndicators?.find((item) => {
-                        const name = (item.indicator_name || item.name || "").toLowerCase();
-                        return name.includes(def.key) || def.name.toLowerCase().includes(name);
+                        const name = (
+                            item.indicator_name ||
+                            item.name ||
+                            ""
+                        ).toLowerCase();
+                        return (
+                            name.includes(def.key) ||
+                            def.name.toLowerCase().includes(name)
+                        );
                     });
-                    targetSum += Number(found?.plan_value || found?.target || 0);
-                    actualSum += Number(found?.actual_value || found?.actual || 0);
+                    targetSum += Number(
+                        found?.plan_value || found?.target || 0,
+                    );
+                    actualSum += Number(
+                        found?.actual_value || found?.actual || 0,
+                    );
                 }
             });
 
@@ -225,11 +383,22 @@ export default function KPIPerRig() {
                 const repMonth = getReportMonth(rep);
                 if (targetMonths.includes(repMonth)) {
                     const found = rep.leadingIndicators?.find((item) => {
-                        const name = (item.indicator_name || item.name || "").toLowerCase();
-                        return name.includes(def.key) || def.name.toLowerCase().includes(name);
+                        const name = (
+                            item.indicator_name ||
+                            item.name ||
+                            ""
+                        ).toLowerCase();
+                        return (
+                            name.includes(def.key) ||
+                            def.name.toLowerCase().includes(name)
+                        );
                     });
-                    targetSum += Number(found?.plan_value || found?.target || 0);
-                    actualSum += Number(found?.actual_value || found?.actual || 0);
+                    targetSum += Number(
+                        found?.plan_value || found?.target || 0,
+                    );
+                    actualSum += Number(
+                        found?.actual_value || found?.actual || 0,
+                    );
                 }
             });
 
@@ -271,7 +440,12 @@ export default function KPIPerRig() {
             }
         });
 
-        const achievement = totalTarget > 0 ? (totalActual / totalTarget) * 100 : (totalActual > 0 ? 100 : 0);
+        const achievement =
+            totalTarget > 0
+                ? (totalActual / totalTarget) * 100
+                : totalActual > 0
+                  ? 100
+                  : 0;
         let status = "On Track";
         if (laggingIncidents > 0) {
             status = "Attention Needed";
@@ -328,26 +502,53 @@ export default function KPIPerRig() {
 
     const performanceBars = useMemo(() => {
         if (performanceMode === "Monthly") {
-            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const months = [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
+            ];
             return months.map((m, idx) => {
                 let actual = 0;
                 let target = 0;
                 filteredReports.forEach((rep) => {
                     if (getReportMonth(rep) === idx) {
                         rep.leadingIndicators?.forEach((item) => {
-                            target += Number(item.plan_value || item.target || 0);
-                            actual += Number(item.actual_value || item.actual || 0);
+                            target += Number(
+                                item.plan_value || item.target || 0,
+                            );
+                            actual += Number(
+                                item.actual_value || item.actual || 0,
+                            );
                         });
                     }
                 });
-                const percentage = target > 0 ? Math.min(100, Math.round((actual / target) * 100)) : (actual > 0 ? 100 : 0);
+                const percentage =
+                    target > 0
+                        ? Math.min(100, Math.round((actual / target) * 100))
+                        : actual > 0
+                          ? 100
+                          : 0;
                 return { label: m, value: percentage };
             });
         }
 
         if (performanceMode === "Quarterly") {
             return quarterlyChartData.map((q) => {
-                const percentage = q.target > 0 ? Math.min(100, Math.round((q.actual / q.target) * 100)) : (q.actual > 0 ? 100 : 0);
+                const percentage =
+                    q.target > 0
+                        ? Math.min(100, Math.round((q.actual / q.target) * 100))
+                        : q.actual > 0
+                          ? 100
+                          : 0;
                 return {
                     label: q.label,
                     value: percentage,
@@ -364,12 +565,56 @@ export default function KPIPerRig() {
                 ytdActual += Number(item.actual_value || item.actual || 0);
             });
         });
-        const ytdPercentage = ytdTarget > 0 ? Math.min(100, Math.round((ytdActual / ytdTarget) * 100)) : (ytdActual > 0 ? 100 : 0);
+        const ytdPercentage =
+            ytdTarget > 0
+                ? Math.min(100, Math.round((ytdActual / ytdTarget) * 100))
+                : ytdActual > 0
+                  ? 100
+                  : 0;
 
         return [
-            { label: "Q1 YTD", value: quarterlyChartData[0].target > 0 ? Math.min(100, Math.round((quarterlyChartData[0].actual / quarterlyChartData[0].target) * 100)) : 0 },
-            { label: "Q2 YTD", value: quarterlyChartData[1].target > 0 ? Math.min(100, Math.round((quarterlyChartData[1].actual / quarterlyChartData[1].target) * 100)) : 0 },
-            { label: "Q3 YTD", value: quarterlyChartData[2].target > 0 ? Math.min(100, Math.round((quarterlyChartData[2].actual / quarterlyChartData[2].target) * 100)) : 0 },
+            {
+                label: "Q1 YTD",
+                value:
+                    quarterlyChartData[0].target > 0
+                        ? Math.min(
+                              100,
+                              Math.round(
+                                  (quarterlyChartData[0].actual /
+                                      quarterlyChartData[0].target) *
+                                      100,
+                              ),
+                          )
+                        : 0,
+            },
+            {
+                label: "Q2 YTD",
+                value:
+                    quarterlyChartData[1].target > 0
+                        ? Math.min(
+                              100,
+                              Math.round(
+                                  (quarterlyChartData[1].actual /
+                                      quarterlyChartData[1].target) *
+                                      100,
+                              ),
+                          )
+                        : 0,
+            },
+            {
+                label: "Q3 YTD",
+                value:
+                    quarterlyChartData[2].target > 0
+                        ? Math.min(
+                              100,
+                              Math.round(
+                                  (quarterlyChartData[2].actual /
+                                      quarterlyChartData[2].target) *
+                                      100,
+                              ),
+                          )
+                        : 0,
+            },
             { label: "Full YTD", value: ytdPercentage },
         ];
     }, [performanceMode, filteredReports, quarterlyChartData]);
@@ -389,17 +634,23 @@ export default function KPIPerRig() {
 
         if (searchTerm.trim()) {
             result = result.filter((item) =>
-                item.indicator.toLowerCase().includes(searchTerm.toLowerCase())
+                item.indicator.toLowerCase().includes(searchTerm.toLowerCase()),
             );
         }
 
         return result;
     }, [kpiMetrics, tableCategory, searchTerm]);
 
-    const totalPages = Math.max(1, Math.ceil(displayTableData.length / rowsPerPage));
+    const totalPages = Math.max(
+        1,
+        Math.ceil(displayTableData.length / rowsPerPage),
+    );
 
     const currentData = useMemo(() => {
-        return displayTableData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+        return displayTableData.slice(
+            (currentPage - 1) * rowsPerPage,
+            currentPage * rowsPerPage,
+        );
     }, [displayTableData, currentPage, rowsPerPage]);
 
     // =====================================================
@@ -419,7 +670,14 @@ export default function KPIPerRig() {
     };
 
     const handleExport = () => {
-        const headers = ["Indicator", "Category", "Target", "Actual", "Variance", "Status"];
+        const headers = [
+            "Indicator",
+            "Category",
+            "Target",
+            "Actual",
+            "Variance",
+            "Status",
+        ];
         const rows = displayTableData.map((row) => [
             `"${row.indicator}"`,
             `"${row.category}"`,
@@ -429,11 +687,16 @@ export default function KPIPerRig() {
             `"${row.status}"`,
         ]);
 
-        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+        const csvContent =
+            "data:text/csv;charset=utf-8," +
+            [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `KPI_Report_${rig}_${year}_${period}.csv`);
+        link.setAttribute(
+            "download",
+            `KPI_Report_${rig}_${year}_${period}.csv`,
+        );
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -455,9 +718,11 @@ export default function KPIPerRig() {
             style={{
                 minHeight: "100vh",
                 backgroundColor: "#f4f7f6",
-                fontFamily: "'Instrument Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+                fontFamily:
+                    "'Instrument Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
                 color: "#0f172a",
-                backgroundImage: "radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(4, 120, 87, 0.04) 0px, transparent 50%)",
+                backgroundImage:
+                    "radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%), radial-gradient(at 0% 100%, rgba(4, 120, 87, 0.04) 0px, transparent 50%)",
             }}
         >
             {/* SIDEBAR */}
@@ -468,7 +733,8 @@ export default function KPIPerRig() {
                 style={{
                     marginLeft: "var(--admin-sidebar-width, 215px)",
                     width: "calc(100% - var(--admin-sidebar-width, 215px))",
-                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    transition:
+                        "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
                     boxSizing: "border-box",
                 }}
@@ -490,13 +756,20 @@ export default function KPIPerRig() {
                         zIndex: 40,
                     }}
                 >
-                    <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "14px",
+                        }}
+                    >
                         <div
                             style={{
                                 width: "38px",
                                 height: "38px",
                                 borderRadius: "10px",
-                                background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                                background:
+                                    "linear-gradient(135deg, #059669 0%, #047857 100%)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -507,8 +780,21 @@ export default function KPIPerRig() {
                             <BarChart3 size={20} strokeWidth={2.4} />
                         </div>
                         <div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                <span style={{ color: "#065f46", fontSize: "17px", fontWeight: "800", letterSpacing: "-0.02em" }}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        color: "#065f46",
+                                        fontSize: "17px",
+                                        fontWeight: "800",
+                                        letterSpacing: "-0.02em",
+                                    }}
+                                >
                                     Besmindo RigOps
                                 </span>
                                 <span
@@ -525,17 +811,38 @@ export default function KPIPerRig() {
                                         gap: "4px",
                                     }}
                                 >
-                                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#22c55e", display: "inline-block" }} />
+                                    <span
+                                        style={{
+                                            width: "6px",
+                                            height: "6px",
+                                            borderRadius: "50%",
+                                            backgroundColor: "#22c55e",
+                                            display: "inline-block",
+                                        }}
+                                    />
                                     HSE KPI System
                                 </span>
                             </div>
-                            <div style={{ fontSize: "12px", color: "#64748b", marginTop: "1px", fontWeight: "500" }}>
+                            <div
+                                style={{
+                                    fontSize: "12px",
+                                    color: "#64748b",
+                                    marginTop: "1px",
+                                    fontWeight: "500",
+                                }}
+                            >
                                 Rig & Contract Performance Analytics
                             </div>
                         </div>
                     </div>
 
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                        }}
+                    >
                         <div
                             style={{
                                 display: "flex",
@@ -595,15 +902,23 @@ export default function KPIPerRig() {
                 </header>
 
                 {/* PAGE CONTENT */}
-                <div style={{ padding: "28px 32px 60px", maxWidth: "1600px", margin: "0 auto" }}>
+                <div
+                    style={{
+                        padding: "28px 32px 60px",
+                        maxWidth: "1600px",
+                        margin: "0 auto",
+                    }}
+                >
                     {/* HERO FILTER BAR */}
                     <section
                         style={{
-                            background: "linear-gradient(135deg, #ffffff 0%, #fcfdfd 100%)",
+                            background:
+                                "linear-gradient(135deg, #ffffff 0%, #fcfdfd 100%)",
                             borderRadius: "16px",
                             border: "1px solid #e2e8f0",
                             padding: "22px 26px",
-                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02)",
+                            boxShadow:
+                                "0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02)",
                             marginBottom: "24px",
                             display: "flex",
                             justifyContent: "space-between",
@@ -613,7 +928,14 @@ export default function KPIPerRig() {
                         }}
                     >
                         <div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                    marginBottom: "4px",
+                                }}
+                            >
                                 <h1
                                     style={{
                                         margin: 0,
@@ -626,8 +948,15 @@ export default function KPIPerRig() {
                                     KPI Performance Dashboard
                                 </h1>
                             </div>
-                            <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
-                                Real-time safety KPIs, incidents, audit points, and compliance tracker.
+                            <p
+                                style={{
+                                    margin: 0,
+                                    fontSize: "13px",
+                                    color: "#64748b",
+                                }}
+                            >
+                                Real-time safety KPIs, incidents, audit points,
+                                and compliance tracker.
                             </p>
                         </div>
 
@@ -652,7 +981,9 @@ export default function KPIPerRig() {
                                 >
                                     <option value="All Rigs">All Rigs</option>
                                     {availableRigs.map((r) => (
-                                        <option key={r} value={r}>{r}</option>
+                                        <option key={r} value={r}>
+                                            {r}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -660,16 +991,23 @@ export default function KPIPerRig() {
                             {/* CONTRACT */}
                             <div style={{ minWidth: "150px" }}>
                                 <label style={modernLabel}>
-                                    <Briefcase size={12} color="#059669" /> Contract
+                                    <Briefcase size={12} color="#059669" />{" "}
+                                    Contract
                                 </label>
                                 <select
                                     value={contract}
-                                    onChange={(e) => setContract(e.target.value)}
+                                    onChange={(e) =>
+                                        setContract(e.target.value)
+                                    }
                                     style={modernSelect}
                                 >
-                                    <option value="All Contracts">All Contracts</option>
+                                    <option value="All Contracts">
+                                        All Contracts
+                                    </option>
                                     {availableContracts.map((c) => (
-                                        <option key={c} value={c}>{c}</option>
+                                        <option key={c} value={c}>
+                                            {c}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -685,7 +1023,9 @@ export default function KPIPerRig() {
                                     style={modernSelect}
                                 >
                                     {availableYears.map((y) => (
-                                        <option key={y} value={String(y)}>{y}</option>
+                                        <option key={y} value={String(y)}>
+                                            {y}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -716,7 +1056,8 @@ export default function KPIPerRig() {
                                     padding: "0 20px",
                                     border: "none",
                                     borderRadius: "10px",
-                                    background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                                    background:
+                                        "linear-gradient(135deg, #059669 0%, #047857 100%)",
                                     color: "#ffffff",
                                     fontSize: "13px",
                                     fontWeight: "700",
@@ -724,7 +1065,8 @@ export default function KPIPerRig() {
                                     display: "flex",
                                     alignItems: "center",
                                     gap: "6px",
-                                    boxShadow: "0 4px 14px rgba(5, 150, 105, 0.35)",
+                                    boxShadow:
+                                        "0 4px 14px rgba(5, 150, 105, 0.35)",
                                     transition: "all 0.2s",
                                 }}
                             >
@@ -784,10 +1126,26 @@ export default function KPIPerRig() {
                                     <ShieldAlert size={22} color="#dc2626" />
                                 )
                             }
-                            badge={summaryCards.status === "On Track" ? "Optimal" : "Attention"}
-                            badgeBg={summaryCards.status === "On Track" ? "#ecfdf5" : "#fef2f2"}
-                            badgeColor={summaryCards.status === "On Track" ? "#047857" : "#b91c1c"}
-                            accentColor={summaryCards.status === "On Track" ? "#10b981" : "#ef4444"}
+                            badge={
+                                summaryCards.status === "On Track"
+                                    ? "Optimal"
+                                    : "Attention"
+                            }
+                            badgeBg={
+                                summaryCards.status === "On Track"
+                                    ? "#ecfdf5"
+                                    : "#fef2f2"
+                            }
+                            badgeColor={
+                                summaryCards.status === "On Track"
+                                    ? "#047857"
+                                    : "#b91c1c"
+                            }
+                            accentColor={
+                                summaryCards.status === "On Track"
+                                    ? "#10b981"
+                                    : "#ef4444"
+                            }
                         />
                     </div>
 
@@ -822,7 +1180,8 @@ export default function KPIPerRig() {
                                     left: 0,
                                     right: 0,
                                     height: "3px",
-                                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
+                                    background:
+                                        "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
                                 }}
                             />
 
@@ -835,26 +1194,93 @@ export default function KPIPerRig() {
                                 }}
                             >
                                 <div>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                        <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "#004d32" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "8px",
+                                        }}
+                                    >
+                                        <h2
+                                            style={{
+                                                margin: 0,
+                                                fontSize: "16px",
+                                                fontWeight: "800",
+                                                color: "#004d32",
+                                            }}
+                                        >
                                             Target vs Actual Performance
                                         </h2>
-                                        <span style={{ fontSize: "11px", fontWeight: "800", color: "#efff00", backgroundColor: "#004d32", border: "1px solid #efff00", padding: "2px 8px", borderRadius: "999px" }}>
+                                        <span
+                                            style={{
+                                                fontSize: "11px",
+                                                fontWeight: "800",
+                                                color: "#efff00",
+                                                backgroundColor: "#004d32",
+                                                border: "1px solid #efff00",
+                                                padding: "2px 8px",
+                                                borderRadius: "999px",
+                                            }}
+                                        >
                                             Quarterly
                                         </span>
                                     </div>
-                                    <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#64748b" }}>
-                                        Comparison of aggregated target and actual milestones.
+                                    <p
+                                        style={{
+                                            margin: "4px 0 0",
+                                            fontSize: "12px",
+                                            color: "#64748b",
+                                        }}
+                                    >
+                                        Comparison of aggregated target and
+                                        actual milestones.
                                     </p>
                                 </div>
 
-                                <div style={{ display: "flex", gap: "14px", fontSize: "12px", fontWeight: "700" }}>
-                                    <span style={{ display: "flex", alignItems: "center", gap: "6px", color: "#64748b" }}>
-                                        <span style={{ width: "10px", height: "10px", borderRadius: "3px", backgroundColor: "#cbd5e1" }} />
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        gap: "14px",
+                                        fontSize: "12px",
+                                        fontWeight: "700",
+                                    }}
+                                >
+                                    <span
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "6px",
+                                            color: "#64748b",
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                width: "10px",
+                                                height: "10px",
+                                                borderRadius: "3px",
+                                                backgroundColor: "#cbd5e1",
+                                            }}
+                                        />
                                         Target
                                     </span>
-                                    <span style={{ display: "flex", alignItems: "center", gap: "6px", color: "#004d32" }}>
-                                        <span style={{ width: "10px", height: "10px", borderRadius: "3px", background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)", border: "1px solid #004d32" }} />
+                                    <span
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "6px",
+                                            color: "#004d32",
+                                        }}
+                                    >
+                                        <span
+                                            style={{
+                                                width: "10px",
+                                                height: "10px",
+                                                borderRadius: "3px",
+                                                background:
+                                                    "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                                                border: "1px solid #004d32",
+                                            }}
+                                        />
                                         Actual
                                     </span>
                                 </div>
@@ -887,7 +1313,9 @@ export default function KPIPerRig() {
                                             alignItems: "center",
                                             cursor: "pointer",
                                         }}
-                                        onClick={() => handleChartClick(item.label)}
+                                        onClick={() =>
+                                            handleChartClick(item.label)
+                                        }
                                     >
                                         <div
                                             style={{
@@ -906,7 +1334,8 @@ export default function KPIPerRig() {
                                                     height: `${item.target}%`,
                                                     backgroundColor: "#cbd5e1",
                                                     borderRadius: "5px 5px 0 0",
-                                                    transition: "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                                                    transition:
+                                                        "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                                                 }}
                                                 title={`Target: ${item.target}%`}
                                             />
@@ -916,11 +1345,14 @@ export default function KPIPerRig() {
                                                 style={{
                                                     width: "36%",
                                                     height: `${item.actual}%`,
-                                                    background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                                                    background:
+                                                        "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
                                                     borderRadius: "5px 5px 0 0",
-                                                    boxShadow: "0 0 10px rgba(239, 255, 0, 0.35)",
+                                                    boxShadow:
+                                                        "0 0 10px rgba(239, 255, 0, 0.35)",
                                                     border: "1px solid #004d32",
-                                                    transition: "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                                                    transition:
+                                                        "height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                                                 }}
                                                 title={`Actual: ${item.actual}%`}
                                             />
@@ -963,7 +1395,8 @@ export default function KPIPerRig() {
                                     left: 0,
                                     right: 0,
                                     height: "3px",
-                                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
+                                    background:
+                                        "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
                                 }}
                             />
 
@@ -976,16 +1409,46 @@ export default function KPIPerRig() {
                                 }}
                             >
                                 <div>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                        <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "#004d32" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "8px",
+                                        }}
+                                    >
+                                        <h2
+                                            style={{
+                                                margin: 0,
+                                                fontSize: "16px",
+                                                fontWeight: "800",
+                                                color: "#004d32",
+                                            }}
+                                        >
                                             Performance Trend
                                         </h2>
-                                        <span style={{ fontSize: "11px", fontWeight: "800", color: "#efff00", backgroundColor: "#004d32", border: "1px solid #efff00", padding: "2px 8px", borderRadius: "999px" }}>
+                                        <span
+                                            style={{
+                                                fontSize: "11px",
+                                                fontWeight: "800",
+                                                color: "#efff00",
+                                                backgroundColor: "#004d32",
+                                                border: "1px solid #efff00",
+                                                padding: "2px 8px",
+                                                borderRadius: "999px",
+                                            }}
+                                        >
                                             {performanceMode}
                                         </span>
                                     </div>
-                                    <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#64748b" }}>
-                                        Monthly & cumulative safety performance progression.
+                                    <p
+                                        style={{
+                                            margin: "4px 0 0",
+                                            fontSize: "12px",
+                                            color: "#64748b",
+                                        }}
+                                    >
+                                        Monthly & cumulative safety performance
+                                        progression.
                                     </p>
                                 </div>
 
@@ -998,26 +1461,42 @@ export default function KPIPerRig() {
                                         border: "1px solid #004d32",
                                     }}
                                 >
-                                    {["Monthly", "Quarterly", "YTD"].map((mode) => (
-                                        <button
-                                            key={mode}
-                                            onClick={() => setPerformanceMode(mode)}
-                                            style={{
-                                                border: "none",
-                                                padding: "5px 12px",
-                                                fontSize: "11px",
-                                                borderRadius: "6px",
-                                                backgroundColor: performanceMode === mode ? "#004d32" : "transparent",
-                                                color: performanceMode === mode ? "#efff00" : "#475569",
-                                                fontWeight: performanceMode === mode ? "800" : "600",
-                                                cursor: "pointer",
-                                                boxShadow: performanceMode === mode ? "0 0 8px rgba(239, 255, 0, 0.25)" : "none",
-                                                transition: "all 0.2s",
-                                            }}
-                                        >
-                                            {mode}
-                                        </button>
-                                    ))}
+                                    {["Monthly", "Quarterly", "YTD"].map(
+                                        (mode) => (
+                                            <button
+                                                key={mode}
+                                                onClick={() =>
+                                                    setPerformanceMode(mode)
+                                                }
+                                                style={{
+                                                    border: "none",
+                                                    padding: "5px 12px",
+                                                    fontSize: "11px",
+                                                    borderRadius: "6px",
+                                                    backgroundColor:
+                                                        performanceMode === mode
+                                                            ? "#004d32"
+                                                            : "transparent",
+                                                    color:
+                                                        performanceMode === mode
+                                                            ? "#efff00"
+                                                            : "#475569",
+                                                    fontWeight:
+                                                        performanceMode === mode
+                                                            ? "800"
+                                                            : "600",
+                                                    cursor: "pointer",
+                                                    boxShadow:
+                                                        performanceMode === mode
+                                                            ? "0 0 8px rgba(239, 255, 0, 0.25)"
+                                                            : "none",
+                                                    transition: "all 0.2s",
+                                                }}
+                                            >
+                                                {mode}
+                                            </button>
+                                        ),
+                                    )}
                                 </div>
                             </div>
 
@@ -1049,17 +1528,22 @@ export default function KPIPerRig() {
                                                 alignItems: "center",
                                                 cursor: "pointer",
                                             }}
-                                            onClick={() => handleChartClick(bar.label)}
+                                            onClick={() =>
+                                                handleChartClick(bar.label)
+                                            }
                                         >
                                             <div
                                                 style={{
                                                     width: "100%",
                                                     height: `${bar.value}%`,
-                                                    background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                                                    background:
+                                                        "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
                                                     borderRadius: "5px 5px 0 0",
-                                                    boxShadow: "0 0 8px rgba(239, 255, 0, 0.3)",
+                                                    boxShadow:
+                                                        "0 0 8px rgba(239, 255, 0, 0.3)",
                                                     border: "1px solid #004d32",
-                                                    transition: "height 0.4s ease",
+                                                    transition:
+                                                        "height 0.4s ease",
                                                 }}
                                                 title={`${bar.label}: ${bar.value}%`}
                                             />
@@ -1105,20 +1589,57 @@ export default function KPIPerRig() {
                             }}
                         >
                             <div>
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                    <h2 style={{ margin: 0, fontSize: "17px", fontWeight: "800", color: "#004d32" }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "10px",
+                                    }}
+                                >
+                                    <h2
+                                        style={{
+                                            margin: 0,
+                                            fontSize: "17px",
+                                            fontWeight: "800",
+                                            color: "#004d32",
+                                        }}
+                                    >
                                         Detailed KPI Performance Matrix
                                     </h2>
-                                    <span style={{ fontSize: "12px", color: "#efff00", fontWeight: "800", backgroundColor: "#004d32", border: "1px solid #efff00", padding: "2px 9px", borderRadius: "999px" }}>
+                                    <span
+                                        style={{
+                                            fontSize: "12px",
+                                            color: "#efff00",
+                                            fontWeight: "800",
+                                            backgroundColor: "#004d32",
+                                            border: "1px solid #efff00",
+                                            padding: "2px 9px",
+                                            borderRadius: "999px",
+                                        }}
+                                    >
                                         {displayTableData.length} items
                                     </span>
                                 </div>
-                                <p style={{ margin: "3px 0 0", fontSize: "12px", color: "#64748b" }}>
-                                    Comprehensive breakdown of Leading, Lagging, and Operational HSE targets.
+                                <p
+                                    style={{
+                                        margin: "3px 0 0",
+                                        fontSize: "12px",
+                                        color: "#64748b",
+                                    }}
+                                >
+                                    Comprehensive breakdown of Leading, Lagging,
+                                    and Operational HSE targets.
                                 </p>
                             </div>
 
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                    flexWrap: "wrap",
+                                }}
+                            >
                                 {/* CATEGORY FILTER TABS */}
                                 <div
                                     style={{
@@ -1129,29 +1650,45 @@ export default function KPIPerRig() {
                                         border: "1px solid #004d32",
                                     }}
                                 >
-                                    {["All", "Leading", "Lagging"].map((cat) => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => {
-                                                setTableCategory(cat);
-                                                setCurrentPage(1);
-                                            }}
-                                            style={{
-                                                border: "none",
-                                                padding: "5px 12px",
-                                                fontSize: "12px",
-                                                borderRadius: "6px",
-                                                backgroundColor: tableCategory === cat ? "#004d32" : "transparent",
-                                                color: tableCategory === cat ? "#efff00" : "#475569",
-                                                fontWeight: tableCategory === cat ? "800" : "600",
-                                                cursor: "pointer",
-                                                boxShadow: tableCategory === cat ? "0 0 6px rgba(239, 255, 0, 0.25)" : "none",
-                                                transition: "all 0.2s",
-                                            }}
-                                        >
-                                            {cat === "All" ? "All Indicators" : `${cat} Only`}
-                                        </button>
-                                    ))}
+                                    {["All", "Leading", "Lagging"].map(
+                                        (cat) => (
+                                            <button
+                                                key={cat}
+                                                onClick={() => {
+                                                    setTableCategory(cat);
+                                                    setCurrentPage(1);
+                                                }}
+                                                style={{
+                                                    border: "none",
+                                                    padding: "5px 12px",
+                                                    fontSize: "12px",
+                                                    borderRadius: "6px",
+                                                    backgroundColor:
+                                                        tableCategory === cat
+                                                            ? "#004d32"
+                                                            : "transparent",
+                                                    color:
+                                                        tableCategory === cat
+                                                            ? "#efff00"
+                                                            : "#475569",
+                                                    fontWeight:
+                                                        tableCategory === cat
+                                                            ? "800"
+                                                            : "600",
+                                                    cursor: "pointer",
+                                                    boxShadow:
+                                                        tableCategory === cat
+                                                            ? "0 0 6px rgba(239, 255, 0, 0.25)"
+                                                            : "none",
+                                                    transition: "all 0.2s",
+                                                }}
+                                            >
+                                                {cat === "All"
+                                                    ? "All Indicators"
+                                                    : `${cat} Only`}
+                                            </button>
+                                        ),
+                                    )}
                                 </div>
 
                                 {/* SEARCH BAR */}
@@ -1211,7 +1748,8 @@ export default function KPIPerRig() {
                                         alignItems: "center",
                                         gap: "6px",
                                         cursor: "pointer",
-                                        boxShadow: "0 0 10px rgba(239, 255, 0, 0.25)",
+                                        boxShadow:
+                                            "0 0 10px rgba(239, 255, 0, 0.25)",
                                         transition: "all 0.2s",
                                     }}
                                     title="Export CSV"
@@ -1232,14 +1770,47 @@ export default function KPIPerRig() {
                                 }}
                             >
                                 <thead>
-                                    <tr style={{ backgroundColor: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+                                    <tr
+                                        style={{
+                                            backgroundColor: "#f8fafc",
+                                            borderBottom: "1px solid #e2e8f0",
+                                        }}
+                                    >
                                         <th style={modernTh}>KPI Indicator</th>
                                         <th style={modernTh}>Category</th>
-                                        <th style={{ ...modernTh, textAlign: "center" }}>Target</th>
-                                        <th style={{ ...modernTh, textAlign: "center" }}>Actual</th>
-                                        <th style={{ ...modernTh, textAlign: "center" }}>Variance</th>
+                                        <th
+                                            style={{
+                                                ...modernTh,
+                                                textAlign: "center",
+                                            }}
+                                        >
+                                            Target
+                                        </th>
+                                        <th
+                                            style={{
+                                                ...modernTh,
+                                                textAlign: "center",
+                                            }}
+                                        >
+                                            Actual
+                                        </th>
+                                        <th
+                                            style={{
+                                                ...modernTh,
+                                                textAlign: "center",
+                                            }}
+                                        >
+                                            Variance
+                                        </th>
                                         <th style={modernTh}>Status</th>
-                                        <th style={{ ...modernTh, textAlign: "center" }}>Action</th>
+                                        <th
+                                            style={{
+                                                ...modernTh,
+                                                textAlign: "center",
+                                            }}
+                                        >
+                                            Action
+                                        </th>
                                     </tr>
                                 </thead>
 
@@ -1249,33 +1820,69 @@ export default function KPIPerRig() {
                                             <tr
                                                 key={`${row.indicator}-${index}`}
                                                 style={{
-                                                    borderBottom: "1px solid #f1f5f9",
-                                                    backgroundColor: index % 2 === 0 ? "#ffffff" : "#fcfdfd",
-                                                    transition: "background-color 0.15s",
+                                                    borderBottom:
+                                                        "1px solid #f1f5f9",
+                                                    backgroundColor:
+                                                        index % 2 === 0
+                                                            ? "#ffffff"
+                                                            : "#fcfdfd",
+                                                    transition:
+                                                        "background-color 0.15s",
                                                 }}
                                             >
                                                 {/* INDICATOR NAME */}
-                                                <td style={{ ...modernTd, fontWeight: "600", color: "#1e293b" }}>
-                                                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                                <td
+                                                    style={{
+                                                        ...modernTd,
+                                                        fontWeight: "600",
+                                                        color: "#1e293b",
+                                                    }}
+                                                >
+                                                    <div
+                                                        style={{
+                                                            display: "flex",
+                                                            alignItems:
+                                                                "center",
+                                                            gap: "10px",
+                                                        }}
+                                                    >
                                                         <span
                                                             style={{
                                                                 width: "28px",
                                                                 height: "28px",
-                                                                borderRadius: "8px",
-                                                                backgroundColor: row.category === "Leading" ? "#f0fdf4" : "#fef2f2",
-                                                                color: row.category === "Leading" ? "#16a34a" : "#dc2626",
+                                                                borderRadius:
+                                                                    "8px",
+                                                                backgroundColor:
+                                                                    row.category ===
+                                                                    "Leading"
+                                                                        ? "#f0fdf4"
+                                                                        : "#fef2f2",
+                                                                color:
+                                                                    row.category ===
+                                                                    "Leading"
+                                                                        ? "#16a34a"
+                                                                        : "#dc2626",
                                                                 display: "flex",
-                                                                alignItems: "center",
-                                                                justifyContent: "center",
+                                                                alignItems:
+                                                                    "center",
+                                                                justifyContent:
+                                                                    "center",
                                                             }}
                                                         >
-                                                            {row.category === "Leading" ? (
-                                                                <ShieldCheck size={16} />
+                                                            {row.category ===
+                                                            "Leading" ? (
+                                                                <ShieldCheck
+                                                                    size={16}
+                                                                />
                                                             ) : (
-                                                                <Flame size={16} />
+                                                                <Flame
+                                                                    size={16}
+                                                                />
                                                             )}
                                                         </span>
-                                                        <span>{row.indicator}</span>
+                                                        <span>
+                                                            {row.indicator}
+                                                        </span>
                                                     </div>
                                                 </td>
 
@@ -1283,13 +1890,22 @@ export default function KPIPerRig() {
                                                 <td style={modernTd}>
                                                     <span
                                                         style={{
-                                                            display: "inline-block",
+                                                            display:
+                                                                "inline-block",
                                                             padding: "2px 8px",
                                                             borderRadius: "6px",
                                                             fontSize: "11px",
                                                             fontWeight: "700",
-                                                            backgroundColor: row.category === "Leading" ? "#f0fdf4" : "#fef2f2",
-                                                            color: row.category === "Leading" ? "#15803d" : "#b91c1c",
+                                                            backgroundColor:
+                                                                row.category ===
+                                                                "Leading"
+                                                                    ? "#f0fdf4"
+                                                                    : "#fef2f2",
+                                                            color:
+                                                                row.category ===
+                                                                "Leading"
+                                                                    ? "#15803d"
+                                                                    : "#b91c1c",
                                                         }}
                                                     >
                                                         {row.category}
@@ -1297,65 +1913,107 @@ export default function KPIPerRig() {
                                                 </td>
 
                                                 {/* TARGET */}
-                                                <td style={{ ...modernTd, textAlign: "center", fontFamily: "monospace", fontWeight: "700", color: "#475569" }}>
+                                                <td
+                                                    style={{
+                                                        ...modernTd,
+                                                        textAlign: "center",
+                                                        fontFamily: "monospace",
+                                                        fontWeight: "700",
+                                                        color: "#475569",
+                                                    }}
+                                                >
                                                     {row.target}
                                                 </td>
 
                                                 {/* ACTUAL */}
-                                                <td style={{ ...modernTd, textAlign: "center", fontFamily: "monospace", fontWeight: "700", color: "#0f172a" }}>
+                                                <td
+                                                    style={{
+                                                        ...modernTd,
+                                                        textAlign: "center",
+                                                        fontFamily: "monospace",
+                                                        fontWeight: "700",
+                                                        color: "#0f172a",
+                                                    }}
+                                                >
                                                     {row.actual}
                                                 </td>
 
                                                 {/* VARIANCE */}
-                                                <td style={{ ...modernTd, textAlign: "center" }}>
+                                                <td
+                                                    style={{
+                                                        ...modernTd,
+                                                        textAlign: "center",
+                                                    }}
+                                                >
                                                     <span
                                                         style={{
-                                                            display: "inline-block",
+                                                            display:
+                                                                "inline-block",
                                                             padding: "3px 8px",
                                                             borderRadius: "6px",
                                                             fontSize: "11px",
                                                             fontWeight: "800",
-                                                            fontFamily: "monospace",
+                                                            fontFamily:
+                                                                "monospace",
                                                             backgroundColor:
                                                                 row.variance > 0
                                                                     ? "#f0fdf4"
-                                                                    : row.variance < 0
+                                                                    : row.variance <
+                                                                        0
                                                                       ? "#fef2f2"
                                                                       : "#f8fafc",
                                                             color:
                                                                 row.variance > 0
                                                                     ? "#16a34a"
-                                                                    : row.variance < 0
+                                                                    : row.variance <
+                                                                        0
                                                                       ? "#dc2626"
                                                                       : "#64748b",
                                                         }}
                                                     >
-                                                        {row.variance > 0 ? `+${row.variance}` : row.variance}
+                                                        {row.variance > 0
+                                                            ? `+${row.variance}`
+                                                            : row.variance}
                                                     </span>
                                                 </td>
 
                                                 {/* STATUS BADGE */}
                                                 <td style={modernTd}>
-                                                    <ModernStatusBadge status={row.status} />
+                                                    <ModernStatusBadge
+                                                        status={row.status}
+                                                    />
                                                 </td>
 
                                                 {/* ACTION */}
-                                                <td style={{ ...modernTd, textAlign: "center" }}>
+                                                <td
+                                                    style={{
+                                                        ...modernTd,
+                                                        textAlign: "center",
+                                                    }}
+                                                >
                                                     <button
-                                                        onClick={() => setSelectedKpi(row)}
+                                                        onClick={() =>
+                                                            setSelectedKpi(row)
+                                                        }
                                                         style={{
                                                             width: "30px",
                                                             height: "30px",
                                                             borderRadius: "8px",
                                                             border: "1px solid #e2e8f0",
-                                                            backgroundColor: "#ffffff",
-                                                            display: "inline-flex",
-                                                            alignItems: "center",
-                                                            justifyContent: "center",
+                                                            backgroundColor:
+                                                                "#ffffff",
+                                                            display:
+                                                                "inline-flex",
+                                                            alignItems:
+                                                                "center",
+                                                            justifyContent:
+                                                                "center",
                                                             color: "#059669",
                                                             cursor: "pointer",
-                                                            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-                                                            transition: "all 0.2s",
+                                                            boxShadow:
+                                                                "0 1px 3px rgba(0,0,0,0.04)",
+                                                            transition:
+                                                                "all 0.2s",
                                                         }}
                                                         title="View KPI Detail"
                                                     >
@@ -1366,8 +2024,17 @@ export default function KPIPerRig() {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={7} style={{ ...modernTd, textAlign: "center", padding: "40px", color: "#94a3b8" }}>
-                                                No KPI indicators found matching your filters.
+                                            <td
+                                                colSpan={7}
+                                                style={{
+                                                    ...modernTd,
+                                                    textAlign: "center",
+                                                    padding: "40px",
+                                                    color: "#94a3b8",
+                                                }}
+                                            >
+                                                No KPI indicators found matching
+                                                your filters.
                                             </td>
                                         </tr>
                                     )}
@@ -1389,12 +2056,33 @@ export default function KPIPerRig() {
                             }}
                         >
                             <span>
-                                Showing <strong style={{ color: "#0f172a" }}>{displayTableData.length > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0}</strong> to{" "}
-                                <strong style={{ color: "#0f172a" }}>{Math.min(currentPage * rowsPerPage, displayTableData.length)}</strong> of{" "}
-                                <strong style={{ color: "#0f172a" }}>{displayTableData.length}</strong> indicators
+                                Showing{" "}
+                                <strong style={{ color: "#0f172a" }}>
+                                    {displayTableData.length > 0
+                                        ? (currentPage - 1) * rowsPerPage + 1
+                                        : 0}
+                                </strong>{" "}
+                                to{" "}
+                                <strong style={{ color: "#0f172a" }}>
+                                    {Math.min(
+                                        currentPage * rowsPerPage,
+                                        displayTableData.length,
+                                    )}
+                                </strong>{" "}
+                                of{" "}
+                                <strong style={{ color: "#0f172a" }}>
+                                    {displayTableData.length}
+                                </strong>{" "}
+                                indicators
                             </span>
 
-                            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    gap: "6px",
+                                    alignItems: "center",
+                                }}
+                            >
                                 <button
                                     onClick={handlePrevious}
                                     disabled={currentPage === 1}
@@ -1403,16 +2091,31 @@ export default function KPIPerRig() {
                                     <ChevronLeft size={16} />
                                 </button>
 
-                                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                                {Array.from(
+                                    { length: totalPages },
+                                    (_, index) => index + 1,
+                                ).map((page) => (
                                     <button
                                         key={page}
                                         onClick={() => setCurrentPage(page)}
                                         style={{
                                             ...modernPageBtn(false),
-                                            backgroundColor: currentPage === page ? "#059669" : "#ffffff",
-                                            color: currentPage === page ? "#ffffff" : "#334155",
-                                            fontWeight: currentPage === page ? "800" : "600",
-                                            boxShadow: currentPage === page ? "0 2px 8px rgba(5, 150, 105, 0.35)" : "none",
+                                            backgroundColor:
+                                                currentPage === page
+                                                    ? "#059669"
+                                                    : "#ffffff",
+                                            color:
+                                                currentPage === page
+                                                    ? "#ffffff"
+                                                    : "#334155",
+                                            fontWeight:
+                                                currentPage === page
+                                                    ? "800"
+                                                    : "600",
+                                            boxShadow:
+                                                currentPage === page
+                                                    ? "0 2px 8px rgba(5, 150, 105, 0.35)"
+                                                    : "none",
                                         }}
                                     >
                                         {page}
@@ -1422,7 +2125,9 @@ export default function KPIPerRig() {
                                 <button
                                     onClick={handleNext}
                                     disabled={currentPage === totalPages}
-                                    style={modernPageBtn(currentPage === totalPages)}
+                                    style={modernPageBtn(
+                                        currentPage === totalPages,
+                                    )}
                                 >
                                     <ChevronRight size={16} />
                                 </button>
@@ -1459,8 +2164,20 @@ export default function KPIPerRig() {
                             border: "1px solid #e2e8f0",
                         }}
                     >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "flex-start",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                }}
+                            >
                                 <div
                                     style={{
                                         width: "40px",
@@ -1476,11 +2193,24 @@ export default function KPIPerRig() {
                                     <Award size={22} />
                                 </div>
                                 <div>
-                                    <h2 style={{ margin: 0, color: "#0f172a", fontSize: "18px", fontWeight: "800" }}>
+                                    <h2
+                                        style={{
+                                            margin: 0,
+                                            color: "#0f172a",
+                                            fontSize: "18px",
+                                            fontWeight: "800",
+                                        }}
+                                    >
                                         KPI Indicator Details
                                     </h2>
-                                    <span style={{ fontSize: "12px", color: "#64748b" }}>
-                                        {selectedKpi.category || "General"} Metric
+                                    <span
+                                        style={{
+                                            fontSize: "12px",
+                                            color: "#64748b",
+                                        }}
+                                    >
+                                        {selectedKpi.category || "General"}{" "}
+                                        Metric
                                     </span>
                                 </div>
                             </div>
@@ -1504,19 +2234,50 @@ export default function KPIPerRig() {
                             </button>
                         </div>
 
-                        <div style={{ marginTop: "24px", display: "grid", gap: "12px" }}>
-                            <ModernDetailRow label="Indicator Name" value={selectedKpi.indicator} />
-                            <ModernDetailRow label="Category" value={selectedKpi.category || "General"} />
-                            <ModernDetailRow label="Period Target" value={selectedKpi.target} />
-                            <ModernDetailRow label="Actual Recorded" value={selectedKpi.actual} />
+                        <div
+                            style={{
+                                marginTop: "24px",
+                                display: "grid",
+                                gap: "12px",
+                            }}
+                        >
+                            <ModernDetailRow
+                                label="Indicator Name"
+                                value={selectedKpi.indicator}
+                            />
+                            <ModernDetailRow
+                                label="Category"
+                                value={selectedKpi.category || "General"}
+                            />
+                            <ModernDetailRow
+                                label="Period Target"
+                                value={selectedKpi.target}
+                            />
+                            <ModernDetailRow
+                                label="Actual Recorded"
+                                value={selectedKpi.actual}
+                            />
                             <ModernDetailRow
                                 label="Variance / Gap"
-                                value={selectedKpi.variance > 0 ? `+${selectedKpi.variance}` : selectedKpi.variance}
+                                value={
+                                    selectedKpi.variance > 0
+                                        ? `+${selectedKpi.variance}`
+                                        : selectedKpi.variance
+                                }
                             />
-                            <ModernDetailRow label="Status" value={selectedKpi.status} />
+                            <ModernDetailRow
+                                label="Status"
+                                value={selectedKpi.status}
+                            />
                             <ModernDetailRow label="Active Rig" value={rig} />
-                            <ModernDetailRow label="Contract" value={contract} />
-                            <ModernDetailRow label="Year / Period" value={`${year} / ${period}`} />
+                            <ModernDetailRow
+                                label="Contract"
+                                value={contract}
+                            />
+                            <ModernDetailRow
+                                label="Year / Period"
+                                value={`${year} / ${period}`}
+                            />
                         </div>
 
                         <button
@@ -1527,7 +2288,8 @@ export default function KPIPerRig() {
                                 padding: "12px",
                                 border: "none",
                                 borderRadius: "10px",
-                                background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                                background:
+                                    "linear-gradient(135deg, #059669 0%, #047857 100%)",
                                 color: "#ffffff",
                                 cursor: "pointer",
                                 fontWeight: "700",
@@ -1548,7 +2310,16 @@ export default function KPIPerRig() {
 // MODERN CLASSIC: METRIC CARD (HIJAU BOTOL & KUNING NEON)
 // =====================================================
 
-function ModernMetricCard({ title, value, unit, icon, badge, badgeBg, badgeColor, accentColor }) {
+function ModernMetricCard({
+    title,
+    value,
+    unit,
+    icon,
+    badge,
+    badgeBg,
+    badgeColor,
+    accentColor,
+}) {
     return (
         <div
             style={{
@@ -1570,20 +2341,59 @@ function ModernMetricCard({ title, value, unit, icon, badge, badgeBg, badgeColor
                     left: 0,
                     right: 0,
                     height: "4px",
-                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
+                    background:
+                        "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
                 }}
             />
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                }}
+            >
                 <div>
-                    <span style={{ fontSize: "11px", color: "#004d32", fontWeight: "800", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    <span
+                        style={{
+                            fontSize: "11px",
+                            color: "#004d32",
+                            fontWeight: "800",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.06em",
+                        }}
+                    >
                         {title}
                     </span>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginTop: "10px" }}>
-                        <span style={{ fontSize: "28px", fontWeight: "900", color: "#003824", letterSpacing: "-0.02em" }}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "baseline",
+                            gap: "6px",
+                            marginTop: "10px",
+                        }}
+                    >
+                        <span
+                            style={{
+                                fontSize: "28px",
+                                fontWeight: "900",
+                                color: "#003824",
+                                letterSpacing: "-0.02em",
+                            }}
+                        >
                             {value}
                         </span>
-                        {unit && <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "700" }}>{unit}</span>}
+                        {unit && (
+                            <span
+                                style={{
+                                    fontSize: "13px",
+                                    color: "#64748b",
+                                    fontWeight: "700",
+                                }}
+                            >
+                                {unit}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -1645,7 +2455,9 @@ function ModernStatusBadge({ status }) {
                 backgroundColor: isAchieved ? "#004d32" : "#7f1d1d",
                 color: isAchieved ? "#efff00" : "#fecaca",
                 border: isAchieved ? "1px solid #efff00" : "1px solid #ef4444",
-                boxShadow: isAchieved ? "0 0 10px rgba(239, 255, 0, 0.3)" : "none",
+                boxShadow: isAchieved
+                    ? "0 0 10px rgba(239, 255, 0, 0.3)"
+                    : "none",
             }}
         >
             <span
@@ -1654,7 +2466,9 @@ function ModernStatusBadge({ status }) {
                     height: "6px",
                     borderRadius: "50%",
                     backgroundColor: isAchieved ? "#efff00" : "#ef4444",
-                    boxShadow: isAchieved ? "0 0 6px #efff00" : "0 0 6px #ef4444",
+                    boxShadow: isAchieved
+                        ? "0 0 6px #efff00"
+                        : "0 0 6px #ef4444",
                 }}
             />
             {status}
@@ -1676,8 +2490,25 @@ function ModernDetailRow({ label, value }) {
                 borderBottom: "1px solid #f1f5f9",
             }}
         >
-            <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}>{label}</span>
-            <strong style={{ fontSize: "13px", color: "#004d32", textAlign: "right", fontWeight: "800" }}>{value}</strong>
+            <span
+                style={{
+                    fontSize: "13px",
+                    color: "#64748b",
+                    fontWeight: "600",
+                }}
+            >
+                {label}
+            </span>
+            <strong
+                style={{
+                    fontSize: "13px",
+                    color: "#004d32",
+                    textAlign: "right",
+                    fontWeight: "800",
+                }}
+            >
+                {value}
+            </strong>
         </div>
     );
 }

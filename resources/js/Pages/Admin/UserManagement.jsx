@@ -1,41 +1,13 @@
 import React, { useMemo, useState } from "react";
 import AdminSidebar from "../../Components/AdminSidebar";
 
-export default function UserManagement() {
+export default function UserManagement({ users: initialUsers = [] }) {
     // ==========================================
-    // DATA USER
+    // DATA USER DARI MYSQL
     // ==========================================
 
-    const [users, setUsers] = useState([
-        {
-            id: 1,
-            name: "John Doe",
-            email: "john.doe@rigops.com",
-            role: "Admin",
-            status: "Active",
-        },
-        {
-            id: 2,
-            name: "Jane Smith",
-            email: "jane.smith@rigops.com",
-            role: "User/PIC",
-            status: "Active",
-        },
-        {
-            id: 3,
-            name: "Robert Jones",
-            email: "r.jones@rigops.com",
-            role: "User/PIC",
-            status: "Inactive",
-        },
-        {
-            id: 4,
-            name: "Alice Wong",
-            email: "a.wong@rigops.com",
-            role: "Admin",
-            status: "Active",
-        },
-    ]);
+    const [users, setUsers] = useState(initialUsers);
+    const [isLoading, setIsLoading] = useState(false);
 
     // ==========================================
     // SEARCH
@@ -46,12 +18,14 @@ export default function UserManagement() {
     const filteredUsers = useMemo(() => {
         return users.filter((user) => {
             const keyword = search.toLowerCase();
+            const roleName = user.role === "admin" ? "admin" : "user/pic";
+            const statusName = user.status ? user.status.toLowerCase() : "active";
 
             return (
-                user.name.toLowerCase().includes(keyword) ||
-                user.email.toLowerCase().includes(keyword) ||
-                user.role.toLowerCase().includes(keyword) ||
-                user.status.toLowerCase().includes(keyword)
+                (user.name && user.name.toLowerCase().includes(keyword)) ||
+                (user.email && user.email.toLowerCase().includes(keyword)) ||
+                roleName.includes(keyword) ||
+                statusName.includes(keyword)
             );
         });
     }, [users, search]);
@@ -61,14 +35,14 @@ export default function UserManagement() {
     // ==========================================
 
     const [showModal, setShowModal] = useState(false);
-
     const [editingUser, setEditingUser] = useState(null);
 
     const [form, setForm] = useState({
         name: "",
         email: "",
-        role: "User/PIC",
-        status: "Active",
+        role: "user",
+        status: "active",
+        password: "",
     });
 
     // ==========================================
@@ -82,7 +56,13 @@ export default function UserManagement() {
 
         setTimeout(() => {
             setMessage("");
-        }, 2500);
+        }, 3000);
+    };
+
+    const getCsrfToken = () => {
+        return (
+            document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || ""
+        );
     };
 
     // ==========================================
@@ -95,8 +75,9 @@ export default function UserManagement() {
         setForm({
             name: "",
             email: "",
-            role: "User/PIC",
-            status: "Active",
+            role: "user",
+            status: "active",
+            password: "",
         });
 
         setShowModal(true);
@@ -113,98 +94,155 @@ export default function UserManagement() {
             name: user.name,
             email: user.email,
             role: user.role,
-            status: user.status,
+            status: user.status || "active",
+            password: "",
         });
 
         setShowModal(true);
     };
 
     // ==========================================
-    // SAVE USER
+    // SAVE USER (CREATE / UPDATE VIA MYSQL API)
     // ==========================================
 
-    const handleSaveUser = () => {
+    const handleSaveUser = async () => {
         if (!form.name.trim() || !form.email.trim()) {
             showMessage("Nama dan email wajib diisi.");
             return;
         }
 
-        if (editingUser) {
-            setUsers((currentUsers) =>
-                currentUsers.map((user) =>
-                    user.id === editingUser.id
-                        ? {
-                              ...user,
-                              ...form,
-                          }
-                        : user
-                )
-            );
+        setIsLoading(true);
 
-            showMessage("Data user berhasil diperbarui.");
-        } else {
-            const newUser = {
-                id: Date.now(),
-                ...form,
+        try {
+            const url = editingUser ? `/admin/users/${editingUser.id}` : "/admin/users";
+            const method = editingUser ? "PUT" : "POST";
+
+            const payload = {
+                name: form.name,
+                email: form.email,
+                role: form.role,
+                status: form.status,
             };
 
-            setUsers((currentUsers) => [
-                ...currentUsers,
-                newUser,
-            ]);
+            if (form.password) {
+                payload.password = form.password;
+            }
 
-            showMessage("User baru berhasil ditambahkan.");
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: "same-origin",
+                body: JSON.stringify(payload),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                showMessage(result.message || "Gagal menyimpan data user ke database.");
+                setIsLoading(false);
+                return;
+            }
+
+            if (editingUser) {
+                setUsers((currentUsers) =>
+                    currentUsers.map((u) => (u.id === editingUser.id ? result.data : u))
+                );
+                showMessage("Data user di MySQL berhasil diperbarui.");
+            } else {
+                setUsers((currentUsers) => [result.data, ...currentUsers]);
+                showMessage("User baru berhasil ditambahkan ke database MySQL.");
+            }
+
+            setShowModal(false);
+        } catch (error) {
+            console.error("Error saving user:", error);
+            showMessage("Terjadi kesalahan sistem saat menyimpan ke database.");
+        } finally {
+            setIsLoading(false);
         }
-
-        setShowModal(false);
     };
 
     // ==========================================
-    // DELETE USER
+    // DELETE USER DARI MYSQL
     // ==========================================
 
-    const handleDeleteUser = (user) => {
+    const handleDeleteUser = async (user) => {
         const confirmed = window.confirm(
-            `Hapus user "${user.name}"?`
+            `Apakah Anda yakin ingin menghapus user "${user.name}" dari database MySQL?`
         );
 
         if (!confirmed) {
             return;
         }
 
-        setUsers((currentUsers) =>
-            currentUsers.filter(
-                (item) => item.id !== user.id
-            )
-        );
+        try {
+            const response = await fetch(`/admin/users/${user.id}`, {
+                method: "DELETE",
+                headers: {
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: "same-origin",
+            });
 
-        showMessage("User berhasil dihapus.");
+            const result = await response.json();
+
+            if (!response.ok) {
+                showMessage(result.message || "Gagal menghapus user.");
+                return;
+            }
+
+            setUsers((currentUsers) =>
+                currentUsers.filter((item) => item.id !== user.id)
+            );
+
+            showMessage(`User "${user.name}" berhasil dihapus dari MySQL.`);
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            showMessage("Terjadi kesalahan saat menghapus data user.");
+        }
     };
 
     // ==========================================
-    // TOGGLE STATUS
+    // TOGGLE STATUS DI MYSQL
     // ==========================================
 
-    const handleToggleStatus = (user) => {
-        const newStatus =
-            user.status === "Active"
-                ? "Inactive"
-                : "Active";
+    const handleToggleStatus = async (user) => {
+        try {
+            const response = await fetch(`/admin/users/${user.id}/toggle-status`, {
+                method: "PATCH",
+                headers: {
+                    Accept: "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                credentials: "same-origin",
+            });
 
-        setUsers((currentUsers) =>
-            currentUsers.map((item) =>
-                item.id === user.id
-                    ? {
-                          ...item,
-                          status: newStatus,
-                      }
-                    : item
-            )
-        );
+            const result = await response.json();
 
-        showMessage(
-            `${user.name} sekarang ${newStatus}.`
-        );
+            if (!response.ok) {
+                showMessage(result.message || "Gagal mengubah status user.");
+                return;
+            }
+
+            setUsers((currentUsers) =>
+                currentUsers.map((item) =>
+                    item.id === user.id ? result.data : item
+                )
+            );
+
+            showMessage(`Status ${user.name} sekarang: ${result.data.status}.`);
+        } catch (error) {
+            console.error("Error toggling status:", error);
+            showMessage("Gagal mengubah status di database.");
+        }
     };
 
     // ==========================================
@@ -589,82 +627,61 @@ export default function UserManagement() {
                                                 </td>
 
                                                 {/* ROLE */}
-
-                                                <td
-                                                    style={
-                                                        tableCell
-                                                    }
-                                                >
+                                                <td style={tableCell}>
                                                     <span
-                                                        style={
-                                                            roleBadge
-                                                        }
+                                                        style={{
+                                                            ...roleBadge,
+                                                            backgroundColor: user.role === "admin" ? "#e0e7ff" : "#ecfdf5",
+                                                            color: user.role === "admin" ? "#4338ca" : "#047857",
+                                                            border: user.role === "admin" ? "1px solid #c7d2fe" : "1px solid #a7f3d0",
+                                                            padding: "3px 8px",
+                                                            borderRadius: "6px",
+                                                            fontSize: "11.5px",
+                                                            fontWeight: "700",
+                                                        }}
                                                     >
-                                                        {
-                                                            user.role
-                                                        }
+                                                        {user.role === "admin" ? "Admin" : "Field User / PIC"}
                                                     </span>
                                                 </td>
 
                                                 {/* STATUS */}
-
-                                                <td
-                                                    style={
-                                                        tableCell
-                                                    }
-                                                >
+                                                <td style={tableCell}>
                                                     <button
-                                                        onClick={() =>
-                                                            handleToggleStatus(
-                                                                user
-                                                            )
-                                                        }
+                                                        onClick={() => handleToggleStatus(user)}
                                                         style={{
-                                                            border:
-                                                                "none",
-                                                            background:
-                                                                "transparent",
-                                                            cursor:
-                                                                "pointer",
-                                                            padding:
-                                                                "0",
-                                                            display:
-                                                                "flex",
-                                                            alignItems:
-                                                                "center",
-                                                            gap:
-                                                                "6px",
+                                                            border: "none",
+                                                            background: "transparent",
+                                                            cursor: "pointer",
+                                                            padding: "0",
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            gap: "6px",
                                                         }}
+                                                        title="Klik untuk mengubah status aktif/non-aktif"
                                                     >
                                                         <span
                                                             style={{
-                                                                width:
-                                                                    "6px",
-                                                                height:
-                                                                    "6px",
-                                                                borderRadius:
-                                                                    "50%",
+                                                                width: "7px",
+                                                                height: "7px",
+                                                                borderRadius: "50%",
                                                                 backgroundColor:
-                                                                    user.status ===
-                                                                    "Active"
-                                                                        ? "#18b77a"
-                                                                        : "#d11a2a",
+                                                                    (user.status || "active").toLowerCase() === "active"
+                                                                        ? "#10b981"
+                                                                        : "#ef4444",
                                                             }}
                                                         />
-
                                                         <span
                                                             style={{
                                                                 color:
-                                                                    user.status ===
-                                                                    "Active"
-                                                                        ? "#344054"
-                                                                        : "#b42318",
-                                                                fontSize: "15px",
+                                                                    (user.status || "active").toLowerCase() === "active"
+                                                                        ? "#047857"
+                                                                        : "#b91c1c",
+                                                                fontSize: "13px",
+                                                                fontWeight: "700",
+                                                                textTransform: "capitalize",
                                                             }}
                                                         >
-                                                            {
-                                                                user.status
-                                                            }
+                                                            {user.status || "active"}
                                                         </span>
                                                     </button>
                                                 </td>
@@ -930,70 +947,53 @@ export default function UserManagement() {
                         />
 
                         {/* ROLE */}
-
-                        <label
-                            style={
-                                modalLabel
-                            }
-                        >
-                            Role
-                        </label>
-
+                        <label style={modalLabel}>Peran Akun (Role)</label>
                         <select
                             value={form.role}
                             onChange={(e) =>
                                 setForm({
                                     ...form,
-                                    role:
-                                        e.target
-                                            .value,
+                                    role: e.target.value,
                                 })
                             }
-                            style={
-                                modalInput
-                            }
+                            style={modalInput}
                         >
-                            <option>
-                                Admin
-                            </option>
-
-                            <option>
-                                User/PIC
-                            </option>
+                            <option value="admin">HSE Administrator (Admin)</option>
+                            <option value="user">Field User / PIC Lapangan (User)</option>
                         </select>
 
                         {/* STATUS */}
-
-                        <label
-                            style={
-                                modalLabel
-                            }
-                        >
-                            Status
-                        </label>
-
+                        <label style={modalLabel}>Status Akun</label>
                         <select
                             value={form.status}
                             onChange={(e) =>
                                 setForm({
                                     ...form,
-                                    status:
-                                        e.target
-                                            .value,
+                                    status: e.target.value,
                                 })
                             }
-                            style={
-                                modalInput
-                            }
+                            style={modalInput}
                         >
-                            <option>
-                                Active
-                            </option>
-
-                            <option>
-                                Inactive
-                            </option>
+                            <option value="active">Active (Aktif)</option>
+                            <option value="inactive">Inactive (Non-Aktif)</option>
                         </select>
+
+                        {/* PASSWORD */}
+                        <label style={modalLabel}>
+                            {editingUser ? "Kata Sandi Baru (Kosongkan jika tidak ingin mengubah)" : "Kata Sandi"}
+                        </label>
+                        <input
+                            type="password"
+                            value={form.password}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    password: e.target.value,
+                                })
+                            }
+                            placeholder={editingUser ? "Biarkan kosong untuk tetap memakai sandi lama" : "Minimal 6 karakter"}
+                            style={modalInput}
+                        />
 
                         {/* MODAL BUTTON */}
 

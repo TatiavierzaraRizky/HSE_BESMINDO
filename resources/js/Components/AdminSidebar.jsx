@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, usePage } from "@inertiajs/react";
+import { Link, usePage, router } from "@inertiajs/react";
 
 import {
     LayoutDashboard,
@@ -184,7 +184,7 @@ function AdminSidebar({
     */
     const handleLogout = () => {
         localStorage.removeItem("isLoggedIn");
-        window.location.href = "/login";
+        router.post("/logout");
     };
 
     /*

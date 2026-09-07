@@ -303,552 +303,557 @@ export default function Dashboard() {
             <div
                 style={{
                     minHeight: "100vh",
-                backgroundColor: "#F5F8F5",
-                fontFamily: "Arial, Helvetica, sans-serif",
-                color: "#123C30",
-            }}
-        >
-            {/* =================================
-                SIDEBAR
-            ================================= */}
-
-            <AdminSidebar />
-
-            {/* =================================
-                MAIN AREA
-            ================================= */}
-
-            <div
-                className="admin-main-content"
-                style={{
-                    marginLeft: "var(--admin-sidebar-width, 215px)",
-                    minHeight: "100vh",
-                    width: "calc(100% - var(--admin-sidebar-width, 215px))",
-                    maxWidth: "calc(100% - var(--admin-sidebar-width, 215px))",
-                    minWidth: 0,
-                    boxSizing: "border-box",
-                    overflowX: "hidden",
-                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    backgroundColor: "#F5F8F5",
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    color: "#123C30",
                 }}
             >
                 {/* =================================
+                SIDEBAR
+            ================================= */}
+
+                <AdminSidebar />
+
+                {/* =================================
+                MAIN AREA
+            ================================= */}
+
+                <div
+                    className="admin-main-content"
+                    style={{
+                        marginLeft: "var(--admin-sidebar-width, 215px)",
+                        minHeight: "100vh",
+                        width: "calc(100% - var(--admin-sidebar-width, 215px))",
+                        maxWidth:
+                            "calc(100% - var(--admin-sidebar-width, 215px))",
+                        minWidth: 0,
+                        boxSizing: "border-box",
+                        overflowX: "hidden",
+                        transition:
+                            "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    }}
+                >
+                    {/* =================================
                     TOP BAR
                 ================================= */}
 
-                <header
-                    className="admin-topbar"
-                    style={{
-                        height: "68px",
-                        width: "100%",
-                        backgroundColor: "#ffffff",
-                        borderBottom: "1px solid #dfe7e3",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "0 24px",
-                        boxSizing: "border-box",
-                    }}
-                >
-                    {/* BRAND */}
-
-                    <div
+                    <header
+                        className="admin-topbar"
                         style={{
-                            fontSize: "25px",
-                            fontWeight: "700",
-                            color: "#064E3B",
-                        }}
-                    >
-                        RigOps HSE Manager
-                    </div>
-
-                    {/* RIGHT TOPBAR */}
-
-                    <div
-                        style={{
+                            height: "68px",
+                            width: "100%",
+                            backgroundColor: "#ffffff",
+                            borderBottom: "1px solid #dfe7e3",
                             display: "flex",
                             alignItems: "center",
-                            gap: "18px",
+                            justifyContent: "space-between",
+                            padding: "0 24px",
+                            boxSizing: "border-box",
                         }}
                     >
-                        {/* SEARCH */}
+                        {/* BRAND */}
 
                         <div
                             style={{
-                                width: "215px",
-                                height: "34px",
-                                border: "1px solid #d2dbd7",
-                                borderRadius: "7px",
+                                fontSize: "25px",
+                                fontWeight: "700",
+                                color: "#064E3B",
+                            }}
+                        >
+                            RigOps HSE Manager
+                        </div>
+
+                        {/* RIGHT TOPBAR */}
+
+                        <div
+                            style={{
                                 display: "flex",
                                 alignItems: "center",
-                                padding: "0 10px",
-                                backgroundColor: "#FAFCFA",
+                                gap: "18px",
                             }}
                         >
-                            <Search size={16} color="#36564A" />
+                            {/* SEARCH */}
 
-                            <input
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search records..."
+                            <div
                                 style={{
-                                    width: "100%",
-                                    border: "none",
-                                    outline: "none",
-                                    background: "transparent",
-                                    paddingLeft: "8px",
-                                    fontSize: "14px",
-                                }}
-                            />
-                        </div>
-
-                        {/* NOTIFICATION */}
-
-                        <div
-                            style={{
-                                position: "relative",
-                            }}
-                        >
-                            <button
-                                onClick={() =>
-                                    setShowNotifications(!showNotifications)
-                                }
-                                style={{
-                                    border: "none",
-                                    background: "transparent",
-                                    cursor: "pointer",
-                                    padding: "4px",
+                                    width: "215px",
+                                    height: "34px",
+                                    border: "1px solid #d2dbd7",
+                                    borderRadius: "7px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    padding: "0 10px",
+                                    backgroundColor: "#FAFCFA",
                                 }}
                             >
-                                <Bell size={20} color="#064E3B" />
-                            </button>
+                                <Search size={16} color="#36564A" />
 
-                            {showNotifications && (
-                                <div
+                                <input
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Search records..."
                                     style={{
-                                        position: "absolute",
-                                        right: 0,
-                                        top: "38px",
-                                        width: "270px",
-                                        background: "white",
-                                        border: "1px solid #d8e1dd",
-                                        borderRadius: "8px",
-                                        boxShadow:
-                                            "0 8px 25px rgba(0,0,0,0.12)",
-                                        padding: "14px",
-                                        zIndex: 50,
+                                        width: "100%",
+                                        border: "none",
+                                        outline: "none",
+                                        background: "transparent",
+                                        paddingLeft: "8px",
+                                        fontSize: "14px",
+                                    }}
+                                />
+                            </div>
+
+                            {/* NOTIFICATION */}
+
+                            <div
+                                style={{
+                                    position: "relative",
+                                }}
+                            >
+                                <button
+                                    onClick={() =>
+                                        setShowNotifications(!showNotifications)
+                                    }
+                                    style={{
+                                        border: "none",
+                                        background: "transparent",
+                                        cursor: "pointer",
+                                        padding: "4px",
                                     }}
                                 >
-                                    <strong
-                                        style={{
-                                            display: "block",
-                                            marginBottom: "10px",
-                                            fontSize: "15px",
-                                        }}
-                                    >
-                                        Notifications
-                                    </strong>
+                                    <Bell size={20} color="#064E3B" />
+                                </button>
 
+                                {showNotifications && (
                                     <div
                                         style={{
-                                            fontSize: "14px",
-                                            padding: "10px",
-                                            backgroundColor: "#F4FFD0",
-                                            borderRadius: "5px",
-                                            marginBottom: "7px",
+                                            position: "absolute",
+                                            right: 0,
+                                            top: "38px",
+                                            width: "270px",
+                                            background: "white",
+                                            border: "1px solid #d8e1dd",
+                                            borderRadius: "8px",
+                                            boxShadow:
+                                                "0 8px 25px rgba(0,0,0,0.12)",
+                                            padding: "14px",
+                                            zIndex: 50,
                                         }}
                                     >
-                                        ⚠ Safety observation below target.
-                                    </div>
+                                        <strong
+                                            style={{
+                                                display: "block",
+                                                marginBottom: "10px",
+                                                fontSize: "15px",
+                                            }}
+                                        >
+                                            Notifications
+                                        </strong>
 
-                                    <div
-                                        style={{
-                                            fontSize: "14px",
-                                            padding: "10px",
-                                            backgroundColor: "#F4FFD0",
-                                            borderRadius: "5px",
-                                        }}
-                                    >
-                                        ✓ Monthly HSE report ready.
+                                        <div
+                                            style={{
+                                                fontSize: "14px",
+                                                padding: "10px",
+                                                backgroundColor: "#F4FFD0",
+                                                borderRadius: "5px",
+                                                marginBottom: "7px",
+                                            }}
+                                        >
+                                            ⚠ Safety observation below target.
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                fontSize: "14px",
+                                                padding: "10px",
+                                                backgroundColor: "#F4FFD0",
+                                                borderRadius: "5px",
+                                            }}
+                                        >
+                                            ✓ Monthly HSE report ready.
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
+
+                            <CircleHelp size={20} color="#064E3B" />
+
+                            <UserCircle size={21} color="#064E3B" />
                         </div>
+                    </header>
 
-                        <CircleHelp size={20} color="#064E3B" />
-
-                        <UserCircle size={21} color="#064E3B" />
-                    </div>
-                </header>
-
-                {/* =================================
+                    {/* =================================
                     PAGE CONTENT
                 ================================= */}
 
-                <main
-                    className="admin-main"
-                    style={{
-                        marginLeft: 0,
-                        width: "100%",
-                        maxWidth: "100%",
-                        minWidth: 0,
-                        minHeight: "100vh",
-                        boxSizing: "border-box",
-                    }}
-                >
-                    {/* BREADCRUMB */}
-
-                    <div
+                    <main
+                        className="admin-main"
                         style={{
-                            fontSize: "15px",
-                            color: "#61786D",
-                            marginBottom: "20px",
-                        }}
-                    >
-                        ▣ &nbsp; Admin Dashboard
-                    </div>
-
-                    {/* =================================
-                        TITLE + FILTER
-                    ================================= */}
-
-                    <div
-                        className="dashboard-title-filter"
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "flex-end",
-                            gap: "20px",
-                            marginBottom: "20px",
+                            marginLeft: 0,
                             width: "100%",
                             maxWidth: "100%",
+                            minWidth: 0,
+                            minHeight: "100vh",
                             boxSizing: "border-box",
-                            flexWrap: "wrap",
                         }}
                     >
-                        <div>
-                            <h1
-                                style={{
-                                    margin: 0,
-                                    fontSize: "30px",
-                                    color: "#111827",
-                                }}
-                            >
-                                Executive Overview
-                            </h1>
-
-                            <p
-                                style={{
-                                    margin: "6px 0 0",
-                                    color: "#526B60",
-                                    fontSize: "15px",
-                                }}
-                            >
-                                Real-time safety and operational performance
-                                metrics.
-                            </p>
-                        </div>
-
-                        {/* FILTERS */}
+                        {/* BREADCRUMB */}
 
                         <div
                             style={{
+                                fontSize: "15px",
+                                color: "#61786D",
+                                marginBottom: "20px",
+                            }}
+                        >
+                            ▣ &nbsp; Admin Dashboard
+                        </div>
+
+                        {/* =================================
+                        TITLE + FILTER
+                    ================================= */}
+
+                        <div
+                            className="dashboard-title-filter"
+                            style={{
                                 display: "flex",
-                                alignItems: "center",
-                                background: "white",
+                                justifyContent: "space-between",
+                                alignItems: "flex-end",
+                                gap: "20px",
+                                marginBottom: "20px",
+                                width: "100%",
+                                maxWidth: "100%",
+                                boxSizing: "border-box",
+                                flexWrap: "wrap",
+                            }}
+                        >
+                            <div>
+                                <h1
+                                    style={{
+                                        margin: 0,
+                                        fontSize: "30px",
+                                        color: "#111827",
+                                    }}
+                                >
+                                    Executive Overview
+                                </h1>
+
+                                <p
+                                    style={{
+                                        margin: "6px 0 0",
+                                        color: "#526B60",
+                                        fontSize: "15px",
+                                    }}
+                                >
+                                    Real-time safety and operational performance
+                                    metrics.
+                                </p>
+                            </div>
+
+                            {/* FILTERS */}
+
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    background: "white",
+                                    border: "1px solid #d4ded9",
+                                    borderRadius: "5px",
+                                    overflow: "hidden",
+                                }}
+                            >
+                                <FilterSelect
+                                    icon={<CalendarDays size={15} />}
+                                    value={year}
+                                    onChange={setYear}
+                                    options={["2024", "2025", "2026"]}
+                                />
+
+                                <FilterSelect
+                                    value={month}
+                                    onChange={setMonth}
+                                    options={[
+                                        "All Months",
+                                        "January",
+                                        "February",
+                                        "March",
+                                        "April",
+                                        "May",
+                                        "June",
+                                        "July",
+                                        "August",
+                                        "September",
+                                        "October",
+                                        "November",
+                                        "December",
+                                    ]}
+                                />
+
+                                <FilterSelect
+                                    value={rig}
+                                    onChange={setRig}
+                                    options={[
+                                        "All Rigs",
+                                        "Rig-01",
+                                        "Rig-02",
+                                        "Rig-03",
+                                        "Rig-04",
+                                    ]}
+                                />
+
+                                <FilterSelect
+                                    value={contract}
+                                    onChange={setContract}
+                                    options={[
+                                        "All Contracts",
+                                        "Contract 01",
+                                        "Contract 02",
+                                        "Contract 03",
+                                        "Contract 04",
+                                    ]}
+                                />
+                            </div>
+                        </div>
+
+                        {/* =================================
+                        KPI CARDS
+                    ================================= */}
+
+                        <div
+                            className="dashboard-kpi-grid"
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                    "repeat(6, minmax(0, 1fr))",
+                                gap: "12px",
+                                marginBottom: "20px",
+                                width: "100%",
+                                maxWidth: "100%",
+                                boxSizing: "border-box",
+                            }}
+                        >
+                            <MetricCard
+                                title="TOTAL ACTIVE RIG"
+                                value="12"
+                                change="↑ 2"
+                            />
+
+                            <MetricCard
+                                title="TOTAL NO. KONTRAK"
+                                value="45"
+                                change="— 0"
+                            />
+
+                            <MetricCard
+                                title="TOTAL MAN HOURS"
+                                value="1.2M"
+                                change="↑ 5%"
+                            />
+
+                            <MetricCard
+                                title="TOTAL KM DRIVEN"
+                                value="845K"
+                                change="↑ 2%"
+                            />
+
+                            <MetricCard
+                                title="HSE PERFORMANCE"
+                                value="98.5%"
+                                badge="EXCELLENT"
+                            />
+
+                            <MetricCard
+                                title="KPI PERFORMANCE"
+                                value="92.0%"
+                                badge="ON TRACK"
+                            />
+                        </div>
+
+                        {/* =================================
+                        CHARTS
+                    ================================= */}
+
+                        <div
+                            className="dashboard-chart-grid"
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns:
+                                    "minmax(0, 1fr) minmax(0, 1fr)",
+                                gap: "14px",
+                                marginBottom: "20px",
+                                width: "100%",
+                                maxWidth: "100%",
+                                boxSizing: "border-box",
+                            }}
+                        >
+                            {/* MONTHLY CHART */}
+
+                            <ChartCard title="HSE Performance Monthly" menu>
+                                <LineChart values={chartValues} />
+                            </ChartCard>
+
+                            {/* TARGET VS ACTUAL */}
+
+                            <ChartCard title="KPI Target vs Actual">
+                                <BarChart />
+                            </ChartCard>
+                        </div>
+
+                        {/* =================================
+                        KPI TABLE
+                    ================================= */}
+
+                        <div
+                            style={{
+                                backgroundColor: "white",
                                 border: "1px solid #d4ded9",
                                 borderRadius: "5px",
                                 overflow: "hidden",
                             }}
                         >
-                            <FilterSelect
-                                icon={<CalendarDays size={15} />}
-                                value={year}
-                                onChange={setYear}
-                                options={["2024", "2025", "2026"]}
-                            />
+                            {/* TABLE HEADER */}
 
-                            <FilterSelect
-                                value={month}
-                                onChange={setMonth}
-                                options={[
-                                    "All Months",
-                                    "January",
-                                    "February",
-                                    "March",
-                                    "April",
-                                    "May",
-                                    "June",
-                                    "July",
-                                    "August",
-                                    "September",
-                                    "October",
-                                    "November",
-                                    "December",
-                                ]}
-                            />
-
-                            <FilterSelect
-                                value={rig}
-                                onChange={setRig}
-                                options={[
-                                    "All Rigs",
-                                    "Rig-01",
-                                    "Rig-02",
-                                    "Rig-03",
-                                    "Rig-04",
-                                ]}
-                            />
-
-                            <FilterSelect
-                                value={contract}
-                                onChange={setContract}
-                                options={[
-                                    "All Contracts",
-                                    "Contract 01",
-                                    "Contract 02",
-                                    "Contract 03",
-                                    "Contract 04",
-                                ]}
-                            />
-                        </div>
-                    </div>
-
-                    {/* =================================
-                        KPI CARDS
-                    ================================= */}
-
-                    <div
-                        className="dashboard-kpi-grid"
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-                            gap: "12px",
-                            marginBottom: "20px",
-                            width: "100%",
-                            maxWidth: "100%",
-                            boxSizing: "border-box",
-                        }}
-                    >
-                        <MetricCard
-                            title="TOTAL ACTIVE RIG"
-                            value="12"
-                            change="↑ 2"
-                        />
-
-                        <MetricCard
-                            title="TOTAL NO. KONTRAK"
-                            value="45"
-                            change="— 0"
-                        />
-
-                        <MetricCard
-                            title="TOTAL MAN HOURS"
-                            value="1.2M"
-                            change="↑ 5%"
-                        />
-
-                        <MetricCard
-                            title="TOTAL KM DRIVEN"
-                            value="845K"
-                            change="↑ 2%"
-                        />
-
-                        <MetricCard
-                            title="HSE PERFORMANCE"
-                            value="98.5%"
-                            badge="EXCELLENT"
-                        />
-
-                        <MetricCard
-                            title="KPI PERFORMANCE"
-                            value="92.0%"
-                            badge="ON TRACK"
-                        />
-                    </div>
-
-                    {/* =================================
-                        CHARTS
-                    ================================= */}
-
-                    <div
-                        className="dashboard-chart-grid"
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns:
-                                "minmax(0, 1fr) minmax(0, 1fr)",
-                            gap: "14px",
-                            marginBottom: "20px",
-                            width: "100%",
-                            maxWidth: "100%",
-                            boxSizing: "border-box",
-                        }}
-                    >
-                        {/* MONTHLY CHART */}
-
-                        <ChartCard title="HSE Performance Monthly" menu>
-                            <LineChart values={chartValues} />
-                        </ChartCard>
-
-                        {/* TARGET VS ACTUAL */}
-
-                        <ChartCard title="KPI Target vs Actual">
-                            <BarChart />
-                        </ChartCard>
-                    </div>
-
-                    {/* =================================
-                        KPI TABLE
-                    ================================= */}
-
-                    <div
-                        style={{
-                            backgroundColor: "white",
-                            border: "1px solid #d4ded9",
-                            borderRadius: "5px",
-                            overflow: "hidden",
-                        }}
-                    >
-                        {/* TABLE HEADER */}
-
-                        <div
-                            style={{
-                                padding: "16px 14px",
-                                borderBottom: "1px solid #dce4e1",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                            }}
-                        >
-                            <h2
+                            <div
                                 style={{
-                                    margin: 0,
-                                    fontSize: "20px",
-                                }}
-                            >
-                                KPI Summary Details
-                            </h2>
-
-                            <button
-                                onClick={() => setShowAll(!showAll)}
-                                style={{
-                                    border: "none",
-                                    background: "transparent",
-                                    color: "#075E45",
-                                    cursor: "pointer",
+                                    padding: "16px 14px",
+                                    borderBottom: "1px solid #dce4e1",
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: "5px",
-                                    fontSize: "14px",
-                                    fontWeight: "600",
+                                    justifyContent: "space-between",
                                 }}
                             >
-                                {showAll ? "Show Less" : "View All"}
+                                <h2
+                                    style={{
+                                        margin: 0,
+                                        fontSize: "20px",
+                                    }}
+                                >
+                                    KPI Summary Details
+                                </h2>
 
-                                <ArrowRight size={14} />
-                            </button>
-                        </div>
+                                <button
+                                    onClick={() => setShowAll(!showAll)}
+                                    style={{
+                                        border: "none",
+                                        background: "transparent",
+                                        color: "#075E45",
+                                        cursor: "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "5px",
+                                        fontSize: "14px",
+                                        fontWeight: "600",
+                                    }}
+                                >
+                                    {showAll ? "Show Less" : "View All"}
 
-                        {/* TABLE */}
+                                    <ArrowRight size={14} />
+                                </button>
+                            </div>
 
-                        <div
-                            style={{
-                                overflowX: "auto",
-                            }}
-                        >
-                            <table
+                            {/* TABLE */}
+
+                            <div
                                 style={{
-                                    width: "100%",
-                                    borderCollapse: "collapse",
-                                    fontSize: "13px",
+                                    overflowX: "auto",
                                 }}
                             >
-                                <thead>
-                                    <tr
-                                        style={{
-                                            backgroundColor: "#f1f5f7",
-                                        }}
-                                    >
-                                        <TableHead>INDICATOR</TableHead>
+                                <table
+                                    style={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                        fontSize: "13px",
+                                    }}
+                                >
+                                    <thead>
+                                        <tr
+                                            style={{
+                                                backgroundColor: "#f1f5f7",
+                                            }}
+                                        >
+                                            <TableHead>INDICATOR</TableHead>
 
-                                        <TableHead>TARGET</TableHead>
+                                            <TableHead>TARGET</TableHead>
 
-                                        <TableHead>ACTUAL</TableHead>
+                                            <TableHead>ACTUAL</TableHead>
 
-                                        <TableHead>ACHIEVEMENT</TableHead>
+                                            <TableHead>ACHIEVEMENT</TableHead>
 
-                                        <TableHead>STATUS</TableHead>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {displayedKpi.length > 0 ? (
-                                        displayedKpi.map((item, index) => (
-                                            <tr
-                                                key={index}
-                                                style={{
-                                                    borderBottom:
-                                                        "1px solid #dce4e1",
-                                                }}
-                                            >
-                                                <TableCell left>
-                                                    {item.indicator}
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    {item.target}
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    {item.actual}
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <span
-                                                        style={{
-                                                            color:
-                                                                item.achievement >=
-                                                                90
-                                                                    ? "#0A6B50"
-                                                                    : item.achievement >=
-                                                                        70
-                                                                      ? "#b45309"
-                                                                      : "#dc2626",
-                                                            fontWeight: "600",
-                                                            fontSize: "13px",
-                                                        }}
-                                                    >
-                                                        {item.achievement}%
-                                                    </span>
-                                                </TableCell>
-
-                                                <TableCell>
-                                                    <StatusBadge
-                                                        status={item.status}
-                                                    />
-                                                </TableCell>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td
-                                                colSpan="5"
-                                                style={{
-                                                    padding: "30px",
-                                                    textAlign: "center",
-                                                    color: "#61786D",
-                                                    fontSize: "14px",
-                                                }}
-                                            >
-                                                Data tidak ditemukan.
-                                            </td>
+                                            <TableHead>STATUS</TableHead>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+
+                                    <tbody>
+                                        {displayedKpi.length > 0 ? (
+                                            displayedKpi.map((item, index) => (
+                                                <tr
+                                                    key={index}
+                                                    style={{
+                                                        borderBottom:
+                                                            "1px solid #dce4e1",
+                                                    }}
+                                                >
+                                                    <TableCell left>
+                                                        {item.indicator}
+                                                    </TableCell>
+
+                                                    <TableCell>
+                                                        {item.target}
+                                                    </TableCell>
+
+                                                    <TableCell>
+                                                        {item.actual}
+                                                    </TableCell>
+
+                                                    <TableCell>
+                                                        <span
+                                                            style={{
+                                                                color:
+                                                                    item.achievement >=
+                                                                    90
+                                                                        ? "#0A6B50"
+                                                                        : item.achievement >=
+                                                                            70
+                                                                          ? "#b45309"
+                                                                          : "#dc2626",
+                                                                fontWeight:
+                                                                    "600",
+                                                                fontSize:
+                                                                    "13px",
+                                                            }}
+                                                        >
+                                                            {item.achievement}%
+                                                        </span>
+                                                    </TableCell>
+
+                                                    <TableCell>
+                                                        <StatusBadge
+                                                            status={item.status}
+                                                        />
+                                                    </TableCell>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td
+                                                    colSpan="5"
+                                                    style={{
+                                                        padding: "30px",
+                                                        textAlign: "center",
+                                                        color: "#61786D",
+                                                        fontSize: "14px",
+                                                    }}
+                                                >
+                                                    Data tidak ditemukan.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                </main>
-            </div>
+                    </main>
+                </div>
             </div>
         </>
     );
@@ -941,7 +946,8 @@ function MetricCard({ title, value, change, badge }) {
                     left: 0,
                     right: 0,
                     height: "4px",
-                    background: "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
+                    background:
+                        "linear-gradient(90deg, #004d32 0%, #efff00 100%)",
                 }}
             />
 
@@ -1056,7 +1062,13 @@ function ChartCard({ title, children, menu = false }) {
                     {title}
                 </h2>
 
-                {menu && <MoreVertical size={16} color="#004d32" style={{ cursor: "pointer" }} />}
+                {menu && (
+                    <MoreVertical
+                        size={16}
+                        color="#004d32"
+                        style={{ cursor: "pointer" }}
+                    />
+                )}
             </div>
 
             {children}
@@ -1108,9 +1120,23 @@ function LineChart({ values }) {
                 preserveAspectRatio="none"
             >
                 <defs>
-                    <linearGradient id="neonGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#efff00" stopOpacity="0.5" />
-                        <stop offset="100%" stopColor="#004d32" stopOpacity="0.05" />
+                    <linearGradient
+                        id="neonGrad"
+                        x1="0%"
+                        y1="0%"
+                        x2="0%"
+                        y2="100%"
+                    >
+                        <stop
+                            offset="0%"
+                            stopColor="#efff00"
+                            stopOpacity="0.5"
+                        />
+                        <stop
+                            offset="100%"
+                            stopColor="#004d32"
+                            stopOpacity="0.05"
+                        />
                     </linearGradient>
                 </defs>
 
@@ -1205,7 +1231,13 @@ function BarChart() {
                     color: "#004d32",
                 }}
             >
-                <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                <span
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "5px",
+                    }}
+                >
                     <span
                         style={{
                             width: "9px",
@@ -1217,13 +1249,21 @@ function BarChart() {
                     Target
                 </span>
 
-                <span style={{ display: "flex", alignItems: "center", gap: "5px", color: "#004d32" }}>
+                <span
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        color: "#004d32",
+                    }}
+                >
                     <span
                         style={{
                             width: "9px",
                             height: "9px",
                             borderRadius: "3px",
-                            background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                            background:
+                                "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
                             border: "1px solid #004d32",
                         }}
                     />
@@ -1285,9 +1325,11 @@ function BarChart() {
                                 style={{
                                     width: "16px",
                                     height: `${item.actual}%`,
-                                    background: "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
+                                    background:
+                                        "linear-gradient(180deg, #efff00 0%, #004d32 100%)",
                                     borderRadius: "4px 4px 0 0",
-                                    boxShadow: "0 0 10px rgba(239, 255, 0, 0.4)",
+                                    boxShadow:
+                                        "0 0 10px rgba(239, 255, 0, 0.4)",
                                     border: "1px solid #004d32",
                                     transition: "height 0.3s ease",
                                 }}
@@ -1388,7 +1430,9 @@ function StatusBadge({ status }) {
                 backgroundColor: bg,
                 color: color,
                 border: `1px solid ${border}`,
-                boxShadow: isAchieved ? "0 0 8px rgba(239, 255, 0, 0.3)" : "none",
+                boxShadow: isAchieved
+                    ? "0 0 8px rgba(239, 255, 0, 0.3)"
+                    : "none",
                 fontSize: "11px",
                 fontWeight: "800",
             }}
