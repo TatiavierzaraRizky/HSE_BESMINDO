@@ -40,171 +40,57 @@ import {
 ============================================================ */
 
 const LAGGING_MASTER = [
-    {
-        key: "fatality",
-        name: "Lost Time Incidents (LTI) - Fatality",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "serious_lost_time_injury",
-        name: "Serious Lost Time Injury (>21 Days)",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "restricted_work_case",
-        name: "Restricted Work Case (RWC)",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "medical_treatment_case",
-        name: "Medical Treatment Case (MTC)",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "total_recordable_injury",
-        name: "Total Recordable Injury (TRI)",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "motor_vehicle_crash",
-        name: "Motor Vehicle Crash (MVC)",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "oil_spill",
-        name: "Environmental Spills (Oil Spill)",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "fire_incident",
-        name: "Fire Incidents",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "property_damage",
-        name: "Property Damage Incident",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "security_incident",
-        name: "Security Incidents",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "occupational_illness",
-        name: "Occupational Illness",
-        category: "Lagging",
-        isLagging: true,
-    },
-    {
-        key: "first_aid_case",
-        name: "First Aid Cases",
-        category: "Lagging",
-        isLagging: true,
-    },
+    { no: "1.1", key: "fatality", name: "FATALITY", category: "Lagging", isLagging: true, unit: "Case", definition: "FR = (kasus cedera x 200.000) / Jam Kerja" },
+    { no: "1.2", key: "serious_lost_time_injury", name: "SERIOUS LOST TIME INJURY (>21 LOST DAY)", category: "Lagging", isLagging: true, unit: "Case", definition: "FR = (kasus cedera x 200.000) / Jam Kerja" },
+    { no: "1.3", key: "restricted_work_case", name: "RESTRICTED WORK CASE (RWC)", category: "Lagging", isLagging: true, unit: "Case", definition: "FR = (kasus cedera x 200.000) / Jam Kerja" },
+    { no: "1.4", key: "medical_treatment_case", name: "MEDICAL TREATMENT CASE (MTC)", category: "Lagging", isLagging: true, unit: "Case", definition: "FR = (kasus cedera x 200.000) / Jam Kerja" },
+    { no: "1.5", key: "total_recordable_injury", name: "TOTAL RECORDABLE INJURY (TRI)", category: "Lagging", isLagging: true, unit: "Case", definition: "TRI = 1.1 + 1.2 + 1.3 + 1.4" },
+    { no: "1.6", key: "motor_vehicle_crash", name: "MOTOR VEHICLE CRASH (MVC)", category: "Lagging", isLagging: true, unit: "Case", definition: "MVC FR = (kasus x 1.000.000) / KM" },
+    { no: "1.7", key: "oil_spill", name: "TUMPAHAN / OIL SPILL", category: "Lagging", isLagging: true, unit: "Case", definition: "Record case >1 barrel" },
+    { no: "1.8", key: "fire_incident", name: "FIRE", category: "Lagging", isLagging: true, unit: "Case", definition: "Record case > Rp. 100 Jt" },
+    { no: "1.9", key: "property_damage", name: "PROPERTY DAMAGE", category: "Lagging", isLagging: true, unit: "Case", definition: "Record case > Rp. 100 Jt" },
+    { no: "1.10", key: "security_incident", name: "SECURITY CASE", category: "Lagging", isLagging: true, unit: "Case", definition: "Record case" },
+    { no: "1.11", key: "illness_fatality", name: "ILLNESS/FATALITY", category: "Lagging", isLagging: true, unit: "Case", definition: "Record case" },
+    { no: "1.12", key: "reportable_case", name: "REPORTABLE CASE : OPS. INCIDENT / ETA / FAC / NEARMISS", category: "Lagging", isLagging: true, unit: "Case", definition: "Reportable case" },
 ];
 
 const LEADING_MASTER = [
-    { key: "peka", name: "Safety Observations (PEKA)", category: "Leading" },
-    {
-        key: "hazid",
-        name: "Hazard Identification (HAZID)",
-        category: "Leading",
-    },
-    { key: "swa", name: "Stop Work Authority (SWA)", category: "Leading" },
-    {
-        key: "safety_equipment",
-        name: "Safety Equipment & APD Inspection",
-        category: "Leading",
-    },
-    { key: "drops", name: "Drops Inspection Program", category: "Leading" },
-    {
-        key: "vv_inspection",
-        name: "Inspeksi V&V Operation",
-        category: "Leading",
-    },
-    {
-        key: "audit_smk3l",
-        name: "Safety Audits Completed (SMK3L)",
-        category: "Leading",
-    },
-    {
-        key: "spot_check",
-        name: "Vehicle & Rig Spot Check",
-        category: "Leading",
-    },
-    {
-        key: "monitoring_kepatuhan",
-        name: "Driver Compliance Monitoring",
-        category: "Leading",
-    },
-    { key: "pti", name: "Pre-Task Identification (PTI)", category: "Leading" },
-    { key: "mcu", name: "Medical Check Up (MCU)", category: "Leading" },
-    {
-        key: "management_visit",
-        name: "Management Walkthrough / MWT",
-        category: "Leading",
-    },
-    {
-        key: "rapat_keselamatan",
-        name: "Safety Committee Meetings",
-        category: "Leading",
-    },
-    {
-        key: "pre_hitch",
-        name: "Pre-Hitch Safety Meetings",
-        category: "Leading",
-    },
-    {
-        key: "safety_talk",
-        name: "Toolbox Talks & Safety Talks",
-        category: "Leading",
-    },
-    {
-        key: "forum_kampanye",
-        name: "HSE Campaigns & Forums",
-        category: "Leading",
-    },
-    {
-        key: "hygiene",
-        name: "Industrial Hygiene Monitoring",
-        category: "Leading",
-    },
-    {
-        key: "housekeeping",
-        name: "Rig Site Housekeeping 5S",
-        category: "Leading",
-    },
-    {
-        key: "penghargaan",
-        name: "HSE Recognition & Awards",
-        category: "Leading",
-    },
-    {
-        key: "on_site_training",
-        name: "HSE Training & Development",
-        category: "Leading",
-    },
-    {
-        key: "erp_drill_rig",
-        name: "Emergency Response Drill (Rig)",
-        category: "Leading",
-    },
-    {
-        key: "erp_drill_yard",
-        name: "Emergency Response Drill (Yard)",
-        category: "Leading",
-    },
+    { no: 1, key: "peka", name: "OBSERVASI PERILAKU (PEKA) *)", definition: "2 Laporan / Org / Bln", category: "Leading", unit: "Laporan", targetMonthly: 180, targetAnnual: 2160 },
+    { no: 2, key: "hazid", name: "IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)", definition: "15 Laporan/ Shift / Hari", category: "Leading", unit: "Laporan", targetMonthly: 900, targetAnnual: 10800 },
+    { no: 3, key: "swa", name: "SWA REPORT", definition: "3 Laporan/ Shift / Hari", category: "Leading", unit: "Laporan", targetMonthly: 60, targetAnnual: 720 },
+    { no: 4, key: "safety_equipment", name: "INSPEKSI SAFETY EQUIPMENT & APD *) (Eye wash, Shower, Fire, P3K, Tandu, FBH, SCBA)", definition: "Laporan bulanan", category: "Leading", unit: "Laporan", targetMonthly: 1, targetAnnual: 12 },
+    { no: 5, key: "lr_color_code", name: "EKSTERNAL INSPEKSI LR COLOR CODE", definition: "1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 6, key: "drops", name: "INSPEKSI BENDA JATUH / DROPS **)", definition: "Per 7 hari / 30 hari / 90 hari / 180 hari", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
+    { no: 7, key: "vv_inspection", name: "INTERNAL INSPEKSI / V&V OLEH TEAM", definition: "Minimal 1x / bulan", category: "Leading", unit: "Laporan", targetMonthly: 1, targetAnnual: 12 },
+    { no: 8, key: "audit_smk3l", name: "INSPEKSI / AUDIT SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR", definition: "1x / Tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 9, key: "spot_check", name: "SPOT CHECK KENDARAAN *) **)", definition: "1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 10, key: "audit_sistem", name: "AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)", definition: "1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 11, key: "monitoring_kepatuhan", name: "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)", definition: "100% tak ada pelanggaran", category: "Leading", unit: "%", targetMonthly: "100%", targetAnnual: "100%", isPercentage: true },
+    { no: 12, key: "pti", name: "Laporan Inspeksi Kendaraan (PTI)", definition: "1 laporan (Random) / bulan / unit", category: "Leading", unit: "Laporan", targetMonthly: 11, targetAnnual: 132 },
+    { no: 13, key: "mcu_random", name: "SPESIFIK MCU RANDOM : (NAPZA & MIRAS TEST *)", definition: "1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 14, key: "pra_mcu", name: "PRA MCU (MCU TAHUNAN BAGI YANG KONSULTASI TAHUN SEBELUMNYA)", definition: "1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 15, key: "top_mwt", name: "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)", definition: "1x / Caturwulan", category: "Leading", unit: "Kunjungan", targetMonthly: "TBA", targetAnnual: 3 },
+    { no: 16, key: "mwt", name: "MANAGEMENT VISIT / MWT (Level Coord level s/d Manager *)", definition: "4X / Rig / bulan", category: "Leading", unit: "Kunjungan", targetMonthly: 4, targetAnnual: 48 },
+    { no: 17, key: "tgm", name: "RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)", definition: "1x / shift / hari", category: "Leading", unit: "Rapat", targetMonthly: 60, targetAnnual: 720 },
+    { no: 18, key: "pre_hitch", name: "PRE HITCH MEETING", definition: "3x / Bulan", category: "Leading", unit: "Rapat", targetMonthly: 3, targetAnnual: 36 },
+    { no: 19, key: "rapat_phr", name: "RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.", definition: "Minimal 4x / bulan", category: "Leading", unit: "Rapat", targetMonthly: 4, targetAnnual: 48 },
+    { no: 20, key: "safety_talk", name: "SAFETY TALK MONTHLY MEETING : Support Yard & RIG", definition: "Minimal 1X / Bulan", category: "Leading", unit: "Rapat", targetMonthly: 1, targetAnnual: 12 },
+    { no: 21, key: "leadership_forum", name: "LEADERSHIP FORUM ***)", definition: "1X / Caturwulan", category: "Leading", unit: "Forum", targetMonthly: "TBA", targetAnnual: 3 },
+    { no: 22, key: "kampanye", name: "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK) *)", definition: "1X / Caturwulan", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 3 },
+    { no: 23, key: "review_manajemen", name: "REVIEW, TINJAUAN MANAJEMEN *)", definition: "1X / Tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 24, key: "hygiene_noise", name: "HYGIENE MONITORING : NOISE & LUX MONITORING **)", definition: "Min 1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 25, key: "hygiene_mess", name: "HYGIENE MONITORING : Mess, Catering, DAM*)", definition: "Min 1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 26, key: "housekeeping_rig", name: "INSPEKSI \"HOUSEKEEPING RIG\"", definition: "1x / Bulan", category: "Leading", unit: "Laporan", targetMonthly: 1, targetAnnual: 12 },
+    { no: 27, key: "kontes_housekeeping", name: "PENGHARGAAN: KONTES \"HOUSEKEEPING RIG\" *)", definition: "1x / semester", category: "Leading", unit: "Penghargaan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 28, key: "laporan_lh", name: "PELAPORAN LINGKUNGAN KE DINAS LH", definition: "1x / semester", category: "Leading", unit: "Laporan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 29, key: "rig_of_the_month", name: "PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL **)", definition: "Rig Yang The Best / Mencapai target nilai yang ditentukan", category: "Leading", unit: "Penghargaan", targetMonthly: "TBA", targetAnnual: "TBA" },
+    { no: 30, key: "best_peka", name: "PENGHARGAAN THE BEST BBS / PEKA", definition: "1 orang / bulan / Rig", category: "Leading", unit: "Orang", targetMonthly: 1, targetAnnual: 12 },
+    { no: 31, key: "best_driver", name: "PENGHARGAAN THE BEST DRIVER", definition: "1 orang / bulan / Rig", category: "Leading", unit: "Orang", targetMonthly: 1, targetAnnual: 12 },
+    { no: 32, key: "selamat_tahunan", name: "PENGHARGAAN: PENCAPAIAN KERJA SELAMAT TAHUNAN", definition: "Non recordable case dalam 1 tahun", category: "Leading", unit: "Penghargaan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 33, key: "hes_refreshing", name: "PENGHARGAAN HES REFRESHING", definition: "Per Semester / Per 1 tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "2 / 1" },
+    { no: 34, key: "on_site_training", name: "\"ON SITE TRAINING\" DI LOKASI *)", definition: "Min 1x / kru + Hyb / bulan", category: "Leading", unit: "Sesi", targetMonthly: 6, targetAnnual: 72 },
+    { no: 35, key: "erp_drill_rig", name: "EMERGENCY RESPONSE DRILL (RIG) *)", definition: "1 x / kru + Hyb / 3 bulan (sesuai jadwal)", category: "Leading", unit: "Drill", targetMonthly: 3, targetAnnual: 36 },
+    { no: 36, key: "erp_drill_yard", name: "EMERGENCY RESPONSE DRILL (YARD/WORK SHOP) *)", definition: "1 x / Semester", category: "Leading", unit: "Drill", targetMonthly: "TBA", targetAnnual: 2 },
 ];
 
 function normalizeReport(report) {
@@ -341,6 +227,9 @@ export default function KPIPerRig() {
                 const repMonth = getReportMonth(rep);
                 if (targetMonths.includes(repMonth)) {
                     const found = rep.laggingIndicators?.find((item) => {
+                        if (item.indicator_no && String(item.indicator_no).trim() === String(def.no).trim()) {
+                            return true;
+                        }
                         const name = (
                             item.indicator_name ||
                             item.name ||
@@ -348,11 +237,12 @@ export default function KPIPerRig() {
                         ).toLowerCase();
                         return (
                             name.includes(def.key) ||
-                            def.name.toLowerCase().includes(name)
+                            def.name.toLowerCase().includes(name) ||
+                            name.includes(def.name.toLowerCase())
                         );
                     });
                     targetSum += Number(
-                        found?.plan_value || found?.target || 0,
+                        found?.plan_value || found?.target || found?.plan || 0,
                     );
                     actualSum += Number(
                         found?.actual_value || found?.actual || 0,
@@ -365,16 +255,19 @@ export default function KPIPerRig() {
 
             list.push({
                 indicator: def.name,
+                indicator_no: def.no,
                 category: "Lagging",
                 target: targetSum,
                 actual: actualSum,
                 variance,
                 status,
                 isLagging: true,
+                unit: def.unit,
+                definition: def.definition,
             });
         });
 
-        // 2. Leading Indicators (22 Indicators)
+        // 2. Leading Indicators (36 Indicators)
         LEADING_MASTER.forEach((def) => {
             let targetSum = 0;
             let actualSum = 0;
@@ -383,6 +276,9 @@ export default function KPIPerRig() {
                 const repMonth = getReportMonth(rep);
                 if (targetMonths.includes(repMonth)) {
                     const found = rep.leadingIndicators?.find((item) => {
+                        if (item.indicator_no && Number(item.indicator_no) === Number(def.no)) {
+                            return true;
+                        }
                         const name = (
                             item.indicator_name ||
                             item.name ||
@@ -390,11 +286,12 @@ export default function KPIPerRig() {
                         ).toLowerCase();
                         return (
                             name.includes(def.key) ||
-                            def.name.toLowerCase().includes(name)
+                            def.name.toLowerCase().includes(name) ||
+                            name.includes(def.name.toLowerCase())
                         );
                     });
                     targetSum += Number(
-                        found?.plan_value || found?.target || 0,
+                        found?.plan_value || found?.target || found?.plan || 0,
                     );
                     actualSum += Number(
                         found?.actual_value || found?.actual || 0,
@@ -410,12 +307,15 @@ export default function KPIPerRig() {
 
             list.push({
                 indicator: def.name,
+                indicator_no: def.no,
                 category: "Leading",
                 target: targetSum,
                 actual: actualSum,
                 variance,
                 status,
                 isLagging: false,
+                unit: def.unit,
+                isPercentage: def.isPercentage,
             });
         });
 

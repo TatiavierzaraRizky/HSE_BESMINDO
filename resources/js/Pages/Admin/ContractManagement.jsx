@@ -1238,7 +1238,7 @@ export default function ContractManagement() {
                             Rig No *
                         </label>
 
-                        <input
+                        <input    
                             value={
                                 form.rigNo
                             }

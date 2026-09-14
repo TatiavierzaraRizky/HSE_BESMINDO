@@ -126,6 +126,12 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
         'show'
     ])->name('admin.hse-report.show');
 
+    // Hapus satu report berdasarkan ID (CRUD Delete)
+    Route::delete('/hse-report/{id}', [
+        HseReportController::class,
+        'destroy'
+    ])->name('admin.hse-report.destroy');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -133,9 +139,10 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/hse-performance', function () {
-        return Inertia::render('Admin/HSEPerformance');
-    })->name('admin.hse-performance');
+    Route::get('/hse-performance', [
+        HseReportController::class,
+        'performance',
+    ])->name('admin.hse-performance');
 
 
     /*

@@ -273,7 +273,7 @@ const LEADING_INDICATOR_MASTER = [
     {
         no: 2,
         indicator: "IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)",
-        definition: "1.5 Laporan / Shift / Hari",
+        definition: "15 Laporan/ Shift / Hari",
         monthlyTarget: 900,
         annualTarget: 10800,
         definition2: "Total target bulanan menyesuaikan jumlah hari / bulan",
@@ -282,7 +282,7 @@ const LEADING_INDICATOR_MASTER = [
     {
         no: 3,
         indicator: "SWA REPORT",
-        definition: "3 Laporan / Shift / Hari",
+        definition: "3 Laporan/ Shift / Hari",
         monthlyTarget: 60,
         annualTarget: 720,
         definition2: "",
@@ -468,7 +468,7 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: "TBA",
         annualTarget: 1,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],    
     },
     {
         no: 24,
@@ -694,6 +694,22 @@ function buildLaggingRows(reports) {
             row.values.actual[month] += number(item.actual);
         });
     });
+
+    // Perhitungan Kumulatif TRI (1.5) = 1.1 (Fatality) + 1.2 (Serious LTI) + 1.3 (RWC) + 1.4 (MTC)
+    const row1_1 = map.get("1.1");
+    const row1_2 = map.get("1.2");
+    const row1_3 = map.get("1.3");
+    const row1_4 = map.get("1.4");
+    const row1_5 = map.get("1.5");
+
+    if (row1_5 && row1_1 && row1_2 && row1_3 && row1_4) {
+        for (let m = 0; m < 12; m++) {
+            const sumPlan = row1_1.values.plan[m] + row1_2.values.plan[m] + row1_3.values.plan[m] + row1_4.values.plan[m];
+            const sumActual = row1_1.values.actual[m] + row1_2.values.actual[m] + row1_3.values.actual[m] + row1_4.values.actual[m];
+            row1_5.values.plan[m] = Math.max(row1_5.values.plan[m], sumPlan);
+            row1_5.values.actual[m] = Math.max(row1_5.values.actual[m], sumActual);
+        }
+    }
   
     return Array.from(map.values()).map((item) => ({
         ...item,
@@ -1505,7 +1521,7 @@ export default function Reports() {
         ws.mergeCells("A1:AM1");
 
         ws.getCell("A1").value =
-            `KEY PERFORMANCE INDICATOR BMS#03A`;
+            `KEY PERFORMANCE INDICATOR (HSE) - PT BESMINDO MATERI SEWATAMA (BMSD/03/FO/HSE/02/17 Rev: #12)`;
 
         applyCellStyle(ws.getCell("A1"), {
             size: 15,
@@ -2627,7 +2643,7 @@ export default function Reports() {
 
                 const ws =
                     workbook.addWorksheet(
-                        "KPI BMS#03A",
+                        rig !== "All Rigs" ? `KPI ${rig}` : "KPI HSE",
                     );
 
                 ws.pageSetup = {
@@ -3156,7 +3172,7 @@ export default function Reports() {
                             "8px",
                         border:
                             "1px solid #d9e2de",
-                        marginBottom:
+                        marginBottom:       
                             "18px",
                         display:
                             "flex",
@@ -3185,7 +3201,7 @@ export default function Reports() {
                                     "6px 0 0",
                                 color:
                                     "#526B60",
-                                fontSize:
+                                fontSize: 
                                     "14px",
                             }}
                         >
@@ -3751,9 +3767,7 @@ export default function Reports() {
                                                 "20px",
                                         }}
                                     >
-                                        Report Preview:
-                                        KPI
-                                        BMS#03A
+                                        Report Preview: KPI {rig !== "All Rigs" ? rig : "(All Rigs)"}
                                     </h2>
 
                                     <p
@@ -3834,9 +3848,7 @@ export default function Reports() {
                                             "18px",
                                     }}
                                 >
-                                    KEY PERFORMANCE
-                                    INDICATOR
-                                    BMS#03A
+                                    KEY PERFORMANCE INDICATOR (HSE) {rig !== "All Rigs" ? rig : ""}
                                 </div>
 
                                 <div

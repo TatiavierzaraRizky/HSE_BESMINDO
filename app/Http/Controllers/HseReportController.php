@@ -217,6 +217,14 @@ class HseReportController extends Controller
     }
 
     /**
+     * Menampilkan halaman HSE Performance.
+     */
+    public function performance(Request $request)
+    {
+        return Inertia::render('Admin/HSEPerformance', $this->getReportData($request));
+    }
+
+    /**
      * Menyimpan report utama sekaligus data Man Hours, Lagging, dan Leading.
      */
     public function store(Request $request)
@@ -793,6 +801,26 @@ class HseReportController extends Controller
                 'status' =>
                     $report->status,
             ],
+        ]);
+    }
+
+    /**
+     * Menghapus report HSE dan data terkait (CRUD Delete).
+     */
+    public function destroy($id)
+    {
+        $report = HseReport::findOrFail($id);
+
+        DB::transaction(function () use ($report) {
+            $report->manHours()->delete();
+            $report->laggingIndicators()->delete();
+            $report->leadingIndicators()->delete();
+            $report->delete();
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Laporan HSE berhasil dihapus.',
         ]);
     }
 }

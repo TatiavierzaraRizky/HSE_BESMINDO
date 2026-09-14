@@ -975,7 +975,7 @@ export default function ActualReport() {
                             fontSize: "18px",
                         }}
                     >
-                        KEY PERFORMANCE INDICATOR BMS#03A - ACTUAL
+                        KEY PERFORMANCE INDICATOR (HSE) {rig !== "All Rigs" ? rig : ""} - ACTUAL
                     </div>
 
                     <div

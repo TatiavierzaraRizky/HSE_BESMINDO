@@ -984,7 +984,7 @@ export default function PlanReport() {
                             fontSize: "18px",
                         }}
                     >
-                        KEY PERFORMANCE INDICATOR BMS#03A - PLAN
+                        KEY PERFORMANCE INDICATOR (HSE) {rig !== "All Rigs" ? rig : ""} - PLAN
                     </div>
 
                     <div
