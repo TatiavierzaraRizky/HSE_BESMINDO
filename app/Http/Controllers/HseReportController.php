@@ -185,6 +185,14 @@ class HseReportController extends Controller
     }
 
     /**
+     * Menampilkan halaman Admin Dashboard dengan live data.
+     */
+    public function dashboard(Request $request)
+    {
+        return Inertia::render('Admin/AdminDashboard', $this->getReportData($request));
+    }
+
+    /**
      * Menampilkan halaman Reports utama.
      */
     public function index(Request $request)

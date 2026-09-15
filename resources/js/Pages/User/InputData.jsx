@@ -572,18 +572,22 @@ export default function UserInputData() {
                                     value={form.rigNo}
                                     onChange={handleChange}
                                     options={[
-                                        "BMS#07",
-                                        "BMS#15",
-                                        "BMS#18",
-                                        "BMS#01",
                                         "BMS#02",
                                         "BMS#03",
-                                        "Rig-01",
-                                        "Rig-02",
-                                        "Rig-03",
-                                        "Rig-04",
-                                        "Rig-05",
-                                        "Rig-12",
+                                        "BMS#03A",
+                                        "BMS#05",
+                                        "BMS#06",
+                                        "BMS#07",
+                                        "BMS#08",
+                                        "BMS#10",
+                                        "BMS#11",
+                                        "BMS#15",
+                                        "BMS#16",
+                                        "BMS#17",
+                                        "BMS#18",
+                                        "BMS#19",
+                                        "BMS#20",
+                                        "BMS#21",
                                     ]}
                                     required
                                 />

@@ -99,36 +99,6 @@ function AdminSidebar({
         },
 
         {
-            name: "HSE Performance",
-            href: "/admin/hse-performance",
-            icon: ShieldCheck,
-        },
-
-        {
-            name: "KPI Per Rig",
-            href: "/admin/kpi-per-rig",
-            icon: BarChart3,
-        },
-
-        {
-            name: "Target KPI Management",
-            href: "/admin/target-kpi",
-            icon: Target,
-        },
-
-        {
-            name: "Rig & Contract",
-            href: "/admin/contract-management",
-            icon: FileText,
-        },
-
-        {
-            name: "Rig Management",
-            href: "/admin/rig-management",
-            icon: Settings2,
-        },
-
-        {
             name: "Approval",
             href: "/admin/approval",
             icon: CheckCircle2,
@@ -150,6 +120,30 @@ function AdminSidebar({
             name: "Actual Report",
             href: "/admin/reports/actual",
             icon: TrendingUp,
+        },
+
+        {
+            name: "HSE Performance",
+            href: "/admin/hse-performance",
+            icon: ShieldCheck,
+        },
+
+        {
+            name: "KPI Per Rig",
+            href: "/admin/kpi-per-rig",
+            icon: BarChart3,
+        },
+
+        {
+            name: "Target KPI Management",
+            href: "/admin/target-kpi",
+            icon: Target,
+        },
+
+        {
+            name: "Rig & Contract",
+            href: "/admin/rig-management",
+            icon: Settings2,
         },
 
         {
@@ -348,8 +342,8 @@ function AdminSidebar({
                         style={{
                             padding:
                                 collapsed
-                                    ? "20px 8px"
-                                    : "20px 16px",
+                                    ? "16px 8px"
+                                    : "16px",
 
                             borderBottom:
                                 "1px solid #e2e8f0",
@@ -379,8 +373,8 @@ function AdminSidebar({
                             {/* CHECK ICON */}
                             <div
                                 style={{
-                                    width: "40px",
-                                    height: "40px",
+                                    width: "38px",
+                                    height: "38px",
 
                                     borderRadius:
                                         "50%",
@@ -401,7 +395,7 @@ function AdminSidebar({
                                         "#efff00",
 
                                     fontSize:
-                                        "20px",
+                                        "18px",
 
                                     fontWeight:
                                         "bold",
@@ -418,7 +412,7 @@ function AdminSidebar({
                                     <div
                                         style={{
                                             fontSize:
-                                                "14px",
+                                                "13.5px",
 
                                             fontWeight:
                                                 "700",
@@ -436,98 +430,26 @@ function AdminSidebar({
                                     <div
                                         style={{
                                             fontSize:
-                                                "10px",
+                                                "11px",
 
                                             color:
                                                 "#64748b",
 
                                             marginTop:
-                                                "3px",
+                                                "2px",
 
                                             whiteSpace:
                                                 "nowrap",
+
+                                            fontWeight:
+                                                "500",
                                         }}
                                     >
-                                        Rig-04 Sector Alpha
+                                        Administrator
                                     </div>
                                 </div>
                             )}
                         </div>
-
-                        {/* =================================================
-                            EXPORT REPORT
-                        ================================================= */}
-                        <button
-                            type="button"
-                            title={
-                                collapsed
-                                    ? "Export Report"
-                                    : ""
-                            }
-                            style={{
-                                width:
-                                    collapsed
-                                        ? "40px"
-                                        : "100%",
-
-                                height:
-                                    collapsed
-                                        ? "40px"
-                                        : "auto",
-
-                                marginTop:
-                                    "16px",
-
-                                padding:
-                                    collapsed
-                                        ? "0"
-                                        : "11px",
-
-                                border: "none",
-
-                                borderRadius:
-                                    "5px",
-
-                                backgroundColor:
-                                    "#004d32",
-
-                                color:
-                                    "#ffffff",
-
-                                fontSize:
-                                    "10px",
-
-                                fontWeight:
-                                    "700",
-
-                                cursor:
-                                    "pointer",
-
-                                display:
-                                    "flex",
-
-                                alignItems:
-                                    "center",
-
-                                justifyContent:
-                                    "center",
-
-                                whiteSpace:
-                                    "nowrap",
-
-                                boxSizing:
-                                    "border-box",
-                            }}
-                        >
-                            {collapsed ? (
-                                <ArrowUpRight
-                                    size={17}
-                                    strokeWidth={2.5}
-                                />
-                            ) : (
-                                "Export Report"
-                            )}
-                        </button>
                     </div>
 
                     {/* =================================================

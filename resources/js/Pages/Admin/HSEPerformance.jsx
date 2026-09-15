@@ -84,9 +84,16 @@ export default function HSEPerformance() {
         return Array.from(set).sort((a, b) => b - a);
     }, [reports]);
 
+    const ALL_MASTER_RIGS = [
+        "BMS#02", "BMS#03", "BMS#03A", "BMS#05", "BMS#06", "BMS#07",
+        "BMS#08", "BMS#10", "BMS#11", "BMS#15", "BMS#16", "BMS#17",
+        "BMS#18", "BMS#19", "BMS#20", "BMS#21"
+    ];
+
     const availableRigs = useMemo(() => {
-        const set = new Set(reports.map(r => r.rig_no).filter(Boolean));
-        return Array.from(set).sort();
+        const set = new Set(ALL_MASTER_RIGS);
+        reports.forEach((r) => { if (r.rig_no) set.add(r.rig_no); });
+        return Array.from(set);
     }, [reports]);
 
     const availableProjects = useMemo(() => {
@@ -436,6 +443,100 @@ export default function HSEPerformance() {
         outline: "none",
         cursor: "pointer",
     };
+
+    const labelStyle = {
+        display: "block",
+        fontSize: "11px",
+        fontWeight: "700",
+        color: colors.muted,
+        marginBottom: "4px",
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+    };
+
+    const headerButtonStyle = {
+        width: "38px",
+        height: "38px",
+        borderRadius: "8px",
+        border: `1px solid ${colors.border}`,
+        backgroundColor: "#ffffff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
+        fontSize: "16px",
+        transition: "all 0.2s ease",
+    };
+
+    const sectionHeaderStyle = {
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "14px",
+        flexWrap: "wrap",
+        gap: "8px",
+    };
+
+    const sectionTitleStyle = {
+        margin: 0,
+        fontSize: "15px",
+        fontWeight: "800",
+        color: "#0f172a",
+        letterSpacing: "-0.01em",
+    };
+
+    const thStyle = {
+        padding: "11px 14px",
+        backgroundColor: "#f8fafc",
+        color: "#475569",
+        fontSize: "11.5px",
+        fontWeight: "800",
+        textTransform: "uppercase",
+        letterSpacing: "0.04em",
+        borderBottom: "1px solid #e2e8f0",
+        whiteSpace: "nowrap",
+    };
+
+    const tdStyle = {
+        padding: "11px 14px",
+        fontSize: "12.5px",
+        color: "#334155",
+        verticalAlign: "middle",
+    };
+
+    const tableButtonStyle = {
+        padding: "4px 8px",
+        backgroundColor: "#f1f5f9",
+        border: "1px solid #cbd5e1",
+        borderRadius: "4px",
+        cursor: "pointer",
+        fontSize: "13px",
+    };
+
+    const exportButtonStyle = {
+        padding: "7px 14px",
+        backgroundColor: colors.green,
+        color: "#ffffff",
+        border: "none",
+        borderRadius: "6px",
+        fontSize: "12px",
+        fontWeight: "700",
+        cursor: "pointer",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+    };
+
+    const paginationButtonStyle = (disabled) => ({
+        padding: "6px 12px",
+        border: `1px solid ${colors.border}`,
+        borderRadius: "6px",
+        backgroundColor: disabled ? "#f1f5f9" : "#ffffff",
+        color: disabled ? "#94a3b8" : colors.text,
+        fontSize: "12px",
+        fontWeight: "700",
+        cursor: disabled ? "not-allowed" : "pointer",
+    });
 
     return (
         <div style={{ minHeight: "100vh", backgroundColor: colors.bg, fontFamily: "'Inter', Arial, sans-serif", color: colors.text }}>
@@ -1056,6 +1157,147 @@ export default function HSEPerformance() {
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+/* ============================================================
+   SUB-COMPONENTS FOR HSE PERFORMANCE
+============================================================ */
+
+function KpiCard({ title, value, subtitle, change, icon, isGood }) {
+    return (
+        <div
+            style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #d9e1e8",
+                borderRadius: "10px",
+                padding: "16px",
+                boxShadow: "0 2px 4px rgba(0, 77, 50, 0.04)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+            }}
+        >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                    <span style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                        {title}
+                    </span>
+                    <div style={{ fontSize: "22px", fontWeight: "900", color: "#004d32", marginTop: "4px", letterSpacing: "-0.02em" }}>
+                        {value}
+                    </div>
+                </div>
+                <div
+                    style={{
+                        width: "36px",
+                        height: "36px",
+                        borderRadius: "8px",
+                        backgroundColor: "#e8f1ed",
+                        color: "#004d32",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "17px",
+                    }}
+                >
+                    {icon}
+                </div>
+            </div>
+            <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: "500" }}>{subtitle}</span>
+                <span
+                    style={{
+                        fontSize: "10.5px",
+                        fontWeight: "700",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        backgroundColor: isGood ? "#dcfce7" : "#fee2e2",
+                        color: isGood ? "#166534" : "#991b1b",
+                    }}
+                >
+                    {change}
+                </span>
+            </div>
+        </div>
+    );
+}
+
+function FormulaBadge({ label, formula, value }) {
+    return (
+        <div
+            style={{
+                backgroundColor: "#ffffff",
+                border: "1px solid #d9e1e8",
+                borderRadius: "8px",
+                padding: "12px 14px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+            }}
+        >
+            <div style={{ fontSize: "11px", fontWeight: "800", color: "#004d32", marginBottom: "2px" }}>
+                {label}
+            </div>
+            <div style={{ fontSize: "11px", color: "#64748b", fontFamily: "monospace" }}>
+                {formula}
+            </div>
+            <div style={{ fontSize: "14px", fontWeight: "800", color: "#0f172a", marginTop: "4px" }}>
+                {value}
+            </div>
+        </div>
+    );
+}
+
+function IndicatorBars({ data }) {
+    return (
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {data.map(([label, value], idx) => (
+                <div key={idx}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: "600", marginBottom: "4px" }}>
+                        <span style={{ color: "#334155" }}>{label}</span>
+                        <span style={{ color: "#004d32", fontWeight: "800" }}>{value}%</span>
+                    </div>
+                    <div style={{ width: "100%", height: "8px", backgroundColor: "#e2e8f0", borderRadius: "4px", overflow: "hidden" }}>
+                        <div
+                            style={{
+                                width: `${Math.min(100, Math.max(0, value))}%`,
+                                height: "100%",
+                                backgroundColor: value >= 90 ? "#004d32" : value >= 60 ? "#d97706" : "#dc2626",
+                                borderRadius: "4px",
+                                transition: "width 0.3s ease",
+                            }}
+                        />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function SeverityBadge({ severity }) {
+    const isHigh = severity === "High";
+    const isMedium = severity === "Medium";
+    const isLow = severity === "Low";
+    return (
+        <span
+            style={{
+                padding: "3px 8px",
+                borderRadius: "4px",
+                fontSize: "11px",
+                fontWeight: "700",
+                backgroundColor: isHigh ? "#fee2e2" : isMedium ? "#fef3c7" : isLow ? "#dbeafe" : "#f1f5f9",
+                color: isHigh ? "#991b1b" : isMedium ? "#92400e" : isLow ? "#1e40af" : "#475569",
+            }}
+        >
+            {severity}
+        </span>
+    );
+}
+
+function DetailRow({ label, value }) {
+    return (
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", padding: "6px 0", borderBottom: "1px solid #f1f5f9" }}>
+            <span style={{ color: "#64748b", fontWeight: "600" }}>{label}</span>
+            <span style={{ color: "#0f172a", fontWeight: "700", textAlign: "right" }}>{value || "-"}</span>
         </div>
     );
 }

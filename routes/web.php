@@ -84,9 +84,10 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/dashboard', function () {
-        return Inertia::render('Admin/AdminDashboard');
-    })->name('admin.dashboard');
+    Route::get('/dashboard', [
+        HseReportController::class,
+        'dashboard',
+    ])->name('admin.dashboard');
 
 
     /*

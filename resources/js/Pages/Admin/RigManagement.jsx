@@ -3,59 +3,54 @@ import AdminSidebar from "../../Components/AdminSidebar";
 
 export default function RigManagement() {
     // =====================================================
-    // DATA RIG
+    // DATA RIG & CONTRACT BESMINDO MATERI SEWATAMA
     // =====================================================
 
+    const [activeTab, setActiveTab] = useState("rigs"); // "rigs" or "contracts"
+
     const [rigs, setRigs] = useState([
+        { id: 1, rigNo: "BMS#02", rigName: "Rig BMS-02", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "HSE Specialist", status: "Active" },
+        { id: 2, rigNo: "BMS#03", rigName: "Rig BMS-03", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "Toolpusher", status: "Active" },
+        { id: 3, rigNo: "BMS#03A", rigName: "Rig BMS-03A", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "Rig Superintendent", status: "Active" },
+        { id: 4, rigNo: "BMS#05", rigName: "Rig BMS-05", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "HSE Officer", status: "Active" },
+        { id: 5, rigNo: "BMS#06", rigName: "Rig BMS-06", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "Field Engineer", status: "Active" },
+        { id: 6, rigNo: "BMS#07", rigName: "Rig BMS-07", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "HSE Coordinator", status: "Active" },
+        { id: 7, rigNo: "BMS#08", rigName: "Rig BMS-08", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "HSE Inspector", status: "Active" },
+        { id: 8, rigNo: "BMS#10", rigName: "Rig BMS-10", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "Safety Officer", status: "Active" },
+        { id: 9, rigNo: "BMS#11", rigName: "Rig BMS-11", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "Site Supervisor", status: "Active" },
+        { id: 10, rigNo: "BMS#15", rigName: "Rig BMS-15", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "HSE Supervisor", status: "Active" },
+        { id: 11, rigNo: "BMS#16", rigName: "Rig BMS-16", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "Field Specialist", status: "Active" },
+        { id: 12, rigNo: "BMS#17", rigName: "Rig BMS-17", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "HSE Officer", status: "Active" },
+        { id: 13, rigNo: "BMS#18", rigName: "Rig BMS-18", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "HSE Officer", status: "Active" },
+        { id: 14, rigNo: "BMS#19", rigName: "Rig BMS-19", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "Field Supervisor", status: "Active" },
+        { id: 15, rigNo: "BMS#20", rigName: "Rig BMS-20", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "Rig Superintendent", status: "Active" },
+        { id: 16, rigNo: "BMS#21", rigName: "Rig BMS-21", location: "AREA WK ROKAN - RIAU", contract: "SPHR00108C", contractor: "PT BESMINDO MATERI SEWATAMA", pic: "HSE Coordinator", status: "Active" },
+    ]);
+
+    const [contracts, setContracts] = useState([
         {
             id: 1,
-            rigNo: "Rig-01",
-            rigName: "Rig Alpha",
-            location: "Sector Alpha",
-            contract: "CNT-2024-01",
-            contractor: "PT Besmindo",
-            pic: "John Doe",
+            contractNo: "SPHR00108C",
+            contractName: "Kontrak Jasa Rig Pengeboran & Workover",
+            rigNo: "BMS#07, BMS#15, BMS#18",
+            location: "AREA WK ROKAN - RIAU",
+            client: "PT Pertamina Hulu Rokan (PHR)",
+            startDate: "2026-01-01",
+            endDate: "2028-12-31",
+            value: "Rp 18.5 M",
             status: "Active",
         },
         {
             id: 2,
-            rigNo: "Rig-02",
-            rigName: "Rig Bravo",
-            location: "Sector Bravo",
-            contract: "CNT-2024-02",
-            contractor: "PT Besmindo",
-            pic: "Jane Smith",
+            contractNo: "BMS-PHR-WKROKAN-2026",
+            contractName: "HSE Management & Operation Support",
+            rigNo: "BMS#01, BMS#02, BMS#03",
+            location: "Duri & Minas Field",
+            client: "PT Pertamina Hulu Rokan (PHR)",
+            startDate: "2026-01-01",
+            endDate: "2027-12-31",
+            value: "Rp 5.2 M",
             status: "Active",
-        },
-        {
-            id: 3,
-            rigNo: "Rig-03",
-            rigName: "Rig Charlie",
-            location: "Sector Charlie",
-            contract: "CNT-2024-03",
-            contractor: "PT Rigindo",
-            pic: "Robert Jones",
-            status: "Inactive",
-        },
-        {
-            id: 4,
-            rigNo: "Rig-04",
-            rigName: "Rig Delta",
-            location: "Sector Alpha",
-            contract: "CNT-2024-04",
-            contractor: "PT Besmindo",
-            pic: "Alice Wong",
-            status: "Active",
-        },
-        {
-            id: 5,
-            rigNo: "Rig-05",
-            rigName: "Rig Echo",
-            location: "Sector Delta",
-            contract: "CNT-2024-05",
-            contractor: "PT Petro Energy",
-            pic: "Michael Lee",
-            status: "Maintenance",
         },
     ]);
 

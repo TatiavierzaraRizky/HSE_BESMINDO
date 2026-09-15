@@ -467,24 +467,7 @@ export default function InputData() {
                         </div>
                     </div>
 
-                    <div
-                        style={{
-                            backgroundColor: "#ffffff",
-                            border: "1px solid #d4ded9",
-                            borderRadius: "7px",
-                            padding: "18px 25px",
-                            marginBottom: "20px",
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr 1fr",
-                            gap: "20px",
-                        }}
-                    >
-                        <Step number="1" title="Draft" active />
 
-                        <Step number="2" title="Validation" />
-
-                        <Step number="3" title="Approved" />
-                    </div>
 
                     <form onSubmit={handleSubmit}>
                         <Section title="Identification">
@@ -528,18 +511,22 @@ export default function InputData() {
                                     value={form.rigNo}
                                     onChange={handleChange}
                                     options={[
-                                        "BMS#07",
-                                        "BMS#15",
-                                        "BMS#18",
-                                        "BMS#01",
                                         "BMS#02",
                                         "BMS#03",
-                                        "Rig-01",
-                                        "Rig-02",
-                                        "Rig-03",
-                                        "Rig-04",
-                                        "Rig-05",
-                                        "Rig-12",
+                                        "BMS#03A",
+                                        "BMS#05",
+                                        "BMS#06",
+                                        "BMS#07",
+                                        "BMS#08",
+                                        "BMS#10",
+                                        "BMS#11",
+                                        "BMS#15",
+                                        "BMS#16",
+                                        "BMS#17",
+                                        "BMS#18",
+                                        "BMS#19",
+                                        "BMS#20",
+                                        "BMS#21",
                                     ]}
                                     required
                                 />
@@ -717,16 +704,15 @@ export default function InputData() {
                                     color: "#3f514b",
                                 }}
                             >
-                                Remarks / Executive Summary <span style={{ color: "#dc2626" }}>*</span>
+                                Remarks / Executive Summary <span style={{ color: "#64748b", fontWeight: "normal", fontSize: "12px" }}>(Opsional)</span>
                             </label>
 
                             <textarea
                                 name="remarks"
                                 value={form.remarks}
                                 onChange={handleChange}
-                                placeholder="Enter key notes or context for this period's data..."
+                                placeholder="Catatan tambahan atau konteks opsional untuk data periode ini..."
                                 rows={5}
-                                required
                                 style={{
                                     width: "100%",
                                     boxSizing: "border-box",

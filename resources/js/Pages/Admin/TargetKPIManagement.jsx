@@ -10,44 +10,62 @@ export default function TargetKPIManagement() {
     const [contract, setContract] = useState("All Contracts");
 
     // ================================
-    // DATA KPI
+    // DATA KPI MASTER TARGETS (FORM: BMSD/03/FO/HSE/02/17 REV: #12)
     // ================================
+    const [categoryFilter, setCategoryFilter] = useState("All");
+
     const [kpis, setKpis] = useState([
-        {
-            id: 1,
-            indicator: "Total Recordable Incident Rate (TRIR)",
-            monthly: "< 0.15",
-            annual: "< 1.80",
-            status: "Draft",
-        },
-        {
-            id: 2,
-            indicator: "Lost Time Injury Frequency (LTIF)",
-            monthly: "0",
-            annual: "0",
-            status: "Waiting Approval",
-        },
-        {
-            id: 3,
-            indicator: "Safety Training Completion",
-            monthly: "100%",
-            annual: "100%",
-            status: "Approved",
-        },
-        {
-            id: 4,
-            indicator: "Environmental Spills (Liters)",
-            monthly: "0",
-            annual: "< 50",
-            status: "Rejected",
-        },
-        {
-            id: 5,
-            indicator: "Equipment Inspection Compliance",
-            monthly: "98%",
-            annual: "95%",
-            status: "Approved",
-        },
+        // LAGGING INDICATORS (1.1 - 1.12)
+        { id: 1, category: "Lagging", indicator: "1.1 Fatality Case", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 2, category: "Lagging", indicator: "1.2 Serious Lost Time Injury (>21 Lost Days)", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 3, category: "Lagging", indicator: "1.3 Restricted Work Case (RWC)", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 4, category: "Lagging", indicator: "1.4 Medical Treatment Case (MTC)", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 5, category: "Lagging", indicator: "1.5 Total Recordable Injury (TRI = 1.1+1.2+1.3+1.4)", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 6, category: "Lagging", indicator: "1.6 Motor Vehicle Crash (MVC)", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 7, category: "Lagging", indicator: "1.7 Tumpahan Minyak / Oil Spill (> 1 bbl)", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 8, category: "Lagging", indicator: "1.8 Fire Incident (> Rp. 100 Jt)", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 9, category: "Lagging", indicator: "1.9 Property Damage (> Rp. 100 Jt)", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 10, category: "Lagging", indicator: "1.10 Security Case", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 11, category: "Lagging", indicator: "1.11 Illness / Fatality", monthly: "0 Case", annual: "0 Case", status: "Approved" },
+        { id: 12, category: "Lagging", indicator: "1.12 Reportable Case (Nearmiss / FAC / ETA)", monthly: "Reportable", annual: "Reportable", status: "Approved" },
+
+        // LEADING INDICATORS (1 - 36)
+        { id: 13, category: "Leading", indicator: "1. Observasi Perilaku (PEKA / BBS)", monthly: "180 Laporan", annual: "2.160 Laporan", status: "Approved" },
+        { id: 14, category: "Leading", indicator: "2. Identifikasi Bahaya (HAZID / 5 Mnt Risk Assessment)", monthly: "900 Laporan", annual: "10.800 Laporan", status: "Approved" },
+        { id: 15, category: "Leading", indicator: "3. Stop Work Authority (SWA Report)", monthly: "60 Laporan", annual: "720 Laporan", status: "Approved" },
+        { id: 16, category: "Leading", indicator: "4. Inspeksi Safety Equipment & APD", monthly: "1 Laporan", annual: "12 Laporan", status: "Approved" },
+        { id: 17, category: "Leading", indicator: "5. Eksternal Inspeksi LR Color Code", monthly: "TBA", annual: "2 Kegiatan", status: "Approved" },
+        { id: 18, category: "Leading", indicator: "6. Inspeksi Benda Jatuh / Drops", monthly: "TBA", annual: "TBA", status: "Approved" },
+        { id: 19, category: "Leading", indicator: "7. Internal Inspeksi / V&V Oleh Team", monthly: "1 Laporan", annual: "12 Laporan", status: "Approved" },
+        { id: 20, category: "Leading", indicator: "8. Inspeksi / Audit SMK3L Subkontraktor", monthly: "TBA", annual: "1 Kegiatan", status: "Approved" },
+        { id: 21, category: "Leading", indicator: "9. Spot Check Kendaraan", monthly: "TBA", annual: "2 Kegiatan", status: "Approved" },
+        { id: 22, category: "Leading", indicator: "10. Audit Internal & Eksternal Sistem", monthly: "TBA", annual: "1 Kegiatan", status: "Approved" },
+        { id: 23, category: "Leading", indicator: "11. Monitoring Kepatuhan Pengemudi (IVMS)", monthly: "100%", annual: "100%", status: "Approved" },
+        { id: 24, category: "Leading", indicator: "12. Laporan Inspeksi Kendaraan (PTI)", monthly: "11 Laporan", annual: "132 Laporan", status: "Approved" },
+        { id: 25, category: "Leading", indicator: "13. MCU Random (Napza & Miras Test)", monthly: "TBA", annual: "1 Kegiatan", status: "Approved" },
+        { id: 26, category: "Leading", indicator: "14. Pra MCU Tahunan", monthly: "TBA", annual: "1 Kegiatan", status: "Approved" },
+        { id: 27, category: "Leading", indicator: "15. Top Management Visit / MWT", monthly: "TBA", annual: "3 Kunjungan", status: "Approved" },
+        { id: 28, category: "Leading", indicator: "16. Management Visit / MWT Coord-Manager", monthly: "4 Kunjungan", annual: "48 Kunjungan", status: "Approved" },
+        { id: 29, category: "Leading", indicator: "17. Rapat Rutin Keselamatan (TGM)", monthly: "60 Rapat", annual: "720 Rapat", status: "Approved" },
+        { id: 30, category: "Leading", indicator: "18. Pre Hitch Meeting", monthly: "3 Rapat", annual: "36 Rapat", status: "Approved" },
+        { id: 31, category: "Leading", indicator: "19. Rapat Bersama Leader BMS & PHR", monthly: "4 Rapat", annual: "48 Rapat", status: "Approved" },
+        { id: 32, category: "Leading", indicator: "20. Safety Talk Monthly Meeting (Yard & Rig)", monthly: "1 Rapat", annual: "12 Rapat", status: "Approved" },
+        { id: 33, category: "Leading", indicator: "21. Leadership Forum", monthly: "TBA", annual: "3 Forum", status: "Approved" },
+        { id: 34, category: "Leading", indicator: "22. Kampanye Keselamatan", monthly: "TBA", annual: "3 Kegiatan", status: "Approved" },
+        { id: 35, category: "Leading", indicator: "23. Review Tinjauan Manajemen", monthly: "TBA", annual: "1 Kegiatan", status: "Approved" },
+        { id: 36, category: "Leading", indicator: "24. Hygiene Monitoring (Noise & Lux)", monthly: "TBA", annual: "2 Kegiatan", status: "Approved" },
+        { id: 37, category: "Leading", indicator: "25. Hygiene Monitoring (Mess & Catering)", monthly: "TBA", annual: "1 Kegiatan", status: "Approved" },
+        { id: 38, category: "Leading", indicator: "26. Inspeksi Housekeeping Rig", monthly: "1 Laporan", annual: "12 Laporan", status: "Approved" },
+        { id: 39, category: "Leading", indicator: "27. Penghargaan Kontes Housekeeping", monthly: "TBA", annual: "2 Penghargaan", status: "Approved" },
+        { id: 40, category: "Leading", indicator: "28. Pelaporan Lingkungan Dinas LH", monthly: "TBA", annual: "2 Laporan", status: "Approved" },
+        { id: 41, category: "Leading", indicator: "29. Penghargaan Rig of The Month", monthly: "TBA", annual: "TBA", status: "Approved" },
+        { id: 42, category: "Leading", indicator: "30. Penghargaan The Best BBS/PEKA", monthly: "1 Orang", annual: "12 Orang", status: "Approved" },
+        { id: 43, category: "Leading", indicator: "31. Penghargaan The Best Driver", monthly: "1 Orang", annual: "12 Orang", status: "Approved" },
+        { id: 44, category: "Leading", indicator: "32. Penghargaan Kerja Selamat Tahunan", monthly: "TBA", annual: "1 Penghargaan", status: "Approved" },
+        { id: 45, category: "Leading", indicator: "33. Penghargaan HES Refreshing", monthly: "TBA", annual: "2 Kegiatan", status: "Approved" },
+        { id: 46, category: "Leading", indicator: "34. On Site Training di Lokasi", monthly: "6 Sesi", annual: "72 Sesi", status: "Approved" },
+        { id: 47, category: "Leading", indicator: "35. Emergency Response Drill (Rig)", monthly: "3 Drill", annual: "36 Drill", status: "Approved" },
+        { id: 48, category: "Leading", indicator: "36. Emergency Response Drill (Yard)", monthly: "TBA", annual: "2 Drill", status: "Approved" },
     ]);
 
     // ================================

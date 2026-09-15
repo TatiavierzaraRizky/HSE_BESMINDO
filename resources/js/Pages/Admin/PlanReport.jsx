@@ -168,10 +168,16 @@ export default function PlanReport() {
         ].sort((a, b) => b - a);
     }, [reports]);
 
+    const ALL_MASTER_RIGS = [
+        "BMS#02", "BMS#03", "BMS#03A", "BMS#05", "BMS#06", "BMS#07",
+        "BMS#08", "BMS#10", "BMS#11", "BMS#15", "BMS#16", "BMS#17",
+        "BMS#18", "BMS#19", "BMS#20", "BMS#21"
+    ];
+
     const availableRigs = useMemo(() => {
-        return [
-            ...new Set(reports.map((report) => report.rig_no).filter(Boolean)),
-        ];
+        const set = new Set(ALL_MASTER_RIGS);
+        reports.forEach((r) => { if (r.rig_no) set.add(r.rig_no); });
+        return Array.from(set);
     }, [reports]);
 
     const availableProjects = useMemo(() => {
