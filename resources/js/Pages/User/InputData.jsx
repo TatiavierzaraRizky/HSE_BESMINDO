@@ -509,24 +509,7 @@ export default function UserInputData() {
                         </div>
                     )}
 
-                    {/* STEP WIZARD BAR */}
-                    <div
-                        style={{
-                            backgroundColor: "#ffffff",
-                            border: "1px solid #e2e8f0",
-                            borderRadius: "14px",
-                            padding: "16px 24px",
-                            marginBottom: "24px",
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr 1fr",
-                            gap: "20px",
-                            boxShadow: "0 4px 18px rgba(0, 77, 50, 0.04)",
-                        }}
-                    >
-                        <Step number="1" title="Input Data HSE" active />
-                        <Step number="2" title="Simpan ke Database" />
-                        <Step number="3" title="Sinkronisasi KPI & Report" />
-                    </div>
+
 
                     {/* FORM CONTAINER */}
                     <form onSubmit={handleSubmit}>
@@ -966,50 +949,7 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
     );
 }
 
-function Step({ number, title, active }) {
-    return (
-        <div
-            style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-            }}
-        >
-            <div
-                style={{
-                    width: "30px",
-                    height: "30px",
-                    borderRadius: "50%",
-                    backgroundColor: active ? "#004d32" : "#e2e8f0",
-                    color: active ? "#efff00" : "#64748b",
-                    border: active ? "1px solid #efff00" : "1px solid transparent",
-                    boxShadow: active ? "0 0 8px rgba(239, 255, 0, 0.3)" : "none",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontWeight: "800",
-                    fontSize: "13px",
-                }}
-            >
-                {number}
-            </div>
 
-            <div>
-                <div
-                    style={{
-                        fontSize: "12px",
-                        fontWeight: "800",
-                        color: active ? "#004d32" : "#64748b",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.04em",
-                    }}
-                >
-                    {title}
-                </div>
-            </div>
-        </div>
-    );
-}
 
 function Section({ title, children }) {
     return (
