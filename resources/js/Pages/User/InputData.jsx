@@ -746,16 +746,15 @@ export default function UserInputData() {
                                     color: "#334155",
                                 }}
                             >
-                                Catatan Tambahan / Ringkasan Realisasi Lapangan <span style={{ color: "#dc2626" }}>*</span>
+                                Catatan Tambahan / Ringkasan Realisasi Lapangan <span style={{ color: "#64748b", fontWeight: "normal" }}>(Opsional)</span>
                             </label>
 
                             <textarea
                                 name="remarks"
                                 value={form.remarks}
                                 onChange={handleChange}
-                                placeholder="Tuliskan catatan penting operasional atau penjelasan kendala lapangan pada periode ini..."
+                                placeholder="Tuliskan catatan penting operasional atau penjelasan kendala lapangan pada periode ini (jika ada)..."
                                 rows={4}
-                                required
                                 style={{
                                     width: "100%",
                                     boxSizing: "border-box",
