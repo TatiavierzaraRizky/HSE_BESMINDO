@@ -94,7 +94,11 @@ function getReportYear(report) {
 }
 
 function getMonthFromReport(report) {
-    if (report?.period !== undefined && report?.period !== null && report?.period !== "") {
+    if (
+        report?.period !== undefined &&
+        report?.period !== null &&
+        report?.period !== ""
+    ) {
         const period = Number(report.period);
 
         if (period >= 1 && period <= 12) {
@@ -102,15 +106,9 @@ function getMonthFromReport(report) {
         }
     }
 
-    if (
-        report?.report_date ||
-        report?.issued_date ||
-        report?.created_at
-    ) {
+    if (report?.report_date || report?.issued_date || report?.created_at) {
         const date = new Date(
-            report.report_date ||
-                report.issued_date ||
-                report.created_at,
+            report.report_date || report.issued_date || report.created_at,
         );
 
         if (!Number.isNaN(date.getTime())) {
@@ -143,10 +141,7 @@ function getQuarterValue(item, quarterName, mode = "Actual") {
 }
 
 function normalizeReport(report) {
-    const manHoursData =
-        report?.man_hours ||
-        report?.manHours ||
-        null;
+    const manHoursData = report?.man_hours || report?.manHours || null;
 
     return {
         ...report,
@@ -178,36 +173,31 @@ const LAGGING_INDICATOR_MASTER = [
     {
         no: "1.1",
         name: "FATALITY",
-        definition:
-            "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
+        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
     },
     {
         no: "1.2",
         name: "SERIOUS LOST TIME INJURY (>21 LOST DAY)",
-        definition:
-            "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
+        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
     },
     {
         no: "1.3",
         name: "RESTRICTED WORK CASE (RWC)",
-        definition:
-            "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
+        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
     },
     {
         no: "1.4",
         name: "MEDICAL TREATMENT CASE (MTC)",
-        definition:
-            "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
+        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
     },
     {
         no: "1.5",
         name: "TOTAL RECORDABLE INJURY",
-        definition:
-            "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
+        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
     },
     {
@@ -268,7 +258,9 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: 180,
         annualTarget: 2160,
         definition2: "Kru Operasi",
-        defaultPlanMonthly: [102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102],
+        defaultPlanMonthly: [
+            102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102,
+        ],
     },
     {
         no: 2,
@@ -277,7 +269,9 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: 900,
         annualTarget: 10800,
         definition2: "Total target bulanan menyesuaikan jumlah hari / bulan",
-        defaultPlanMonthly: [930, 840, 930, 900, 930, 900, 930, 930, 900, 930, 900, 930],
+        defaultPlanMonthly: [
+            930, 840, 930, 900, 930, 900, 930, 930, 900, 930, 900, 930,
+        ],
     },
     {
         no: 3,
@@ -290,7 +284,8 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 4,
-        indicator: "INSPEKSI SAFETY EQUIPMENT & APD *) (Eye wash, Shower, Fire, P3K, Tandu, FBH, SCBA)",
+        indicator:
+            "INSPEKSI SAFETY EQUIPMENT & APD *) (Eye wash, Shower, Fire, P3K, Tandu, FBH, SCBA)",
         definition: "Laporan bulanan",
         monthlyTarget: 1,
         annualTarget: 12,
@@ -326,7 +321,8 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 8,
-        indicator: "INSPEKSI / AUDIT SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR",
+        indicator:
+            "INSPEKSI / AUDIT SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR",
         definition: "1x / tahun",
         monthlyTarget: "TBA",
         annualTarget: 1,
@@ -353,14 +349,17 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 11,
-        indicator: "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)",
+        indicator:
+            "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)",
         definition: "100% tak ada pelanggaran",
         monthlyTarget: "100%",
         annualTarget: "100%",
         definition2: "PIC Transport",
         isPercentage: true,
         targetNumber: 100,
-        defaultPlanMonthly: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100],
+        defaultPlanMonthly: [
+            100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+        ],
     },
     {
         no: 12,
@@ -382,7 +381,8 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 14,
-        indicator: "PRA MCU (MCU TAHUNAN BAGI YANG KONSULTASI TAHUN SEBELUMNYA)",
+        indicator:
+            "PRA MCU (MCU TAHUNAN BAGI YANG KONSULTASI TAHUN SEBELUMNYA)",
         definition: "1x / tahun",
         monthlyTarget: "TBA",
         annualTarget: 1,
@@ -391,7 +391,8 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 15,
-        indicator: "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)",
+        indicator:
+            "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)",
         definition: "1x / Caturwulan",
         monthlyTarget: "TBA",
         annualTarget: 3,
@@ -422,7 +423,8 @@ const LEADING_INDICATOR_MASTER = [
         definition: "3x / Bulan",
         monthlyTarget: 3,
         annualTarget: 36,
-        definition2: "1 atau 2 hari sebelum kru Jadwal masuk kerja (on schedule) hari-1.",
+        definition2:
+            "1 atau 2 hari sebelum kru Jadwal masuk kerja (on schedule) hari-1.",
         defaultPlanMonthly: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
     },
     {
@@ -431,12 +433,14 @@ const LEADING_INDICATOR_MASTER = [
         definition: "Minimal 4x / bulan",
         monthlyTarget: 4,
         annualTarget: 48,
-        definition2: "HMM, HES Council Meeting bulanan, C&C/Alignment meeting mingguan, PQA Mgr mingguan",
+        definition2:
+            "HMM, HES Council Meeting bulanan, C&C/Alignment meeting mingguan, PQA Mgr mingguan",
         defaultPlanMonthly: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
     },
     {
         no: 20,
-        indicator: "SAFETY TALK MONTHLY MEETING :\n- Support Yard\n- RIG (Minggu ke IV jadwal PHM)",
+        indicator:
+            "SAFETY TALK MONTHLY MEETING :\n- Support Yard\n- RIG (Minggu ke IV jadwal PHM)",
         definition: "Minimal 1X / Bulan",
         monthlyTarget: 1,
         annualTarget: 12,
@@ -468,7 +472,7 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: "TBA",
         annualTarget: 1,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],    
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     },
     {
         no: 24,
@@ -490,7 +494,7 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 26,
-        indicator: "INSPEKSI \"HOUSEKEEPING RIG\"",
+        indicator: 'INSPEKSI "HOUSEKEEPING RIG"',
         definition: "1x / Bulan",
         monthlyTarget: 1,
         annualTarget: 12,
@@ -499,7 +503,7 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 27,
-        indicator: "PENGHARGAAN: KONTES \"HOUSEKEEPING RIG\" *)",
+        indicator: 'PENGHARGAAN: KONTES "HOUSEKEEPING RIG" *)',
         definition: "1x / semester",
         monthlyTarget: "TBA",
         annualTarget: 2,
@@ -521,7 +525,8 @@ const LEADING_INDICATOR_MASTER = [
         definition: "Rig Yang The Best / Mencapai target nilai yang ditentukan",
         monthlyTarget: "TBA",
         annualTarget: "TBA",
-        definition2: "Rig: Insentif 5% x upah pokok\nSupport: Insentif 2,5% x upah pokok",
+        definition2:
+            "Rig: Insentif 5% x upah pokok\nSupport: Insentif 2,5% x upah pokok",
         defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
@@ -530,7 +535,8 @@ const LEADING_INDICATOR_MASTER = [
         definition: "1 orang / bulan / Rig",
         monthlyTarget: 1,
         annualTarget: 12,
-        definition2: "The best PEKA / BBS dan The best driver support diberikan 1 orang / area",
+        definition2:
+            "The best PEKA / BBS dan The best driver support diberikan 1 orang / area",
         defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     {
@@ -553,16 +559,18 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 33,
-        indicator: "PENGHARGAAN HES REFRESHING :\na. Domestik (minimal 10 orang, mewakili seluruh rig beroperasi di periode penilaian), sasaran : semua jabatan (operation & Support).\nb. Luar Negri - China / dll (minimal 3 orang mewakili seluruh rig beroperasi di periode penilaian), sasaran : Sr. Supervisor s/d Manager level.",
+        indicator:
+            "PENGHARGAAN HES REFRESHING :\na. Domestik (minimal 10 orang, mewakili seluruh rig beroperasi di periode penilaian), sasaran : semua jabatan (operation & Support).\nb. Luar Negri - China / dll (minimal 3 orang mewakili seluruh rig beroperasi di periode penilaian), sasaran : Sr. Supervisor s/d Manager level.",
         definition: "Per Semester / Per 1 tahun",
         monthlyTarget: "TBA",
         annualTarget: "2 / 1",
-        definition2: "Pelaksanaan disesuaikan dengan kondisi bisnis / kontrak & situasi perusahaan.",
+        definition2:
+            "Pelaksanaan disesuaikan dengan kondisi bisnis / kontrak & situasi perusahaan.",
         defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 34,
-        indicator: "\"ON SITE TRAINING\" DI LOKASI *)",
+        indicator: '"ON SITE TRAINING" DI LOKASI *)',
         definition: "Min 1x / kru + Hyb / bulan",
         monthlyTarget: 6,
         annualTarget: 72,
@@ -571,7 +579,8 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 35,
-        indicator: "ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)",
+        indicator:
+            "ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)",
         definition: "1 x / kru + Hyb / 3 bulan (sesuai jadwal)",
         monthlyTarget: 3,
         annualTarget: 36,
@@ -617,15 +626,9 @@ function calculateSummary(values) {
         planQ4: quarter(plan, 3),
         actualQ4: quarter(actual, 3),
 
-        planYtd: plan.reduce(
-            (total, value) => total + number(value),
-            0,
-        ),
+        planYtd: plan.reduce((total, value) => total + number(value), 0),
 
-        actualYtd: actual.reduce(
-            (total, value) => total + number(value),
-            0,
-        ),
+        actualYtd: actual.reduce((total, value) => total + number(value), 0),
     };
 }
 
@@ -660,10 +663,7 @@ function buildLaggingRows(reports) {
                 master = LAGGING_INDICATOR_MASTER[numberNo - 1];
             }
 
-            const key =
-                master?.no ||
-                item.indicator_no ||
-                item.indicator_name;
+            const key = master?.no || item.indicator_no || item.indicator_name;
 
             if (!map.has(key)) {
                 return;
@@ -672,8 +672,7 @@ function buildLaggingRows(reports) {
             const row = map.get(key);
 
             const month =
-                Number(item.month) >= 1 &&
-                Number(item.month) <= 12
+                Number(item.month) >= 1 && Number(item.month) <= 12
                     ? Number(item.month) - 1
                     : getMonthFromReport(report);
 
@@ -704,13 +703,24 @@ function buildLaggingRows(reports) {
 
     if (row1_5 && row1_1 && row1_2 && row1_3 && row1_4) {
         for (let m = 0; m < 12; m++) {
-            const sumPlan = row1_1.values.plan[m] + row1_2.values.plan[m] + row1_3.values.plan[m] + row1_4.values.plan[m];
-            const sumActual = row1_1.values.actual[m] + row1_2.values.actual[m] + row1_3.values.actual[m] + row1_4.values.actual[m];
+            const sumPlan =
+                row1_1.values.plan[m] +
+                row1_2.values.plan[m] +
+                row1_3.values.plan[m] +
+                row1_4.values.plan[m];
+            const sumActual =
+                row1_1.values.actual[m] +
+                row1_2.values.actual[m] +
+                row1_3.values.actual[m] +
+                row1_4.values.actual[m];
             row1_5.values.plan[m] = Math.max(row1_5.values.plan[m], sumPlan);
-            row1_5.values.actual[m] = Math.max(row1_5.values.actual[m], sumActual);
+            row1_5.values.actual[m] = Math.max(
+                row1_5.values.actual[m],
+                sumActual,
+            );
         }
     }
-  
+
     return Array.from(map.values()).map((item) => ({
         ...item,
         ...calculateSummary(item.values),
@@ -749,9 +759,11 @@ function buildLeadingRows(reports) {
             let no = Number(item.indicator_no);
 
             if (!no || no < 1 || no > 36) {
-                const name = String(item.indicator_name || item.name || "").toLowerCase();
-                const matched = LEADING_INDICATOR_MASTER.find(m =>
-                    name.includes(m.indicator.slice(0, 15).toLowerCase())
+                const name = String(
+                    item.indicator_name || item.name || "",
+                ).toLowerCase();
+                const matched = LEADING_INDICATOR_MASTER.find((m) =>
+                    name.includes(m.indicator.slice(0, 15).toLowerCase()),
                 );
                 if (matched) {
                     no = matched.no;
@@ -771,8 +783,7 @@ function buildLeadingRows(reports) {
             const row = map.get(key);
 
             const month =
-                Number(item.month) >= 1 &&
-                Number(item.month) <= 12
+                Number(item.month) >= 1 && Number(item.month) <= 12
                     ? Number(item.month) - 1
                     : getMonthFromReport(report);
 
@@ -958,8 +969,10 @@ function buildManHourRows(reports) {
     // TOTAL JAM KERJA / MAN HOURS (Total) = 2.1 + 2.2
     const totalManHoursValues = createValueObject();
     for (let i = 0; i < 12; i++) {
-        totalManHoursValues.plan[i] = rows[0].values.plan[i] + rows[1].values.plan[i];
-        totalManHoursValues.actual[i] = rows[0].values.actual[i] + rows[1].values.actual[i];
+        totalManHoursValues.plan[i] =
+            rows[0].values.plan[i] + rows[1].values.plan[i];
+        totalManHoursValues.actual[i] =
+            rows[0].values.actual[i] + rows[1].values.actual[i];
     }
     const totalManHoursRow = {
         no: "",
@@ -976,8 +989,10 @@ function buildManHourRows(reports) {
     // TOTAL KILOMETER DRIVEN (Total) = 2.4 + 2.5
     const totalKilometerValues = createValueObject();
     for (let i = 0; i < 12; i++) {
-        totalKilometerValues.plan[i] = rows[3].values.plan[i] + rows[4].values.plan[i];
-        totalKilometerValues.actual[i] = rows[3].values.actual[i] + rows[4].values.actual[i];
+        totalKilometerValues.plan[i] =
+            rows[3].values.plan[i] + rows[4].values.plan[i];
+        totalKilometerValues.actual[i] =
+            rows[3].values.actual[i] + rows[4].values.actual[i];
     }
     const totalKilometerRow = {
         no: "",
@@ -1209,9 +1224,7 @@ export default function Reports() {
 
     const reports = useMemo(
         () =>
-            Array.isArray(rawReports)
-                ? rawReports.map(normalizeReport)
-                : [],
+            Array.isArray(rawReports) ? rawReports.map(normalizeReport) : [],
         [rawReports],
     );
 
@@ -1221,35 +1234,41 @@ export default function Reports() {
 
     const availableYears = useMemo(() => {
         return [
-            ...new Set(
-                reports.map((report) =>
-                    getReportYear(report),
-                ),
-            ),
+            ...new Set(reports.map((report) => getReportYear(report))),
         ].sort((a, b) => b - a);
     }, [reports]);
 
     const ALL_MASTER_RIGS = [
-        "BMS#02", "BMS#03", "BMS#03A", "BMS#05", "BMS#06", "BMS#07",
-        "BMS#08", "BMS#10", "BMS#11", "BMS#15", "BMS#16", "BMS#17",
-        "BMS#18", "BMS#19", "BMS#20", "BMS#21"
+        "BMS#02",
+        "BMS#03",
+        "BMS#03A",
+        "BMS#05",
+        "BMS#06",
+        "BMS#07",
+        "BMS#08",
+        "BMS#10",
+        "BMS#11",
+        "BMS#15",
+        "BMS#16",
+        "BMS#17",
+        "BMS#18",
+        "BMS#19",
+        "BMS#20",
+        "BMS#21",
     ];
 
     const availableRigs = useMemo(() => {
         const set = new Set(ALL_MASTER_RIGS);
-        reports.forEach((r) => { if (r.rig_no) set.add(r.rig_no); });
+        reports.forEach((r) => {
+            if (r.rig_no) set.add(r.rig_no);
+        });
         return Array.from(set);
     }, [reports]);
 
     const availableProjects = useMemo(() => {
         return [
             ...new Set(
-                reports
-                    .map(
-                        (report) =>
-                            report.contract_no,
-                    )
-                    .filter(Boolean),
+                reports.map((report) => report.contract_no).filter(Boolean),
             ),
         ];
     }, [reports]);
@@ -1258,10 +1277,7 @@ export default function Reports() {
         return [
             ...new Set(
                 reports
-                    .map(
-                        (report) =>
-                            report.location_district,
-                    )
+                    .map((report) => report.location_district)
                     .filter(Boolean),
             ),
         ];
@@ -1270,18 +1286,9 @@ export default function Reports() {
     const availableDates = useMemo(() => {
         return [
             ...new Set(
-                reports
-                    .map(
-                        (report) =>
-                            report.report_date,
-                    )
-                    .filter(Boolean),
+                reports.map((report) => report.report_date).filter(Boolean),
             ),
-        ].sort(
-            (a, b) =>
-                new Date(b).getTime() -
-                new Date(a).getTime(),
-        );
+        ].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
     }, [reports]);
 
     const defaultYear =
@@ -1289,32 +1296,23 @@ export default function Reports() {
             ? String(availableYears[0])
             : String(new Date().getFullYear());
 
-    const [reportType, setReportType] =
-        useState("HSE Performance");
+    const [reportType, setReportType] = useState("HSE Performance");
 
-    const [period, setPeriod] =
-        useState("Annual");
+    const [period, setPeriod] = useState("Annual");
 
-    const [year, setYear] =
-        useState(defaultYear);
+    const [year, setYear] = useState(defaultYear);
 
-    const [rig, setRig] =
-        useState("All Rigs");
+    const [rig, setRig] = useState("All Rigs");
 
-    const [project, setProject] =
-        useState("All Projects");
+    const [project, setProject] = useState("All Projects");
 
-    const [location, setLocation] =
-        useState("All Locations");
+    const [location, setLocation] = useState("All Locations");
 
-    const [reportDate, setReportDate] =
-        useState("All Dates");
+    const [reportDate, setReportDate] = useState("All Dates");
 
-    const [preview, setPreview] =
-        useState(false);
+    const [preview, setPreview] = useState(false);
 
-    const [exporting, setExporting] =
-        useState(false);
+    const [exporting, setExporting] = useState(false);
 
     /* ========================================================
        FILTERED REPORT
@@ -1322,111 +1320,64 @@ export default function Reports() {
 
     const filteredReports = useMemo(() => {
         let result = reports.filter(
-            (report) =>
-                String(getReportYear(report)) ===
-                String(year),
+            (report) => String(getReportYear(report)) === String(year),
         );
 
         if (rig !== "All Rigs") {
-            result = result.filter(
-                (report) =>
-                    report.rig_no === rig,
-            );
+            result = result.filter((report) => report.rig_no === rig);
         }
 
         if (project !== "All Projects") {
-            result = result.filter(
-                (report) =>
-                    report.contract_no === project,
-            );
+            result = result.filter((report) => report.contract_no === project);
         }
 
         if (location !== "All Locations") {
             result = result.filter(
-                (report) =>
-                    report.location_district ===
-                    location,
+                (report) => report.location_district === location,
             );
         }
 
         if (reportDate !== "All Dates") {
             result = result.filter(
-                (report) =>
-                    String(
-                        report.report_date,
-                    ) === String(reportDate),
+                (report) => String(report.report_date) === String(reportDate),
             );
         }
 
         return result.sort((a, b) => {
             const dateA = new Date(
-                a.report_date ||
-                    a.issued_date ||
-                    a.created_at ||
-                    0,
+                a.report_date || a.issued_date || a.created_at || 0,
             );
 
             const dateB = new Date(
-                b.report_date ||
-                    b.issued_date ||
-                    b.created_at ||
-                    0,
+                b.report_date || b.issued_date || b.created_at || 0,
             );
 
-            return (
-                dateB.getTime() -
-                dateA.getTime()
-            );
+            return dateB.getTime() - dateA.getTime();
         });
-    }, [
-        reports,
-        year,
-        rig,
-        project,
-        location,
-        reportDate,
-    ]);
+    }, [reports, year, rig, project, location, reportDate]);
 
     /* ========================================================
        REPORT DATA
     ======================================================== */
 
     const lagging = useMemo(
-        () =>
-            buildLaggingRows(
-                filteredReports,
-            ),
+        () => buildLaggingRows(filteredReports),
         [filteredReports],
     );
 
     const manHours = useMemo(
-        () =>
-            buildManHourRows(
-                filteredReports,
-            ),
+        () => buildManHourRows(filteredReports),
         [filteredReports],
     );
 
-    const ops = useMemo(
-        () =>
-            buildOpsRows(
-                filteredReports,
-            ),
-        [filteredReports],
-    );
+    const ops = useMemo(() => buildOpsRows(filteredReports), [filteredReports]);
 
     const leading = useMemo(
-        () =>
-            buildLeadingRows(
-                filteredReports,
-            ),
+        () => buildLeadingRows(filteredReports),
         [filteredReports],
     );
 
-    const latestReport =
-        filteredReports.length > 0
-            ? filteredReports[0]
-            : null;
+    const latestReport = filteredReports.length > 0 ? filteredReports[0] : null;
 
     /* ========================================================
        RESET
@@ -1447,26 +1398,18 @@ export default function Reports() {
        EXCEL STYLE
     ======================================================== */
 
-    function applyCellStyle(
-        cell,
-        options = {},
-    ) {
+    function applyCellStyle(cell, options = {}) {
         cell.font = {
             name: "Arial",
             size: options.size || 9,
             bold: options.bold || false,
-            color:
-                options.color || "000000",
+            color: options.color || "000000",
         };
 
         cell.alignment = {
-            vertical:
-                options.vertical || "middle",
-            horizontal:
-                options.horizontal ||
-                "center",
-            wrapText:
-                options.wrapText !== false,
+            vertical: options.vertical || "middle",
+            horizontal: options.horizontal || "center",
+            wrapText: options.wrapText !== false,
         };
 
         if (options.fill) {
@@ -1483,33 +1426,25 @@ export default function Reports() {
             top: {
                 style: "thin",
                 color: {
-                    argb:
-                        options.borderColor ||
-                        "222222",
+                    argb: options.borderColor || "222222",
                 },
             },
             bottom: {
                 style: "thin",
                 color: {
-                    argb:
-                        options.borderColor ||
-                        "222222",
+                    argb: options.borderColor || "222222",
                 },
             },
             left: {
                 style: "thin",
                 color: {
-                    argb:
-                        options.borderColor ||
-                        "222222",
+                    argb: options.borderColor || "222222",
                 },
             },
             right: {
                 style: "thin",
                 color: {
-                    argb:
-                        options.borderColor ||
-                        "222222",
+                    argb: options.borderColor || "222222",
                 },
             },
         };
@@ -1535,86 +1470,59 @@ export default function Reports() {
         ws.getRow(1).height = 30;
 
         ws.mergeCells("A2:J2");
-        ws.getCell("A2").value =
-            `Tahun Periode : ${year}`;
+        ws.getCell("A2").value = `Tahun Periode : ${year}`;
 
         ws.mergeCells("K2:S2");
 
         const issuedDate =
-            latestReport?.report_date ||
-            latestReport?.issued_date;
+            latestReport?.report_date || latestReport?.issued_date;
 
-        ws.getCell("K2").value =
-            `Tgl Diterbitkan / Rev. : ${
-                issuedDate
-                    ? formatDate(issuedDate)
-                    : "-"
-            } / Rev.${
-                latestReport?.revision_no ??
-                "00"
-            }`;
+        ws.getCell("K2").value = `Tgl Diterbitkan / Rev. : ${
+            issuedDate ? formatDate(issuedDate) : "-"
+        } / Rev.${latestReport?.revision_no ?? "00"}`;
 
         ws.mergeCells("T2:AG2");
 
-        ws.getCell("T2").value =
-            `Fokus Corp / Project : ${
-                project === "All Projects"
-                    ? latestReport?.contract_no ||
-                      "-"
-                    : project
-            }`;
+        ws.getCell("T2").value = `Fokus Corp / Project : ${
+            project === "All Projects"
+                ? latestReport?.contract_no || "-"
+                : project
+        }`;
 
         ws.mergeCells("A3:J3");
-        ws.getCell("A3").value =
-            `Periode : ${period}`;
+        ws.getCell("A3").value = `Periode : ${period}`;
 
         ws.mergeCells("K3:S3");
-        ws.getCell("K3").value =
-            `Rig / Location : ${
-                rig === "All Rigs"
-                    ? "All Rigs"
-                    : rig
-            }`;
+        ws.getCell("K3").value = `Rig / Location : ${
+            rig === "All Rigs" ? "All Rigs" : rig
+        }`;
 
         ws.mergeCells("T3:AG3");
-        ws.getCell("T3").value =
-            `Lokasi / Distrik : ${
-                location ===
-                "All Locations"
-                    ? latestReport?.location_district ||
-                      "-"
-                    : location
-            }`;
+        ws.getCell("T3").value = `Lokasi / Distrik : ${
+            location === "All Locations"
+                ? latestReport?.location_district || "-"
+                : location
+        }`;
 
         ws.mergeCells("A4:AG4");
-        ws.getCell("A4").value =
-            "REFERENSI PROGRAM";
+        ws.getCell("A4").value = "REFERENSI PROGRAM";
 
         ws.mergeCells("A5:AG5");
-        ws.getCell("A5").value =
-            latestReport?.program_reference ||
-            "-";
+        ws.getCell("A5").value = latestReport?.program_reference || "-";
 
         for (let row = 2; row <= 5; row++) {
-            ws.getRow(row).height =
-                row === 5 ? 28 : 22;
+            ws.getRow(row).height = row === 5 ? 28 : 22;
 
-            ws.getRow(row).eachCell(
-                (cell) => {
-                    applyCellStyle(cell, {
-                        size: 9,
-                        bold: row !== 5,
-                        color: "064E3B",
-                        fill:
-                            row === 4
-                                ? "EFFF00"
-                                : row === 5
-                                  ? "FAFFF0"
-                                  : "F5FFD0",
-                        horizontal: "left",
-                    });
-                },
-            );
+            ws.getRow(row).eachCell((cell) => {
+                applyCellStyle(cell, {
+                    size: 9,
+                    bold: row !== 5,
+                    color: "064E3B",
+                    fill:
+                        row === 4 ? "EFFF00" : row === 5 ? "FAFFF0" : "F5FFD0",
+                    horizontal: "left",
+                });
+            });
         }
     }
 
@@ -1622,26 +1530,19 @@ export default function Reports() {
        EXCEL LAGGING
     ======================================================== */
 
-    function buildExcelLagging(
-        ws,
-        startRow,
-    ) {
+    function buildExcelLagging(ws, startRow) {
         let row = startRow;
 
         ws.mergeCells(row, 1, row, 38);
 
-        ws.getCell(row, 1).value =
-            "LAGGING INDICATOR";
+        ws.getCell(row, 1).value = "LAGGING INDICATOR";
 
-        applyCellStyle(
-            ws.getCell(row, 1),
-            {
-                size: 14,
-                bold: true,
-                color: "000000",
-                fill: "00FF20",
-            },
-        );
+        applyCellStyle(ws.getCell(row, 1), {
+            size: 14,
+            bold: true,
+            color: "000000",
+            fill: "00FF20",
+        });
 
         row++;
 
@@ -1650,239 +1551,110 @@ export default function Reports() {
         const header1 = row;
         const header2 = row + 1;
 
-        ws.mergeCells(
-            header1,
-            1,
-            header2,
-            1,
-        );
+        ws.mergeCells(header1, 1, header2, 1);
 
-        ws.mergeCells(
-            header1,
-            2,
-            header2,
-            2,
-        );
+        ws.mergeCells(header1, 2, header2, 2);
 
-        ws.mergeCells(
-            header1,
-            3,
-            header2,
-            3,
-        );
+        ws.mergeCells(header1, 3, header2, 3);
 
-        ws.mergeCells(
-            header1,
-            4,
-            header2,
-            4,
-        );
+        ws.mergeCells(header1, 4, header2, 4);
 
-        ws.getCell(header1, 1).value =
-            "POINT YANG DIUKUR";
+        ws.getCell(header1, 1).value = "POINT YANG DIUKUR";
 
-        ws.getCell(header1, 2).value =
-            "DEFINISI\n(FREQUENCY RATE / UNIT)";
+        ws.getCell(header1, 2).value = "DEFINISI\n(FREQUENCY RATE / UNIT)";
 
-        ws.getCell(header1, 3).value =
-            "TARGET / ESTIMASI / MONTH";
+        ws.getCell(header1, 3).value = "TARGET / ESTIMASI / MONTH";
 
-        ws.getCell(header1, 4).value =
-            "KETERANGAN";
+        ws.getCell(header1, 4).value = "KETERANGAN";
 
         for (let col = 1; col <= 4; col++) {
-            applyCellStyle(
-                ws.getCell(
-                    header1,
-                    col,
-                ),
-                {
-                    bold: true,
-                    fill: "F1DDDC",
-                },
-            );
+            applyCellStyle(ws.getCell(header1, col), {
+                bold: true,
+                fill: "F1DDDC",
+            });
         }
 
         let col = 5;
 
-        ["Q1", "Q2", "Q3", "Q4"].forEach(
-            (q) => {
-                ws.mergeCells(
-                    header1,
-                    col,
-                    header1,
-                    col + 1,
-                );
+        ["Q1", "Q2", "Q3", "Q4"].forEach((q) => {
+            ws.mergeCells(header1, col, header1, col + 1);
 
-                ws.getCell(
-                    header1,
-                    col,
-                ).value = q;
+            ws.getCell(header1, col).value = q;
 
-                applyCellStyle(
-                    ws.getCell(
-                        header1,
-                        col,
-                    ),
-                    {
-                        bold: true,
-                        fill: "F1DDDC",
-                    },
-                );
-
-                ws.getCell(
-                    header2,
-                    col,
-                ).value = "Plan";
-
-                ws.getCell(
-                    header2,
-                    col + 1,
-                ).value = "Actual";
-
-                applyCellStyle(
-                    ws.getCell(
-                        header2,
-                        col,
-                    ),
-                    {
-                        bold: true,
-                        fill: "F1DDDC",
-                    },
-                );
-
-                applyCellStyle(
-                    ws.getCell(
-                        header2,
-                        col + 1,
-                    ),
-                    {
-                        bold: true,
-                        fill: "F1DDDC",
-                    },
-                );
-
-                col += 2;
-            },
-        );
-
-        ws.mergeCells(
-            header1,
-            col,
-            header1,
-            col + 1,
-        );
-
-        ws.getCell(
-            header1,
-            col,
-        ).value = "TOTAL KUMULATIF YTD";
-
-        ws.getCell(
-            header2,
-            col,
-        ).value = "Plan";
-
-        ws.getCell(
-            header2,
-            col + 1,
-        ).value = "Actual";
-
-        applyCellStyle(
-            ws.getCell(
-                header1,
-                col,
-            ),
-            {
+            applyCellStyle(ws.getCell(header1, col), {
                 bold: true,
                 fill: "F1DDDC",
-            },
-        );
+            });
 
-        applyCellStyle(
-            ws.getCell(
-                header2,
-                col,
-            ),
-            {
+            ws.getCell(header2, col).value = "Plan";
+
+            ws.getCell(header2, col + 1).value = "Actual";
+
+            applyCellStyle(ws.getCell(header2, col), {
                 bold: true,
                 fill: "F1DDDC",
-            },
-        );
+            });
 
-        applyCellStyle(
-            ws.getCell(
-                header2,
-                col + 1,
-            ),
-            {
+            applyCellStyle(ws.getCell(header2, col + 1), {
                 bold: true,
                 fill: "F1DDDC",
-            },
-        );
+            });
+
+            col += 2;
+        });
+
+        ws.mergeCells(header1, col, header1, col + 1);
+
+        ws.getCell(header1, col).value = "TOTAL KUMULATIF YTD";
+
+        ws.getCell(header2, col).value = "Plan";
+
+        ws.getCell(header2, col + 1).value = "Actual";
+
+        applyCellStyle(ws.getCell(header1, col), {
+            bold: true,
+            fill: "F1DDDC",
+        });
+
+        applyCellStyle(ws.getCell(header2, col), {
+            bold: true,
+            fill: "F1DDDC",
+        });
+
+        applyCellStyle(ws.getCell(header2, col + 1), {
+            bold: true,
+            fill: "F1DDDC",
+        });
 
         col += 2;
 
         /* MONTH HEADER */
 
         MONTHS.forEach((month) => {
-            ws.mergeCells(
-                header1,
-                col,
-                header1,
-                col + 1,
-            );
+            ws.mergeCells(header1, col, header1, col + 1);
 
-            ws.getCell(
-                header1,
-                col,
-            ).value =
-                `${month}-${String(
-                    year,
-                ).slice(-2)}`;
+            ws.getCell(header1, col).value = `${month}-${String(year).slice(
+                -2,
+            )}`;
 
-            ws.getCell(
-                header2,
-                col,
-            ).value = "Plan";
+            ws.getCell(header2, col).value = "Plan";
 
-            ws.getCell(
-                header2,
-                col + 1,
-            ).value = "Actual";
+            ws.getCell(header2, col + 1).value = "Actual";
 
-            applyCellStyle(
-                ws.getCell(
-                    header1,
-                    col,
-                ),
-                {
-                    bold: true,
-                    fill: "F1DDDC",
-                },
-            );
+            applyCellStyle(ws.getCell(header1, col), {
+                bold: true,
+                fill: "F1DDDC",
+            });
 
-            applyCellStyle(
-                ws.getCell(
-                    header2,
-                    col,
-                ),
-                {
-                    bold: true,
-                    fill: "FFFF00",
-                },
-            );
+            applyCellStyle(ws.getCell(header2, col), {
+                bold: true,
+                fill: "FFFF00",
+            });
 
-            applyCellStyle(
-                ws.getCell(
-                    header2,
-                    col + 1,
-                ),
-                {
-                    bold: true,
-                    fill: "FFFF00",
-                },
-            );
+            applyCellStyle(ws.getCell(header2, col + 1), {
+                bold: true,
+                fill: "FFFF00",
+            });
 
             col += 2;
         });
@@ -1892,18 +1664,14 @@ export default function Reports() {
         /* SECTION 1 */
 
         ws.mergeCells(row, 1, row, 38);
-        ws.getCell(row, 1).value =
-            "1. HES PERFORMANCE";
+        ws.getCell(row, 1).value = "1. HES PERFORMANCE";
 
-        applyCellStyle(
-            ws.getCell(row, 1),
-            {
-                bold: true,
-                color: "000000",
-                fill: "D9D9D9",
-                horizontal: "left",
-            },
-        );
+        applyCellStyle(ws.getCell(row, 1), {
+            bold: true,
+            color: "000000",
+            fill: "D9D9D9",
+            horizontal: "left",
+        });
 
         row++;
 
@@ -1925,46 +1693,23 @@ export default function Reports() {
                 item.actualYtd,
             ];
 
-            item.values.plan.forEach(
-                (value, index) => {
-                    values.push(value);
-                    values.push(
-                        item.values.actual[
-                            index
-                        ],
-                    );
-                },
-            );
+            item.values.plan.forEach((value, index) => {
+                values.push(value);
+                values.push(item.values.actual[index]);
+            });
 
-            values.forEach(
-                (value, index) => {
-                    const cell =
-                        ws.getCell(
-                            row,
-                            index + 1,
-                        );
+            values.forEach((value, index) => {
+                const cell = ws.getCell(row, index + 1);
 
-                    cell.value = value;
+                cell.value = value;
 
-                    applyCellStyle(
-                        cell,
-                        {
-                            size: 8,
-                            bold:
-                                index === 0 ||
-                                index === 1,
-                            horizontal:
-                                index === 1
-                                    ? "left"
-                                    : "center",
-                            fill:
-                                row % 2 === 0
-                                    ? "FFFFFF"
-                                    : "F7F8EE",
-                        },
-                    );
-                },
-            );
+                applyCellStyle(cell, {
+                    size: 8,
+                    bold: index === 0 || index === 1,
+                    horizontal: index === 1 ? "left" : "center",
+                    fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE",
+                });
+            });
 
             row++;
         });
@@ -1972,18 +1717,14 @@ export default function Reports() {
         /* SECTION 2 */
 
         ws.mergeCells(row, 1, row, 38);
-        ws.getCell(row, 1).value =
-            "2. MAN HOURS & KILOMETER PERFORMANCE";
+        ws.getCell(row, 1).value = "2. MAN HOURS & KILOMETER PERFORMANCE";
 
-        applyCellStyle(
-            ws.getCell(row, 1),
-            {
-                bold: true,
-                color: "000000",
-                fill: "D9D9D9",
-                horizontal: "left",
-            },
-        );
+        applyCellStyle(ws.getCell(row, 1), {
+            bold: true,
+            color: "000000",
+            fill: "D9D9D9",
+            horizontal: "left",
+        });
 
         row++;
 
@@ -2022,80 +1763,51 @@ export default function Reports() {
                 formatForExcel(item.actualYtd, false),
             ];
 
-            item.values.plan.forEach(
-                (value, index) => {
-                    values.push(formatForExcel(value, true));
-                    values.push(
-                        formatForExcel(
-                            item.values.actual[index],
-                            false,
-                        ),
-                    );
-                },
-            );
+            item.values.plan.forEach((value, index) => {
+                values.push(formatForExcel(value, true));
+                values.push(formatForExcel(item.values.actual[index], false));
+            });
 
-            values.forEach(
-                (value, index) => {
-                    const cell =
-                        ws.getCell(
-                            row,
-                            index + 1,
-                        );
+            values.forEach((value, index) => {
+                const cell = ws.getCell(row, index + 1);
 
-                    cell.value = value;
+                cell.value = value;
 
-                    applyCellStyle(
-                        cell,
-                        {
-                            size: 8,
-                            bold:
-                                isHeader ||
-                                index === 0 ||
-                                index === 1,
-                            fill: isHeader
-                                ? "DDEBF7"
-                                : row % 2 === 0
-                                  ? "FFFFFF"
-                                  : "F7F8EE",
-                            horizontal:
-                                index === 1
-                                    ? "left"
-                                    : "center",
-                        },
-                    );
-                },
-            );
+                applyCellStyle(cell, {
+                    size: 8,
+                    bold: isHeader || index === 0 || index === 1,
+                    fill: isHeader
+                        ? "DDEBF7"
+                        : row % 2 === 0
+                          ? "FFFFFF"
+                          : "F7F8EE",
+                    horizontal: index === 1 ? "left" : "center",
+                });
+            });
 
             row++;
         };
 
         manHours.forEach(writeMetric);
 
-        applyCellStyle(
-            ws.getCell(row, 1),
-            {
-                size: 8,
-                horizontal: "center",
-            },
-        );
+        applyCellStyle(ws.getCell(row, 1), {
+            size: 8,
+            horizontal: "center",
+        });
 
         row++;
 
         /* SECTION 3 */
 
         ws.mergeCells(row, 1, row, 38);
-        ws.getCell(row, 1).value =
-            "3. OPS PERFORMANCE";
+        ws.getCell(row, 1).value = "3. OPS PERFORMANCE";
 
-        applyCellStyle(
-            ws.getCell(row, 1),
-            {
-                bold: true,
-                color: "000000",
-                fill: "D9D9D9",
-                horizontal: "left",
-            },
-        );
+        applyCellStyle(ws.getCell(row, 1), {
+            bold: true,
+            color: "000000",
+            fill: "D9D9D9",
+            horizontal: "left",
+        });
 
         row++;
 
@@ -2108,26 +1820,19 @@ export default function Reports() {
        EXCEL LEADING
     ======================================================== */
 
-    function buildExcelLeading(
-        ws,
-        startRow,
-    ) {
+    function buildExcelLeading(ws, startRow) {
         let row = startRow;
 
         ws.mergeCells(row, 1, row, 39);
 
-        ws.getCell(row, 1).value =
-            "LEADING INDICATOR";
+        ws.getCell(row, 1).value = "LEADING INDICATOR";
 
-        applyCellStyle(
-            ws.getCell(row, 1),
-            {
-                size: 14,
-                bold: true,
-                color: "000000",
-                fill: "00FF20",
-            },
-        );
+        applyCellStyle(ws.getCell(row, 1), {
+            size: 14,
+            bold: true,
+            color: "000000",
+            fill: "00FF20",
+        });
 
         row++;
 
@@ -2142,187 +1847,94 @@ export default function Reports() {
             "DEFINISI\nFREQUENCY RATE / UNIT",
         ];
 
-        leftHeaders.forEach(
-            (title, index) => {
-                ws.mergeCells(
-                    h1,
-                    index + 1,
-                    h2,
-                    index + 1,
-                );
+        leftHeaders.forEach((title, index) => {
+            ws.mergeCells(h1, index + 1, h2, index + 1);
 
-                ws.getCell(
-                    h1,
-                    index + 1,
-                ).value = title;
+            ws.getCell(h1, index + 1).value = title;
 
-                applyCellStyle(
-                    ws.getCell(
-                        h1,
-                        index + 1,
-                    ),
-                    {
-                        size: 8,
-                        bold: true,
-                        fill: "F1DDDC",
-                    },
-                );
-            },
-        );
+            applyCellStyle(ws.getCell(h1, index + 1), {
+                size: 8,
+                bold: true,
+                fill: "F1DDDC",
+            });
+        });
 
         let col = 6;
 
-        ["Q1", "Q2", "Q3", "Q4"].forEach(
-            (q) => {
-                ws.mergeCells(
-                    h1,
-                    col,
-                    h1,
-                    col + 1,
-                );
+        ["Q1", "Q2", "Q3", "Q4"].forEach((q) => {
+            ws.mergeCells(h1, col, h1, col + 1);
 
-                ws.getCell(
-                    h1,
-                    col,
-                ).value = q;
+            ws.getCell(h1, col).value = q;
 
-                ws.getCell(
-                    h2,
-                    col,
-                ).value = "Plan";
+            ws.getCell(h2, col).value = "Plan";
 
-                ws.getCell(
-                    h2,
-                    col + 1,
-                ).value = "Actual";
+            ws.getCell(h2, col + 1).value = "Actual";
 
-                applyCellStyle(
-                    ws.getCell(
-                        h1,
-                        col,
-                    ),
-                    {
-                        bold: true,
-                        fill: "F1DDDC",
-                    },
-                );
-
-                applyCellStyle(
-                    ws.getCell(
-                        h2,
-                        col,
-                    ),
-                    {
-                        bold: true,
-                        fill: "FFFF00",
-                    },
-                );
-
-                applyCellStyle(
-                    ws.getCell(
-                        h2,
-                        col + 1,
-                    ),
-                    {
-                        bold: true,
-                        fill: "FFFF00",
-                    },
-                );
-
-                col += 2;
-            },
-        );
-
-        ws.mergeCells(
-            h1,
-            col,
-            h1,
-            col + 1,
-        );
-
-        ws.getCell(h1, col).value =
-            "TOTAL KUMULATIF YTD";
-
-        ws.getCell(h2, col).value =
-            "Plan";
-
-        ws.getCell(
-            h2,
-            col + 1,
-        ).value = "Actual";
-
-        applyCellStyle(
-            ws.getCell(h1, col),
-            {
+            applyCellStyle(ws.getCell(h1, col), {
                 bold: true,
                 fill: "F1DDDC",
-            },
-        );
+            });
 
-        applyCellStyle(
-            ws.getCell(h2, col),
-            {
+            applyCellStyle(ws.getCell(h2, col), {
                 bold: true,
                 fill: "FFFF00",
-            },
-        );
+            });
 
-        applyCellStyle(
-            ws.getCell(h2, col + 1),
-            {
+            applyCellStyle(ws.getCell(h2, col + 1), {
                 bold: true,
                 fill: "FFFF00",
-            },
-        );
+            });
+
+            col += 2;
+        });
+
+        ws.mergeCells(h1, col, h1, col + 1);
+
+        ws.getCell(h1, col).value = "TOTAL KUMULATIF YTD";
+
+        ws.getCell(h2, col).value = "Plan";
+
+        ws.getCell(h2, col + 1).value = "Actual";
+
+        applyCellStyle(ws.getCell(h1, col), {
+            bold: true,
+            fill: "F1DDDC",
+        });
+
+        applyCellStyle(ws.getCell(h2, col), {
+            bold: true,
+            fill: "FFFF00",
+        });
+
+        applyCellStyle(ws.getCell(h2, col + 1), {
+            bold: true,
+            fill: "FFFF00",
+        });
 
         col += 2;
 
-        ws.mergeCells(
-            h1,
-            col,
-            h1,
-            col + 23,
-        );
+        ws.mergeCells(h1, col, h1, col + 23);
 
-        ws.getCell(h1, col).value =
-            `TARGET IMPLEMENTASI ${year}`;
+        ws.getCell(h1, col).value = `TARGET IMPLEMENTASI ${year}`;
 
-        applyCellStyle(
-            ws.getCell(h1, col),
-            {
-                size: 12,
-                fill: "F1DDDC",
-            },
-        );
+        applyCellStyle(ws.getCell(h1, col), {
+            size: 12,
+            fill: "F1DDDC",
+        });
 
         let monthCol = col;
 
         MONTHS.forEach((month) => {
-            ws.mergeCells(
-                h2,
-                monthCol,
-                h2,
-                monthCol + 1,
-            );
+            ws.mergeCells(h2, monthCol, h2, monthCol + 1);
 
-            ws.getCell(
-                h2,
-                monthCol,
-            ).value =
-                `${month}-${String(
-                    year,
-                ).slice(-2)}`;
+            ws.getCell(h2, monthCol).value = `${month}-${String(year).slice(
+                -2,
+            )}`;
 
-            applyCellStyle(
-                ws.getCell(
-                    h2,
-                    monthCol,
-                ),
-                {
-                    size: 8,
-                    fill: "F1DDDC",
-                },
-            );
+            applyCellStyle(ws.getCell(h2, monthCol), {
+                size: 8,
+                fill: "F1DDDC",
+            });
 
             monthCol += 2;
         });
@@ -2335,9 +1947,7 @@ export default function Reports() {
                 item.definition || "",
                 item.monthlyTarget,
                 item.annualTarget,
-                item.definition2 ||
-                    item.notes ||
-                    "",
+                item.definition2 || item.notes || "",
                 item.planQ1,
                 item.actualQ1,
                 item.planQ2,
@@ -2350,47 +1960,26 @@ export default function Reports() {
                 item.actualYtd,
             ];
 
-            item.values.plan.forEach(
-                (value, index) => {
-                    values.push(value);
-                    values.push(
-                        item.values.actual[
-                            index
-                        ],
-                    );
-                },
-            );
+            item.values.plan.forEach((value, index) => {
+                values.push(value);
+                values.push(item.values.actual[index]);
+            });
 
-            values.forEach(
-                (value, index) => {
-                    const cell =
-                        ws.getCell(
-                            row,
-                            index + 1,
-                        );
+            values.forEach((value, index) => {
+                const cell = ws.getCell(row, index + 1);
 
-                    cell.value = value;
+                cell.value = value;
 
-                    applyCellStyle(
-                        cell,
-                        {
-                            size: 8,
-                            bold:
-                                index === 0,
-                            horizontal:
-                                index === 0 ||
-                                index === 1 ||
-                                index === 4
-                                    ? "left"
-                                    : "center",
-                            fill:
-                                row % 2 === 0
-                                    ? "FFFFFF"
-                                    : "F7F8EE",
-                        },
-                    );
-                },
-            );
+                applyCellStyle(cell, {
+                    size: 8,
+                    bold: index === 0,
+                    horizontal:
+                        index === 0 || index === 1 || index === 4
+                            ? "left"
+                            : "center",
+                    fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE",
+                });
+            });
 
             row++;
         });
@@ -2402,215 +1991,91 @@ export default function Reports() {
        SIGNATURE EXCEL
     ======================================================== */
 
-    function buildExcelSignature(
-        ws,
-        startRow,
-    ) {
+    function buildExcelSignature(ws, startRow) {
         const row = startRow;
 
         /* HEADER */
 
-        ws.mergeCells(
-            row,
-            1,
-            row,
-            13,
-        );
+        ws.mergeCells(row, 1, row, 13);
 
-        ws.mergeCells(
-            row,
-            14,
-            row,
-            26,
-        );
+        ws.mergeCells(row, 14, row, 26);
 
-        ws.mergeCells(
-            row,
-            27,
-            row,
-            39,
-        );
+        ws.mergeCells(row, 27, row, 39);
 
-        ws.getCell(row, 1).value =
-            "Dilaporkan oleh,";
+        ws.getCell(row, 1).value = "Dilaporkan oleh,";
 
-        ws.getCell(row, 14).value =
-            "Disetujui oleh,";
+        ws.getCell(row, 14).value = "Disetujui oleh,";
 
-        ws.getCell(row, 27).value =
-            "Diketahui Oleh,";
+        ws.getCell(row, 27).value = "Diketahui Oleh,";
 
-        [1, 14, 27].forEach(
-            (col) => {
-                applyCellStyle(
-                    ws.getCell(
-                        row,
-                        col,
-                    ),
-                    {
-                        size: 9,
-                        fill: "F1DDDC",
-                    },
-                );
-            },
-        );
+        [1, 14, 27].forEach((col) => {
+            applyCellStyle(ws.getCell(row, col), {
+                size: 9,
+                fill: "F1DDDC",
+            });
+        });
 
         /* AREA TTD */
 
-        ws.mergeCells(
-            row + 1,
-            1,
-            row + 5,
-            13,
-        );
+        ws.mergeCells(row + 1, 1, row + 5, 13);
 
-        ws.mergeCells(
-            row + 1,
-            14,
-            row + 5,
-            26,
-        );
+        ws.mergeCells(row + 1, 14, row + 5, 26);
 
-        ws.mergeCells(
-            row + 1,
-            27,
-            row + 5,
-            39,
-        );
+        ws.mergeCells(row + 1, 27, row + 5, 39);
 
-        [1, 14, 27].forEach(
-            (col) => {
-                applyCellStyle(
-                    ws.getCell(
-                        row + 1,
-                        col,
-                    ),
-                    {
-                        size: 9,
-                        horizontal:
-                            "center",
-                    },
-                );
-            },
-        );
+        [1, 14, 27].forEach((col) => {
+            applyCellStyle(ws.getCell(row + 1, col), {
+                size: 9,
+                horizontal: "center",
+            });
+        });
 
         /* NAMA */
 
-        ws.mergeCells(
-            row + 6,
-            1,
-            row + 6,
-            13,
-        );
+        ws.mergeCells(row + 6, 1, row + 6, 13);
 
-        ws.mergeCells(
-            row + 6,
-            14,
-            row + 6,
-            26,
-        );
+        ws.mergeCells(row + 6, 14, row + 6, 26);
 
-        ws.mergeCells(
-            row + 6,
-            27,
-            row + 6,
-            39,
-        );
+        ws.mergeCells(row + 6, 27, row + 6, 39);
 
-        ws.getCell(
-            row + 6,
-            1,
-        ).value =
-            "FENNIELLY DHINAWALY";
+        ws.getCell(row + 6, 1).value = "FENNIELLY DHINAWALY";
 
-        ws.getCell(
-            row + 6,
-            14,
-        ).value = "SAIDO";
+        ws.getCell(row + 6, 14).value = "SAIDO";
 
         /* KOTAK KETIGA KOSONG */
 
-        ws.getCell(
-            row + 6,
-            27,
-        ).value = "";
+        ws.getCell(row + 6, 27).value = "";
 
-        [1, 14, 27].forEach(
-            (col) => {
-                applyCellStyle(
-                    ws.getCell(
-                        row + 6,
-                        col,
-                    ),
-                    {
-                        size: 9,
-                        bold: true,
-                    },
-                );
-            },
-        );
+        [1, 14, 27].forEach((col) => {
+            applyCellStyle(ws.getCell(row + 6, col), {
+                size: 9,
+                bold: true,
+            });
+        });
 
         /* JABATAN */
 
-        ws.mergeCells(
-            row + 7,
-            1,
-            row + 7,
-            13,
-        );
+        ws.mergeCells(row + 7, 1, row + 7, 13);
 
-        ws.mergeCells(
-            row + 7,
-            14,
-            row + 7,
-            26,
-        );
+        ws.mergeCells(row + 7, 14, row + 7, 26);
 
-        ws.mergeCells(
-            row + 7,
-            27,
-            row + 7,
-            39,
-        );
+        ws.mergeCells(row + 7, 27, row + 7, 39);
 
-        ws.getCell(
-            row + 7,
-            1,
-        ).value =
-            "HSE & ISO Jr. Manager";
+        ws.getCell(row + 7, 1).value = "HSE & ISO Jr. Manager";
 
-        ws.getCell(
-            row + 7,
-            14,
-        ).value =
-            "General Manager";
+        ws.getCell(row + 7, 14).value = "General Manager";
 
-        ws.getCell(
-            row + 7,
-            27,
-        ).value = "";
+        ws.getCell(row + 7, 27).value = "";
 
-        [1, 14, 27].forEach(
-            (col) => {
-                applyCellStyle(
-                    ws.getCell(
-                        row + 7,
-                        col,
-                    ),
-                    {
-                        size: 8,
-                    },
-                );
-            },
-        );
+        [1, 14, 27].forEach((col) => {
+            applyCellStyle(ws.getCell(row + 7, col), {
+                size: 8,
+            });
+        });
 
         ws.getRow(row).height = 18;
 
-        for (
-            let r = row + 1;
-            r <= row + 5;
-            r++
-        ) {
+        for (let r = row + 1; r <= row + 5; r++) {
             ws.getRow(r).height = 25;
         }
 
@@ -2624,196 +2089,134 @@ export default function Reports() {
        EXPORT EXCEL
     ======================================================== */
 
-    const handleExportExcel =
-        async () => {
-            if (
-                filteredReports.length ===
-                0
-            ) {
-                alert(
-                    "Tidak ada data report yang sesuai dengan filter.",
-                );
+    const handleExportExcel = async () => {
+        if (filteredReports.length === 0) {
+            alert("Tidak ada data report yang sesuai dengan filter.");
 
-                return;
-            }
+            return;
+        }
 
-            try {
-                setExporting(true);
+        try {
+            setExporting(true);
 
-                const workbook =
-                    new ExcelJS.Workbook();
+            const workbook = new ExcelJS.Workbook();
 
-                const ws =
-                    workbook.addWorksheet(
-                        rig !== "All Rigs" ? `KPI ${rig}` : "KPI HSE",
-                    );
+            const ws = workbook.addWorksheet(
+                rig !== "All Rigs" ? `KPI ${rig}` : "KPI HSE",
+            );
 
-                ws.pageSetup = {
-                    orientation:
-                        "landscape",
-                    paperSize: 8,
-                    fitToPage: true,
-                    fitToWidth: 1,
-                    fitToHeight: 0,
-                    horizontalCentered: true,
-                };
+            ws.pageSetup = {
+                orientation: "landscape",
+                paperSize: 8,
+                fitToPage: true,
+                fitToWidth: 1,
+                fitToHeight: 0,
+                horizontalCentered: true,
+            };
 
-                ws.pageMargins = {
-                    left: 0.15,
-                    right: 0.15,
-                    top: 0.25,
-                    bottom: 0.25,
-                    header: 0.1,
-                    footer: 0.1,
-                };
+            ws.pageMargins = {
+                left: 0.15,
+                right: 0.15,
+                top: 0.25,
+                bottom: 0.25,
+                header: 0.1,
+                footer: 0.1,
+            };
 
-                buildExcelHeader(ws);
+            buildExcelHeader(ws);
 
-                let row = 7;
+            let row = 7;
 
-                row = buildExcelLagging(
-                    ws,
-                    row,
-                );
+            row = buildExcelLagging(ws, row);
 
-                row = buildExcelLeading(
-                    ws,
-                    row,
-                );
+            row = buildExcelLeading(ws, row);
 
-                ws.mergeCells(
-                    row,
-                    1,
-                    row,
-                    39,
-                );
+            ws.mergeCells(row, 1, row, 39);
 
-                ws.getCell(row, 1).value =
-                    "NOTES / REMARKS";
+            ws.getCell(row, 1).value = "NOTES / REMARKS";
 
-                applyCellStyle(
-                    ws.getCell(row, 1),
-                    {
-                        bold: true,
-                        color: "FFFFFF",
-                        fill: "064E3B",
-                        horizontal:
-                            "left",
-                    },
-                );
+            applyCellStyle(ws.getCell(row, 1), {
+                bold: true,
+                color: "FFFFFF",
+                fill: "064E3B",
+                horizontal: "left",
+            });
 
-                row++;
+            row++;
 
-                ws.mergeCells(
-                    row,
-                    1,
-                    row + 2,
-                    39,
-                );
+            ws.mergeCells(row, 1, row + 2, 39);
 
-                ws.getCell(row, 1).value =
-                    latestReport?.remarks ||
-                    "Report dibuat berdasarkan data HSE yang tersimpan pada database.";
+            ws.getCell(row, 1).value =
+                latestReport?.remarks ||
+                "Report dibuat berdasarkan data HSE yang tersimpan pada database.";
 
-                applyCellStyle(
-                    ws.getCell(row, 1),
-                    {
-                        size: 9,
-                        fill: "F5FFD0",
-                        horizontal:
-                            "left",
-                        vertical:
-                            "top",
-                    },
-                );
+            applyCellStyle(ws.getCell(row, 1), {
+                size: 9,
+                fill: "F5FFD0",
+                horizontal: "left",
+                vertical: "top",
+            });
 
-                row += 4;
+            row += 4;
 
-                row =
-                    buildExcelSignature(
-                        ws,
-                        row,
-                    );
+            row = buildExcelSignature(ws, row);
 
-                /* WIDTH */
+            /* WIDTH */
 
-                const widths = [
-                    7,
-                    36,
-                    18,
-                    18,
-                    11,
-                    11,
-                    11,
-                    11,
-                    11,
-                    11,
-                    11,
-                    11,
-                    11,
-                    11,
-                    ...Array(24).fill(
-                        10,
-                    ),
-                ];
+            const widths = [
+                7,
+                36,
+                18,
+                18,
+                11,
+                11,
+                11,
+                11,
+                11,
+                11,
+                11,
+                11,
+                11,
+                11,
+                ...Array(24).fill(10),
+            ];
 
-                widths.forEach(
-                    (width, index) => {
-                        ws.getColumn(
-                            index + 1,
-                        ).width = width;
-                    },
-                );
+            widths.forEach((width, index) => {
+                ws.getColumn(index + 1).width = width;
+            });
 
-                ws.views = [];
+            ws.views = [];
 
-                ws.pageSetup.printArea =
-                    `A1:AM${row}`;
+            ws.pageSetup.printArea = `A1:AM${row}`;
 
-                ws.headerFooter.oddFooter =
-                    "&CBMSINDO - KPI / HSE REPORT&RPage &P of &N";
+            ws.headerFooter.oddFooter =
+                "&CBMSINDO - KPI / HSE REPORT&RPage &P of &N";
 
-                const buffer =
-                    await workbook.xlsx.writeBuffer();
+            const buffer = await workbook.xlsx.writeBuffer();
 
-                const blob = new Blob(
-                    [buffer],
-                    {
-                        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    },
-                );
+            const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
 
-                const safeProject =
-                    project.replace(
-                        /[^a-zA-Z0-9]+/g,
-                        "_",
-                    );
+            const safeProject = project.replace(/[^a-zA-Z0-9]+/g, "_");
 
-                const safeRig =
-                    rig.replace(
-                        /[^a-zA-Z0-9]+/g,
-                        "_",
-                    );
+            const safeRig = rig.replace(/[^a-zA-Z0-9]+/g, "_");
 
-                saveAs(
-                    blob,
-                    `KPI_BMS03A_${year}_${safeProject}_${safeRig}_Plan_Actual.xlsx`,
-                );
-            } catch (error) {
-                console.error(
-                    "EXPORT EXCEL ERROR:",
-                    error,
-                );
+            saveAs(
+                blob,
+                `KPI_BMS03A_${year}_${safeProject}_${safeRig}_Plan_Actual.xlsx`,
+            );
+        } catch (error) {
+            console.error("EXPORT EXCEL ERROR:", error);
 
-                alert(
-                    "Export Excel gagal: " +
-                        (error?.message ||
-                            "Terjadi kesalahan."),
-                );
-            } finally {
-                setExporting(false);
-            }
-        };
+            alert(
+                "Export Excel gagal: " +
+                    (error?.message || "Terjadi kesalahan."),
+            );
+        } finally {
+            setExporting(false);
+        }
+    };
 
     /* ========================================================
        STYLE
@@ -2874,128 +2277,64 @@ export default function Reports() {
         return formatNumber(val);
     };
 
-    const renderPlanActualCells = (
-        item,
-    ) => {
+    const renderPlanActualCells = (item) => {
         const cells = [];
 
-        const quarterNames = [
-            "Q1",
-            "Q2",
-            "Q3",
-            "Q4",
-        ];
+        const quarterNames = ["Q1", "Q2", "Q3", "Q4"];
 
-        quarterNames.forEach(
-            (q) => {
-                cells.push(
-                    <td
-                        key={`${q}-plan`}
-                        style={tdCenter}
-                    >
-                        {formatMetricCell(
-                            getQuarterValue(
-                                item,
-                                q,
-                                "Plan",
-                            ),
-                            item,
-                            true,
-                        )}
-                    </td>,
-                );
+        quarterNames.forEach((q) => {
+            cells.push(
+                <td key={`${q}-plan`} style={tdCenter}>
+                    {formatMetricCell(
+                        getQuarterValue(item, q, "Plan"),
+                        item,
+                        true,
+                    )}
+                </td>,
+            );
 
-                cells.push(
-                    <td
-                        key={`${q}-actual`}
-                        style={tdCenter}
-                    >
-                        {formatMetricCell(
-                            getQuarterValue(
-                                item,
-                                q,
-                                "Actual",
-                            ),
-                            item,
-                            false,
-                        )}
-                    </td>,
-                );
-            },
-        );
+            cells.push(
+                <td key={`${q}-actual`} style={tdCenter}>
+                    {formatMetricCell(
+                        getQuarterValue(item, q, "Actual"),
+                        item,
+                        false,
+                    )}
+                </td>,
+            );
+        });
 
         cells.push(
-            <td
-                key="ytd-plan"
-                style={tdCenter}
-            >
-                {formatMetricCell(
-                    item.planYtd,
-                    item,
-                    true,
-                )}
+            <td key="ytd-plan" style={tdCenter}>
+                {formatMetricCell(item.planYtd, item, true)}
             </td>,
         );
 
         cells.push(
-            <td
-                key="ytd-actual"
-                style={tdCenter}
-            >
-                {formatMetricCell(
-                    item.actualYtd,
-                    item,
-                    false,
-                )}
+            <td key="ytd-actual" style={tdCenter}>
+                {formatMetricCell(item.actualYtd, item, false)}
             </td>,
         );
 
-        MONTHS.forEach(
-            (month, index) => {
-                cells.push(
-                    <td
-                        key={`${month}-plan`}
-                        style={tdCenter}
-                    >
-                        {formatMetricCell(
-                            item.values
-                                .plan[
-                                index
-                            ],
-                            item,
-                            true,
-                        )}
-                    </td>,
-                );
+        MONTHS.forEach((month, index) => {
+            cells.push(
+                <td key={`${month}-plan`} style={tdCenter}>
+                    {formatMetricCell(item.values.plan[index], item, true)}
+                </td>,
+            );
 
-                cells.push(
-                    <td
-                        key={`${month}-actual`}
-                        style={tdCenter}
-                    >
-                        {formatMetricCell(
-                            item.values
-                                .actual[
-                                index
-                            ],
-                            item,
-                            false,
-                        )}
-                    </td>,
-                );
-            },
-        );
+            cells.push(
+                <td key={`${month}-actual`} style={tdCenter}>
+                    {formatMetricCell(item.values.actual[index], item, false)}
+                </td>,
+            );
+        });
 
         return cells;
     };
 
-    const renderLaggingRow = (
-        item,
-        index,
-    ) => (
-        <tr
-            key={`lagging-${item.no}`}
-        >
+    const renderLaggingRow = (item, index) => (
+        <tr key={`lagging-${item.no}`}>
             <td
                 style={{
                     ...tdStyle,
@@ -3004,20 +2343,13 @@ export default function Reports() {
             >
                 <span
                     style={{
-                        display:
-                            "inline-block",
-                        minWidth:
-                            "32px",
-                        marginRight:
-                            "5px",
-                        padding:
-                            "2px 5px",
-                        backgroundColor:
-                            "#FFFF00",
-                        border:
-                            "1px solid #222",
-                        textAlign:
-                            "center",
+                        display: "inline-block",
+                        minWidth: "32px",
+                        marginRight: "5px",
+                        padding: "2px 5px",
+                        backgroundColor: "#FFFF00",
+                        border: "1px solid #222",
+                        textAlign: "center",
                     }}
                 >
                     {item.no}
@@ -3029,12 +2361,10 @@ export default function Reports() {
             <td
                 style={{
                     ...tdStyle,
-                    whiteSpace:
-                        "pre-line",
+                    whiteSpace: "pre-line",
                 }}
             >
-                {item.definition ||
-                    "-"}
+                {item.definition || "-"}
             </td>
 
             <td style={tdCenter}>
@@ -3046,26 +2376,18 @@ export default function Reports() {
             <td
                 style={{
                     ...tdStyle,
-                    whiteSpace:
-                        "pre-line",
-                    textAlign:
-                        "center",
+                    whiteSpace: "pre-line",
+                    textAlign: "center",
                 }}
             >
-                {item.notes ||
-                    ""}
+                {item.notes || ""}
             </td>
 
-            {renderPlanActualCells(
-                item,
-            )}
+            {renderPlanActualCells(item)}
         </tr>
     );
 
-    const renderMetricRow = (
-        item,
-        index,
-    ) => {
+    const renderMetricRow = (item, index) => {
         const isHeader = item.isTotalHeader || !item.no;
 
         return (
@@ -3144,10 +2466,8 @@ export default function Reports() {
         <div
             style={{
                 minHeight: "100vh",
-                backgroundColor:
-                    "#f3f7f4",
-                fontFamily:
-                    "Arial, sans-serif",
+                backgroundColor: "#f3f7f4",
+                fontFamily: "Arial, sans-serif",
             }}
         >
             <AdminSidebar />
@@ -3156,7 +2476,8 @@ export default function Reports() {
                 style={{
                     marginLeft: "var(--admin-sidebar-width, 215px)",
                     width: "calc(100% - var(--admin-sidebar-width, 215px))",
-                    transition: "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                    transition:
+                        "margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                     minHeight: "100vh",
                     padding: "35px",
                     boxSizing: "border-box",
@@ -3166,32 +2487,22 @@ export default function Reports() {
 
                 <div
                     style={{
-                        backgroundColor:
-                            "white",
-                        padding:
-                            "18px 24px",
-                        borderRadius:
-                            "8px",
-                        border:
-                            "1px solid #d9e2de",
-                        marginBottom:       
-                            "18px",
-                        display:
-                            "flex",
-                        justifyContent:
-                            "space-between",
-                        alignItems:
-                            "center",
+                        backgroundColor: "white",
+                        padding: "18px 24px",
+                        borderRadius: "8px",
+                        border: "1px solid #d9e2de",
+                        marginBottom: "18px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
                     }}
                 >
                     <div>
                         <h1
                             style={{
                                 margin: 0,
-                                color:
-                                    "#064E3B",
-                                fontSize:
-                                    "28px",
+                                color: "#064E3B",
+                                fontSize: "28px",
                             }}
                         >
                             Report Generation
@@ -3199,59 +2510,31 @@ export default function Reports() {
 
                         <p
                             style={{
-                                margin:
-                                    "6px 0 0",
-                                color:
-                                    "#526B60",
-                                fontSize: 
-                                    "14px",
+                                margin: "6px 0 0",
+                                color: "#526B60",
+                                fontSize: "14px",
                             }}
                         >
-                            Generate report
-                            KPI / HSE
-                            berdasarkan
-                            data database.
+                            Generate report KPI / HSE berdasarkan data database.
                         </p>
                     </div>
 
                     <button
-                        onClick={
-                            handleExportExcel
-                        }
-                        disabled={
-                            exporting ||
-                            filteredReports.length ===
-                                0
-                        }
+                        onClick={handleExportExcel}
+                        disabled={exporting || filteredReports.length === 0}
                         style={{
-                            backgroundColor:
-                                "#EFFF00",
-                            color:
-                                "#064E3B",
-                            border:
-                                "none",
-                            borderRadius:
-                                "6px",
-                            padding:
-                                "12px 18px",
-                            fontSize:
-                                "14px",
-                            fontWeight:
-                                "700",
-                            cursor:
-                                exporting
-                                    ? "not-allowed"
-                                    : "pointer",
-                            opacity:
-                                filteredReports.length ===
-                                0
-                                    ? 0.5
-                                    : 1,
+                            backgroundColor: "#EFFF00",
+                            color: "#064E3B",
+                            border: "none",
+                            borderRadius: "6px",
+                            padding: "12px 18px",
+                            fontSize: "14px",
+                            fontWeight: "700",
+                            cursor: exporting ? "not-allowed" : "pointer",
+                            opacity: filteredReports.length === 0 ? 0.5 : 1,
                         }}
                     >
-                        {exporting
-                            ? "Exporting..."
-                            : "Export Excel"}
+                        {exporting ? "Exporting..." : "Export Excel"}
                     </button>
                 </div>
 
@@ -3259,24 +2542,17 @@ export default function Reports() {
 
                 <section
                     style={{
-                        backgroundColor:
-                            "white",
-                        border:
-                            "1px solid #d9e2de",
-                        borderRadius:
-                            "8px",
-                        padding:
-                            "20px",
+                        backgroundColor: "white",
+                        border: "1px solid #d9e2de",
+                        borderRadius: "8px",
+                        padding: "20px",
                     }}
                 >
                     <h2
                         style={{
-                            margin:
-                                "0 0 18px",
-                            color:
-                                "#064E3B",
-                            fontSize:
-                                "20px",
+                            margin: "0 0 18px",
+                            color: "#064E3B",
+                            fontSize: "20px",
                         }}
                     >
                         Report Configuration
@@ -3284,404 +2560,168 @@ export default function Reports() {
 
                     <div
                         style={{
-                            display:
-                                "grid",
-                            gridTemplateColumns:
-                                "repeat(4, minmax(0, 1fr))",
+                            display: "grid",
+                            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
                             gap: "14px",
                         }}
                     >
-                        <label
-                            style={
-                                labelStyle
-                            }
-                        >
+                        <label style={labelStyle}>
                             Report Type
-
                             <select
-                                value={
-                                    reportType
-                                }
-                                onChange={(
-                                    e,
-                                ) =>
-                                    setReportType(
-                                        e
-                                            .target
-                                            .value,
-                                    )
-                                }
-                                style={
-                                    selectStyle
-                                }
+                                value={reportType}
+                                onChange={(e) => setReportType(e.target.value)}
+                                style={selectStyle}
                             >
-                                <option>
-                                    HSE
-                                    Performance
-                                </option>
+                                <option>HSE Performance</option>
 
-                                <option>
-                                    KPI Per Rig
-                                </option>
+                                <option>KPI Per Rig</option>
 
-                                <option>
-                                    Target KPI
-                                </option>
+                                <option>Target KPI</option>
                             </select>
                         </label>
 
-                        <label
-                            style={
-                                labelStyle
-                            }
-                        >
+                        <label style={labelStyle}>
                             Period
-
                             <select
-                                value={
-                                    period
-                                }
-                                onChange={(
-                                    e,
-                                ) =>
-                                    setPeriod(
-                                        e
-                                            .target
-                                            .value,
-                                    )
-                                }
-                                style={
-                                    selectStyle
-                                }
+                                value={period}
+                                onChange={(e) => setPeriod(e.target.value)}
+                                style={selectStyle}
                             >
-                                <option>
-                                    Annual
-                                </option>
+                                <option>Annual</option>
 
-                                <option>
-                                    Monthly
-                                </option>
+                                <option>Monthly</option>
 
-                                <option>
-                                    Quarterly
-                                </option>
+                                <option>Quarterly</option>
                             </select>
                         </label>
 
-                        <label
-                            style={
-                                labelStyle
-                            }
-                        >
+                        <label style={labelStyle}>
                             Year
-
                             <select
                                 value={year}
-                                onChange={(
-                                    e,
-                                ) =>
-                                    setYear(
-                                        e
-                                            .target
-                                            .value,
-                                    )
-                                }
-                                style={
-                                    selectStyle
-                                }
+                                onChange={(e) => setYear(e.target.value)}
+                                style={selectStyle}
                             >
-                                {availableYears.map(
-                                    (
-                                        item,
-                                    ) => (
-                                        <option
-                                            key={
-                                                item
-                                            }
-                                            value={
-                                                item
-                                            }
-                                        >
-                                            {
-                                                item
-                                            }
-                                        </option>
-                                    ),
-                                )}
+                                {availableYears.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </label>
 
-                        <label
-                            style={
-                                labelStyle
-                            }
-                        >
+                        <label style={labelStyle}>
                             Rig / Location
-
                             <select
-                                value={
-                                    rig
-                                }
-                                onChange={(
-                                    e,
-                                ) =>
-                                    setRig(
-                                        e
-                                            .target
-                                            .value,
-                                    )
-                                }
-                                style={
-                                    selectStyle
-                                }
+                                value={rig}
+                                onChange={(e) => setRig(e.target.value)}
+                                style={selectStyle}
                             >
-                                <option>
-                                    All Rigs
-                                </option>
+                                <option>All Rigs</option>
 
-                                {availableRigs.map(
-                                    (
-                                        item,
-                                    ) => (
-                                        <option
-                                            key={
-                                                item
-                                            }
-                                            value={
-                                                item
-                                            }
-                                        >
-                                            {
-                                                item
-                                            }
-                                        </option>
-                                    ),
-                                )}
+                                {availableRigs.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </label>
                     </div>
 
                     <div
                         style={{
-                            display:
-                                "grid",
-                            gridTemplateColumns:
-                                "repeat(3, minmax(0, 1fr))",
+                            display: "grid",
+                            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
                             gap: "14px",
-                            marginTop:
-                                "14px",
+                            marginTop: "14px",
                         }}
                     >
-                        <label
-                            style={
-                                labelStyle
-                            }
-                        >
-                            Fokus Corp /
-                            Project
-
+                        <label style={labelStyle}>
+                            Fokus Corp / Project
                             <select
-                                value={
-                                    project
-                                }
-                                onChange={(
-                                    e,
-                                ) =>
-                                    setProject(
-                                        e
-                                            .target
-                                            .value,
-                                    )
-                                }
-                                style={
-                                    selectStyle
-                                }
+                                value={project}
+                                onChange={(e) => setProject(e.target.value)}
+                                style={selectStyle}
                             >
-                                <option>
-                                    All
-                                    Projects
-                                </option>
+                                <option>All Projects</option>
 
-                                {availableProjects.map(
-                                    (
-                                        item,
-                                    ) => (
-                                        <option
-                                            key={
-                                                item
-                                            }
-                                            value={
-                                                item
-                                            }
-                                        >
-                                            {
-                                                item
-                                            }
-                                        </option>
-                                    ),
-                                )}
+                                {availableProjects.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </label>
 
-                        <label
-                            style={
-                                labelStyle
-                            }
-                        >
-                            Lokasi /
-                            Distrik
-
+                        <label style={labelStyle}>
+                            Lokasi / Distrik
                             <select
-                                value={
-                                    location
-                                }
-                                onChange={(
-                                    e,
-                                ) =>
-                                    setLocation(
-                                        e
-                                            .target
-                                            .value,
-                                    )
-                                }
-                                style={
-                                    selectStyle
-                                }
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                style={selectStyle}
                             >
-                                <option>
-                                    All
-                                    Locations
-                                </option>
+                                <option>All Locations</option>
 
-                                {availableLocations.map(
-                                    (
-                                        item,
-                                    ) => (
-                                        <option
-                                            key={
-                                                item
-                                            }
-                                            value={
-                                                item
-                                            }
-                                        >
-                                            {
-                                                item
-                                            }
-                                        </option>
-                                    ),
-                                )}
+                                {availableLocations.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
                             </select>
                         </label>
 
-                        <label
-                            style={
-                                labelStyle
-                            }
-                        >
+                        <label style={labelStyle}>
                             Tanggal Report
-
                             <select
-                                value={
-                                    reportDate
-                                }
-                                onChange={(
-                                    e,
-                                ) =>
-                                    setReportDate(
-                                        e
-                                            .target
-                                            .value,
-                                    )
-                                }
-                                style={
-                                    selectStyle
-                                }
+                                value={reportDate}
+                                onChange={(e) => setReportDate(e.target.value)}
+                                style={selectStyle}
                             >
-                                <option>
-                                    All Dates
-                                </option>
+                                <option>All Dates</option>
 
-                                {availableDates.map(
-                                    (
-                                        item,
-                                    ) => (
-                                        <option
-                                            key={
-                                                item
-                                            }
-                                            value={
-                                                item
-                                            }
-                                        >
-                                            {formatDate(
-                                                item,
-                                            )}
-                                        </option>
-                                    ),
-                                )}
+                                {availableDates.map((item) => (
+                                    <option key={item} value={item}>
+                                        {formatDate(item)}
+                                    </option>
+                                ))}
                             </select>
                         </label>
                     </div>
 
                     <div
                         style={{
-                            marginTop:
-                                "18px",
-                            display:
-                                "flex",
-                            justifyContent:
-                                "flex-end",
+                            marginTop: "18px",
+                            display: "flex",
+                            justifyContent: "flex-end",
                             gap: "10px",
                         }}
                     >
                         <button
-                            onClick={
-                                handleReset
-                            }
+                            onClick={handleReset}
                             style={{
-                                backgroundColor:
-                                    "white",
-                                color:
-                                    "#064E3B",
-                                border:
-                                    "1px solid #064E3B",
-                                borderRadius:
-                                    "6px",
-                                padding:
-                                    "11px 18px",
-                                fontSize:
-                                    "14px",
-                                cursor:
-                                    "pointer",
+                                backgroundColor: "white",
+                                color: "#064E3B",
+                                border: "1px solid #064E3B",
+                                borderRadius: "6px",
+                                padding: "11px 18px",
+                                fontSize: "14px",
+                                cursor: "pointer",
                             }}
                         >
                             Reset
                         </button>
 
                         <button
-                            onClick={() =>
-                                setPreview(
-                                    true,
-                                )
-                            }
+                            onClick={() => setPreview(true)}
                             style={{
-                                backgroundColor:
-                                    "#064E3B",
-                                color:
-                                    "white",
-                                border:
-                                    "none",
-                                borderRadius:
-                                    "6px",
-                                padding:
-                                    "11px 18px",
-                                fontSize:
-                                    "14px",
-                                fontWeight:
-                                    "700",
-                                cursor:
-                                    "pointer",
+                                backgroundColor: "#064E3B",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "6px",
+                                padding: "11px 18px",
+                                fontSize: "14px",
+                                fontWeight: "700",
+                                cursor: "pointer",
                             }}
                         >
                             Generate Preview
@@ -3694,33 +2734,25 @@ export default function Reports() {
                 {preview && (
                     <div
                         style={{
-                            marginTop:
-                                "15px",
-                            padding:
-                                "12px 16px",
-                            borderRadius:
-                                "6px",
+                            marginTop: "15px",
+                            padding: "12px 16px",
+                            borderRadius: "6px",
                             backgroundColor:
-                                filteredReports.length >
-                                0
+                                filteredReports.length > 0
                                     ? "#E8F7EF"
                                     : "#FFF1F0",
                             border:
-                                filteredReports.length >
-                                0
+                                filteredReports.length > 0
                                     ? "1px solid #B8DEC8"
                                     : "1px solid #E7B9B4",
                             color:
-                                filteredReports.length >
-                                0
+                                filteredReports.length > 0
                                     ? "#075E45"
                                     : "#A33A2B",
-                            fontSize:
-                                "13px",
+                            fontSize: "13px",
                         }}
                     >
-                        {filteredReports.length >
-                        0
+                        {filteredReports.length > 0
                             ? `Data ditemukan: ${filteredReports.length} report untuk filter yang dipilih.`
                             : "Tidak ada data report yang sesuai dengan filter."}
                     </div>
@@ -3728,1223 +2760,828 @@ export default function Reports() {
 
                 {/* PREVIEW */}
 
-                {preview &&
-                    filteredReports.length >
-                        0 && (
-                        <section
+                {preview && filteredReports.length > 0 && (
+                    <section
+                        style={{
+                            marginTop: "20px",
+                            backgroundColor: "white",
+                            border: "1px solid #d9e2de",
+                            borderRadius: "8px",
+                            padding: "18px",
+                            overflowX: "auto",
+                        }}
+                    >
+                        <div
                             style={{
-                                marginTop:
-                                    "20px",
-                                backgroundColor:
-                                    "white",
-                                border:
-                                    "1px solid #d9e2de",
-                                borderRadius:
-                                    "8px",
-                                padding:
-                                    "18px",
-                                overflowX:
-                                    "auto",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginBottom: "14px",
+                            }}
+                        >
+                            <div>
+                                <h2
+                                    style={{
+                                        margin: 0,
+                                        color: "#064E3B",
+                                        fontSize: "20px",
+                                    }}
+                                >
+                                    Report Preview: KPI{" "}
+                                    {rig !== "All Rigs" ? rig : "(All Rigs)"}
+                                </h2>
+
+                                <p
+                                    style={{
+                                        margin: "5px 0 0",
+                                        color: "#61786D",
+                                        fontSize: "13px",
+                                    }}
+                                >
+                                    {year}
+                                    {" • "}
+                                    {period}
+                                    {" • "}
+                                    {rig}
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={handleExportExcel}
+                                disabled={exporting}
+                                style={{
+                                    backgroundColor: "#EFFF00",
+                                    color: "#064E3B",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    padding: "10px 16px",
+                                    fontSize: "14px",
+                                    fontWeight: "700",
+                                }}
+                            >
+                                {exporting ? "Exporting..." : "Export Excel"}
+                            </button>
+                        </div>
+
+                        {/* DOCUMENT INFO */}
+
+                        <div
+                            style={{
+                                minWidth: "1800px",
+                                border: "1px solid #222",
+                                marginBottom: "18px",
                             }}
                         >
                             <div
                                 style={{
-                                    display:
-                                        "flex",
-                                    justifyContent:
-                                        "space-between",
-                                    alignItems:
-                                        "center",
-                                    marginBottom:
-                                        "14px",
+                                    backgroundColor: "#075E45",
+                                    color: "white",
+                                    padding: "12px",
+                                    textAlign: "center",
+                                    fontWeight: "700",
+                                    fontSize: "18px",
                                 }}
                             >
-                                <div>
-                                    <h2
-                                        style={{
-                                            margin: 0,
-                                            color:
-                                                "#064E3B",
-                                            fontSize:
-                                                "20px",
-                                        }}
-                                    >
-                                        Report Preview: KPI {rig !== "All Rigs" ? rig : "(All Rigs)"}
-                                    </h2>
-
-                                    <p
-                                        style={{
-                                            margin:
-                                                "5px 0 0",
-                                            color:
-                                                "#61786D",
-                                            fontSize:
-                                                "13px",
-                                        }}
-                                    >
-                                        {year}
-                                        {" • "}
-                                        {
-                                            period
-                                        }
-                                        {" • "}
-                                        {rig}
-                                    </p>
-                                </div>
-
-                                <button
-                                    onClick={
-                                        handleExportExcel
-                                    }
-                                    disabled={
-                                        exporting
-                                    }
-                                    style={{
-                                        backgroundColor:
-                                            "#EFFF00",
-                                        color:
-                                            "#064E3B",
-                                        border:
-                                            "none",
-                                        borderRadius:
-                                            "6px",
-                                        padding:
-                                            "10px 16px",
-                                        fontSize:
-                                            "14px",
-                                        fontWeight:
-                                            "700",
-                                    }}
-                                >
-                                    {exporting
-                                        ? "Exporting..."
-                                        : "Export Excel"}
-                                </button>
+                                KEY PERFORMANCE INDICATOR (HSE){" "}
+                                {rig !== "All Rigs" ? rig : ""}
                             </div>
-
-                            {/* DOCUMENT INFO */}
 
                             <div
                                 style={{
-                                    minWidth:
-                                        "1800px",
-                                    border:
-                                        "1px solid #222",
-                                    marginBottom:
-                                        "18px",
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr 1fr",
                                 }}
                             >
                                 <div
                                     style={{
-                                        backgroundColor:
-                                            "#075E45",
-                                        color:
-                                            "white",
-                                        padding:
-                                            "12px",
-                                        textAlign:
-                                            "center",
-                                        fontWeight:
-                                            "700",
-                                        fontSize:
-                                            "18px",
+                                        padding: "10px",
+                                        backgroundColor: "#F5FFD0",
+                                        borderRight: "1px solid #222",
                                     }}
                                 >
-                                    KEY PERFORMANCE INDICATOR (HSE) {rig !== "All Rigs" ? rig : ""}
+                                    <strong>Tahun Periode</strong>
+
+                                    <div>: {year}</div>
                                 </div>
 
                                 <div
                                     style={{
-                                        display:
-                                            "grid",
-                                        gridTemplateColumns:
-                                            "1fr 1fr 1fr",
+                                        padding: "10px",
+                                        backgroundColor: "#F5FFD0",
+                                        borderRight: "1px solid #222",
                                     }}
                                 >
-                                    <div
-                                        style={{
-                                            padding:
-                                                "10px",
-                                            backgroundColor:
-                                                "#F5FFD0",
-                                            borderRight:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        <strong>
-                                            Tahun
-                                            Periode
-                                        </strong>
+                                    <strong>Tgl Diterbitkan / Rev.</strong>
 
-                                        <div>
-                                            :{" "}
-                                            {
-                                                year
-                                            }
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "10px",
-                                            backgroundColor:
-                                                "#F5FFD0",
-                                            borderRight:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        <strong>
-                                            Tgl
-                                            Diterbitkan
-                                            / Rev.
-                                        </strong>
-
-                                        <div>
-                                            :{" "}
-                                            {latestReport?.report_date
-                                                ? formatDate(
-                                                      latestReport.report_date,
-                                                  )
-                                                : "-"}{" "}
-                                            / Rev.
-                                            {latestReport?.revision_no ??
-                                                "00"}
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "10px",
-                                            backgroundColor:
-                                                "#F5FFD0",
-                                        }}
-                                    >
-                                        <strong>
-                                            Fokus Corp
-                                            / Project
-                                        </strong>
-
-                                        <div>
-                                            :{" "}
-                                            {latestReport?.contract_no ||
-                                                "-"}
-                                        </div>
+                                    <div>
+                                        :{" "}
+                                        {latestReport?.report_date
+                                            ? formatDate(
+                                                  latestReport.report_date,
+                                              )
+                                            : "-"}{" "}
+                                        / Rev.
+                                        {latestReport?.revision_no ?? "00"}
                                     </div>
                                 </div>
 
                                 <div
                                     style={{
-                                        display:
-                                            "grid",
-                                        gridTemplateColumns:
-                                            "1fr 1fr 1fr",
+                                        padding: "10px",
+                                        backgroundColor: "#F5FFD0",
                                     }}
                                 >
-                                    <div
-                                        style={{
-                                            padding:
-                                                "10px",
-                                            borderTop:
-                                                "1px solid #222",
-                                            borderRight:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        <strong>
-                                            Periode
-                                        </strong>
+                                    <strong>Fokus Corp / Project</strong>
 
-                                        <div>
-                                            :{" "}
-                                            {
-                                                period
-                                            }
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "10px",
-                                            borderTop:
-                                                "1px solid #222",
-                                            borderRight:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        <strong>
-                                            Rig /
-                                            Location
-                                        </strong>
-
-                                        <div>
-                                            :{" "}
-                                            {
-                                                rig
-                                            }
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "10px",
-                                            borderTop:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        <strong>
-                                            Lokasi /
-                                            Distrik
-                                        </strong>
-
-                                        <div>
-                                            :{" "}
-                                            {latestReport?.location_district ||
-                                                "-"}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div
-                                    style={{
-                                        padding:
-                                            "10px",
-                                        borderTop:
-                                            "1px solid #222",
-                                        backgroundColor:
-                                            "#FAFFF0",
-                                    }}
-                                >
-                                    <strong>
-                                        Referensi
-                                        Program :
-                                    </strong>
-
-                                    <div
-                                        style={{
-                                            marginTop:
-                                                "5px",
-                                        }}
-                                    >
-                                        {latestReport?.program_reference ||
-                                            "-"}
+                                    <div>
+                                        : {latestReport?.contract_no || "-"}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* =================================================
+                            <div
+                                style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr 1fr",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        padding: "10px",
+                                        borderTop: "1px solid #222",
+                                        borderRight: "1px solid #222",
+                                    }}
+                                >
+                                    <strong>Periode</strong>
+
+                                    <div>: {period}</div>
+                                </div>
+
+                                <div
+                                    style={{
+                                        padding: "10px",
+                                        borderTop: "1px solid #222",
+                                        borderRight: "1px solid #222",
+                                    }}
+                                >
+                                    <strong>Rig / Location</strong>
+
+                                    <div>: {rig}</div>
+                                </div>
+
+                                <div
+                                    style={{
+                                        padding: "10px",
+                                        borderTop: "1px solid #222",
+                                    }}
+                                >
+                                    <strong>Lokasi / Distrik</strong>
+
+                                    <div>
+                                        :{" "}
+                                        {latestReport?.location_district || "-"}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                style={{
+                                    padding: "10px",
+                                    borderTop: "1px solid #222",
+                                    backgroundColor: "#FAFFF0",
+                                }}
+                            >
+                                <strong>Referensi Program :</strong>
+
+                                <div
+                                    style={{
+                                        marginTop: "5px",
+                                    }}
+                                >
+                                    {latestReport?.program_reference || "-"}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* =================================================
                                LAGGING TABLE
                             ================================================= */}
 
+                        <div
+                            style={{
+                                minWidth: "2200px",
+                                border: "1px solid #222",
+                            }}
+                        >
                             <div
                                 style={{
-                                    minWidth:
-                                        "2200px",
-                                    border:
-                                        "1px solid #222",
+                                    backgroundColor: "#00FF20",
+                                    color: "#000",
+                                    padding: "8px",
+                                    fontWeight: "700",
+                                    fontSize: "18px",
+                                    textAlign: "center",
                                 }}
                             >
-                                <div
-                                    style={{
-                                        backgroundColor:
-                                            "#00FF20",
-                                        color:
-                                            "#000",
-                                        padding:
-                                            "8px",
-                                        fontWeight:
-                                            "700",
-                                        fontSize:
-                                            "18px",
-                                        textAlign:
-                                            "center",
-                                    }}
-                                >
-                                    LAGGING INDICATOR
-                                </div>
-
-                                <table
-                                    style={{
-                                        width:
-                                            "100%",
-                                        borderCollapse:
-                                            "collapse",
-                                        fontSize:
-                                            "11px",
-                                    }}
-                                >
-                                    <thead>
-                                        <tr>
-                                            <th
-                                                rowSpan={
-                                                    2
-                                                }
-                                                style={{
-                                                    ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                    minWidth:
-                                                        "330px",
-                                                }}
-                                            >
-                                                POINT YANG
-                                                DIUKUR
-                                            </th>
-
-                                            <th
-                                                rowSpan={
-                                                    2
-                                                }
-                                                style={{
-                                                    ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                    minWidth:
-                                                        "260px",
-                                                }}
-                                            >
-                                                DEFINISI
-                                            </th>
-
-                                            <th
-                                                rowSpan={
-                                                    2
-                                                }
-                                                style={{
-                                                    ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                    minWidth:
-                                                        "140px",
-                                                }}
-                                            >
-                                                TARGET /
-                                                ESTIMASI /
-                                                MONTH
-                                            </th>
-
-                                            <th
-                                                rowSpan={
-                                                    2
-                                                }
-                                                style={{
-                                                    ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                    minWidth:
-                                                        "140px",
-                                                }}
-                                            >
-                                                KETERANGAN
-                                            </th>
-
-                                            {[
-                                                "Q1",
-                                                "Q2",
-                                                "Q3",
-                                                "Q4",
-                                            ].map(
-                                                (
-                                                    q,
-                                                ) => (
-                                                    <th
-                                                        key={
-                                                            q
-                                                        }
-                                                        colSpan={
-                                                            2
-                                                        }
-                                                        style={{
-                                                            ...thStyle,
-                                                            backgroundColor:
-                                                                "#F1DDDC",
-                                                        }}
-                                                    >
-                                                        {
-                                                            q
-                                                        }
-                                                    </th>
-                                                ),
-                                            )}
-
-                                            <th
-                                                colSpan={
-                                                    2
-                                                }
-                                                style={{
-                                                    ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                }}
-                                            >
-                                                TOTAL
-                                                KUMULATIF
-                                                YTD
-                                            </th>
-
-                                            {MONTHS.map(
-                                                (
-                                                    month,
-                                                ) => (
-                                                    <th
-                                                        key={
-                                                            month
-                                                        }
-                                                        colSpan={
-                                                            2
-                                                        }
-                                                        style={{
-                                                            ...thStyle,
-                                                            backgroundColor:
-                                                                "#F1DDDC",
-                                                        }}
-                                                    >
-                                                        {
-                                                            month
-                                                        }
-                                                        -
-                                                        {String(
-                                                            year,
-                                                        ).slice(
-                                                            -2,
-                                                        )}
-                                                    </th>
-                                                ),
-                                            )}
-                                        </tr>
-
-                                        <tr>
-                                            {Array.from(
-                                                {
-                                                    length: 17,
-                                                },
-                                            ).map(
-                                                (
-                                                    _,
-                                                    index,
-                                                ) => (
-                                                    <React.Fragment
-                                                        key={
-                                                            index
-                                                        }
-                                                    >
-                                                        <th
-                                                            style={{
-                                                                ...thStyle,
-                                                                backgroundColor:
-                                                                    "#FFFF00",
-                                                                fontSize:
-                                                                    "9px",
-                                                            }}
-                                                        >
-                                                            Plan
-                                                        </th>
-
-                                                        <th
-                                                            style={{
-                                                                ...thStyle,
-                                                                backgroundColor:
-                                                                    "#FFFF00",
-                                                                fontSize:
-                                                                    "9px",
-                                                            }}
-                                                        >
-                                                            Actual
-                                                        </th>
-                                                    </React.Fragment>
-                                                ),
-                                            )}
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        {/* SECTION 1 */}
-
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    38
-                                                }
-                                                style={{
-                                                    ...tdStyle,
-                                                    backgroundColor:
-                                                        "#D9D9D9",
-                                                    fontWeight:
-                                                        "700",
-                                                    textAlign:
-                                                        "left",
-                                                }}
-                                            >
-                                                1. HES
-                                                PERFORMANCE
-                                            </td>
-                                        </tr>
-
-                                        {lagging.map(
-                                            (
-                                                item,
-                                                index,
-                                            ) =>
-                                                renderLaggingRow(
-                                                    item,
-                                                    index,
-                                                ),
-                                        )}
-
-                                        {/* SECTION 2 */}
-
-                                        <tr>
-                                            <td
-                                                colSpan={38}
-                                                style={{
-                                                    ...tdStyle,
-                                                    backgroundColor: "#D9D9D9",
-                                                    fontWeight: "700",
-                                                }}
-                                            >
-                                                2. MAN HOURS & KILOMETER PERFORMANCE
-                                            </td>
-                                        </tr>
-
-                                        {manHours.map((item, index) =>
-                                            renderMetricRow(item, index)
-                                        )}
-
-                                        {/* SECTION 3 */}
-
-                                        <tr>
-                                            <td
-                                                colSpan={
-                                                    38
-                                                }
-                                                style={{
-                                                    ...tdStyle,
-                                                    backgroundColor:
-                                                        "#D9D9D9",
-                                                    fontWeight:
-                                                        "700",
-                                                }}
-                                            >
-                                                3. OPS
-                                                PERFORMANCE
-                                            </td>
-                                        </tr>
-
-                                        {ops.map(
-                                            (
-                                                item,
-                                                index,
-                                            ) =>
-                                                renderMetricRow(
-                                                    item,
-                                                    index,
-                                                ),
-                                        )}
-                                    </tbody>
-                                </table>
+                                LAGGING INDICATOR
                             </div>
 
-                            {/* =================================================
+                            <table
+                                style={{
+                                    width: "100%",
+                                    borderCollapse: "collapse",
+                                    fontSize: "11px",
+                                }}
+                            >
+                                <thead>
+                                    <tr>
+                                        <th
+                                            rowSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                                minWidth: "330px",
+                                            }}
+                                        >
+                                            POINT YANG DIUKUR
+                                        </th>
+
+                                        <th
+                                            rowSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                                minWidth: "260px",
+                                            }}
+                                        >
+                                            DEFINISI
+                                        </th>
+
+                                        <th
+                                            rowSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                                minWidth: "140px",
+                                            }}
+                                        >
+                                            TARGET / ESTIMASI / MONTH
+                                        </th>
+
+                                        <th
+                                            rowSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                                minWidth: "140px",
+                                            }}
+                                        >
+                                            KETERANGAN
+                                        </th>
+
+                                        {["Q1", "Q2", "Q3", "Q4"].map((q) => (
+                                            <th
+                                                key={q}
+                                                colSpan={2}
+                                                style={{
+                                                    ...thStyle,
+                                                    backgroundColor: "#F1DDDC",
+                                                }}
+                                            >
+                                                {q}
+                                            </th>
+                                        ))}
+
+                                        <th
+                                            colSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                            }}
+                                        >
+                                            TOTAL KUMULATIF YTD
+                                        </th>
+
+                                        {MONTHS.map((month) => (
+                                            <th
+                                                key={month}
+                                                colSpan={2}
+                                                style={{
+                                                    ...thStyle,
+                                                    backgroundColor: "#F1DDDC",
+                                                }}
+                                            >
+                                                {month}-{String(year).slice(-2)}
+                                            </th>
+                                        ))}
+                                    </tr>
+
+                                    <tr>
+                                        {Array.from({
+                                            length: 17,
+                                        }).map((_, index) => (
+                                            <React.Fragment key={index}>
+                                                <th
+                                                    style={{
+                                                        ...thStyle,
+                                                        backgroundColor:
+                                                            "#FFFF00",
+                                                        fontSize: "9px",
+                                                    }}
+                                                >
+                                                    Plan
+                                                </th>
+
+                                                <th
+                                                    style={{
+                                                        ...thStyle,
+                                                        backgroundColor:
+                                                            "#FFFF00",
+                                                        fontSize: "9px",
+                                                    }}
+                                                >
+                                                    Actual
+                                                </th>
+                                            </React.Fragment>
+                                        ))}
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {/* SECTION 1 */}
+
+                                    <tr>
+                                        <td
+                                            colSpan={38}
+                                            style={{
+                                                ...tdStyle,
+                                                backgroundColor: "#D9D9D9",
+                                                fontWeight: "700",
+                                                textAlign: "left",
+                                            }}
+                                        >
+                                            1. HES PERFORMANCE
+                                        </td>
+                                    </tr>
+
+                                    {lagging.map((item, index) =>
+                                        renderLaggingRow(item, index),
+                                    )}
+
+                                    {/* SECTION 2 */}
+
+                                    <tr>
+                                        <td
+                                            colSpan={38}
+                                            style={{
+                                                ...tdStyle,
+                                                backgroundColor: "#D9D9D9",
+                                                fontWeight: "700",
+                                            }}
+                                        >
+                                            2. MAN HOURS & KILOMETER PERFORMANCE
+                                        </td>
+                                    </tr>
+
+                                    {manHours.map((item, index) =>
+                                        renderMetricRow(item, index),
+                                    )}
+
+                                    {/* SECTION 3 */}
+
+                                    <tr>
+                                        <td
+                                            colSpan={38}
+                                            style={{
+                                                ...tdStyle,
+                                                backgroundColor: "#D9D9D9",
+                                                fontWeight: "700",
+                                            }}
+                                        >
+                                            3. OPS PERFORMANCE
+                                        </td>
+                                    </tr>
+
+                                    {ops.map((item, index) =>
+                                        renderMetricRow(item, index),
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* =================================================
                                LEADING TABLE
                             ================================================= */}
 
+                        <div
+                            style={{
+                                minWidth: "2200px",
+                                border: "1px solid #222",
+                                marginTop: "18px",
+                            }}
+                        >
                             <div
                                 style={{
-                                    minWidth:
-                                        "2200px",
-                                    border:
-                                        "1px solid #222",
-                                    marginTop:
-                                        "18px",
+                                    backgroundColor: "#00FF20",
+                                    color: "#000",
+                                    padding: "8px",
+                                    fontWeight: "700",
+                                    fontSize: "18px",
+                                    textAlign: "center",
                                 }}
                             >
-                                <div
-                                    style={{
-                                        backgroundColor:
-                                            "#00FF20",
-                                        color:
-                                            "#000",
-                                        padding:
-                                            "8px",
-                                        fontWeight:
-                                            "700",
-                                        fontSize:
-                                            "18px",
-                                        textAlign:
-                                            "center",
-                                    }}
-                                >
-                                    LEADING INDICATOR
-                                </div>
+                                LEADING INDICATOR
+                            </div>
 
-                                <table
-                                    style={{
-                                        width:
-                                            "100%",
-                                        borderCollapse:
-                                            "collapse",
-                                        fontSize:
-                                            "10px",
-                                    }}
-                                >
-                                    <thead>
-                                        <tr>
+                            <table
+                                style={{
+                                    width: "100%",
+                                    borderCollapse: "collapse",
+                                    fontSize: "10px",
+                                }}
+                            >
+                                <thead>
+                                    <tr>
+                                        <th
+                                            rowSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                                minWidth: "330px",
+                                            }}
+                                        >
+                                            POINT YANG DIUKUR/
+                                        </th>
+
+                                        <th
+                                            rowSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                            }}
+                                        >
+                                            DEFINISI
+                                            <br />
+                                            (FREQUENCY RATE / UNIT)
+                                        </th>
+
+                                        <th
+                                            rowSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                            }}
+                                        >
+                                            TARGET
+                                            <br />
+                                            (month)
+                                        </th>
+
+                                        <th
+                                            rowSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                            }}
+                                        >
+                                            TARGET
+                                            <br />
+                                            (Year)
+                                        </th>
+
+                                        <th
+                                            rowSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                            }}
+                                        >
+                                            DEFINISI
+                                            <br />
+                                            FREQUENCY RATE / UNIT
+                                        </th>
+
+                                        {["Q1", "Q2", "Q3", "Q4"].map((q) => (
                                             <th
-                                                rowSpan={
-                                                    2
-                                                }
+                                                key={q}
+                                                colSpan={2}
                                                 style={{
                                                     ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                    minWidth:
-                                                        "330px",
+                                                    backgroundColor: "#F1DDDC",
                                                 }}
                                             >
-                                                POINT YANG
-                                                DIUKUR/
+                                                {q}
                                             </th>
+                                        ))}
 
+                                        <th
+                                            colSpan={2}
+                                            style={{
+                                                ...thStyle,
+                                                backgroundColor: "#F1DDDC",
+                                            }}
+                                        >
+                                            TOTAL KUMULATIF YTD
+                                        </th>
+
+                                        {MONTHS.map((month) => (
                                             <th
-                                                rowSpan={
-                                                    2
-                                                }
+                                                key={month}
+                                                colSpan={2}
                                                 style={{
                                                     ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
+                                                    backgroundColor: "#F1DDDC",
                                                 }}
                                             >
-                                                DEFINISI
-                                                <br />
-                                                (FREQUENCY
-                                                RATE /
-                                                UNIT)
+                                                {month}-{String(year).slice(-2)}
                                             </th>
+                                        ))}
+                                    </tr>
 
-                                            <th
-                                                rowSpan={
-                                                    2
-                                                }
-                                                style={{
-                                                    ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                }}
-                                            >
-                                                TARGET
-                                                <br />
-                                                (month)
-                                            </th>
-
-                                            <th
-                                                rowSpan={
-                                                    2
-                                                }
-                                                style={{
-                                                    ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                }}
-                                            >
-                                                TARGET
-                                                <br />
-                                                (Year)
-                                            </th>
-
-                                            <th
-                                                rowSpan={
-                                                    2
-                                                }
-                                                style={{
-                                                    ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                }}
-                                            >
-                                                DEFINISI
-                                                <br />
-                                                FREQUENCY
-                                                RATE /
-                                                UNIT
-                                            </th>
-
-                                            {[
-                                                "Q1",
-                                                "Q2",
-                                                "Q3",
-                                                "Q4",
-                                            ].map(
-                                                (
-                                                    q,
-                                                ) => (
-                                                    <th
-                                                        key={
-                                                            q
-                                                        }
-                                                        colSpan={
-                                                            2
-                                                        }
-                                                        style={{
-                                                            ...thStyle,
-                                                            backgroundColor:
-                                                                "#F1DDDC",
-                                                        }}
-                                                    >
-                                                        {
-                                                            q
-                                                        }
-                                                    </th>
-                                                ),
-                                            )}
-
-                                            <th
-                                                colSpan={
-                                                    2
-                                                }
-                                                style={{
-                                                    ...thStyle,
-                                                    backgroundColor:
-                                                        "#F1DDDC",
-                                                }}
-                                            >
-                                                TOTAL
-                                                KUMULATIF
-                                                YTD
-                                            </th>
-
-                                            {MONTHS.map(
-                                                (
-                                                    month,
-                                                ) => (
-                                                    <th
-                                                        key={
-                                                            month
-                                                        }
-                                                        colSpan={
-                                                            2
-                                                        }
-                                                        style={{
-                                                            ...thStyle,
-                                                            backgroundColor:
-                                                                "#F1DDDC",
-                                                        }}
-                                                    >
-                                                        {
-                                                            month
-                                                        }
-                                                        -
-                                                        {String(
-                                                            year,
-                                                        ).slice(
-                                                            -2,
-                                                        )}
-                                                    </th>
-                                                ),
-                                            )}
-                                        </tr>
-
-                                        <tr>
-                                            {Array.from(
-                                                {
-                                                    length: 17,
-                                                },
-                                            ).map(
-                                                (
-                                                    _,
-                                                    index,
-                                                ) => (
-                                                    <React.Fragment
-                                                        key={
-                                                            index
-                                                        }
-                                                    >
-                                                        <th
-                                                            style={{
-                                                                ...thStyle,
-                                                                backgroundColor:
-                                                                    "#FFFF00",
-                                                                fontSize:
-                                                                    "8px",
-                                                            }}
-                                                        >
-                                                            Plan
-                                                        </th>
-
-                                                        <th
-                                                            style={{
-                                                                ...thStyle,
-                                                                backgroundColor:
-                                                                    "#FFFF00",
-                                                                fontSize:
-                                                                    "8px",
-                                                            }}
-                                                        >
-                                                            Actual
-                                                        </th>
-                                                    </React.Fragment>
-                                                ),
-                                            )}
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-                                        {leading.map(
-                                            (
-                                                item,
-                                                index,
-                                            ) => (
-                                                <tr
-                                                    key={
-                                                        item.no
-                                                    }
+                                    <tr>
+                                        {Array.from({
+                                            length: 17,
+                                        }).map((_, index) => (
+                                            <React.Fragment key={index}>
+                                                <th
+                                                    style={{
+                                                        ...thStyle,
+                                                        backgroundColor:
+                                                            "#FFFF00",
+                                                        fontSize: "8px",
+                                                    }}
                                                 >
-                                                    <td
-                                                        style={{
-                                                            ...tdStyle,
-                                                            fontWeight:
-                                                                "700",
-                                                            whiteSpace:
-                                                                "pre-line",
-                                                        }}
-                                                    >
-                                                        <span
-                                                            style={{
-                                                                display:
-                                                                    "inline-block",
-                                                                minWidth:
-                                                                    "25px",
-                                                                marginRight:
-                                                                    "5px",
-                                                                padding:
-                                                                    "2px 5px",
-                                                                backgroundColor:
-                                                                    "#FFFF00",
-                                                                border:
-                                                                    "1px solid #222",
-                                                            }}
-                                                        >
-                                                            {
-                                                                item.no
-                                                            }
-                                                        </span>
+                                                    Plan
+                                                </th>
 
-                                                        {
-                                                            item.indicator
-                                                        }
-                                                    </td>
+                                                <th
+                                                    style={{
+                                                        ...thStyle,
+                                                        backgroundColor:
+                                                            "#FFFF00",
+                                                        fontSize: "8px",
+                                                    }}
+                                                >
+                                                    Actual
+                                                </th>
+                                            </React.Fragment>
+                                        ))}
+                                    </tr>
+                                </thead>
 
-                                                    <td
-                                                        style={{
-                                                            ...tdStyle,
-                                                            textAlign:
-                                                                "center",
-                                                        }}
-                                                    >
-                                                        {
-                                                            item.definition
-                                                        }
-                                                    </td>
+                                <tbody>
+                                    {leading.map((item, index) => (
+                                        <tr key={item.no}>
+                                            <td
+                                                style={{
+                                                    ...tdStyle,
+                                                    fontWeight: "700",
+                                                    whiteSpace: "pre-line",
+                                                }}
+                                            >
+                                                <span
+                                                    style={{
+                                                        display: "inline-block",
+                                                        minWidth: "25px",
+                                                        marginRight: "5px",
+                                                        padding: "2px 5px",
+                                                        backgroundColor:
+                                                            "#FFFF00",
+                                                        border: "1px solid #222",
+                                                    }}
+                                                >
+                                                    {item.no}
+                                                </span>
 
-                                                    <td
-                                                        style={
-                                                            tdCenter
-                                                        }
-                                                    >
-                                                        {typeof item.monthlyTarget === "string"
-                                                            ? item.monthlyTarget
-                                                            : formatNumber(
-                                                                  item.monthlyTarget,
-                                                              )}
-                                                    </td>
+                                                {item.indicator}
+                                            </td>
 
-                                                    <td
-                                                        style={
-                                                            tdCenter
-                                                        }
-                                                    >
-                                                        {typeof item.annualTarget === "string"
-                                                            ? item.annualTarget
-                                                            : formatNumber(
-                                                                  item.annualTarget,
-                                                              )}
-                                                    </td>
+                                            <td
+                                                style={{
+                                                    ...tdStyle,
+                                                    textAlign: "center",
+                                                }}
+                                            >
+                                                {item.definition}
+                                            </td>
 
-                                                    <td
-                                                        style={{
-                                                            ...tdStyle,
-                                                            whiteSpace:
-                                                                "pre-line",
-                                                        }}
-                                                    >
-                                                        {
-                                                            item.definition2
-                                                        }
-                                                    </td>
+                                            <td style={tdCenter}>
+                                                {typeof item.monthlyTarget ===
+                                                "string"
+                                                    ? item.monthlyTarget
+                                                    : formatNumber(
+                                                          item.monthlyTarget,
+                                                      )}
+                                            </td>
 
-                                                    {renderPlanActualCells(
-                                                        item,
-                                                    )}
-                                                </tr>
-                                            ),
-                                        )}
-                                    </tbody>
-                                </table>
+                                            <td style={tdCenter}>
+                                                {typeof item.annualTarget ===
+                                                "string"
+                                                    ? item.annualTarget
+                                                    : formatNumber(
+                                                          item.annualTarget,
+                                                      )}
+                                            </td>
+
+                                            <td
+                                                style={{
+                                                    ...tdStyle,
+                                                    whiteSpace: "pre-line",
+                                                }}
+                                            >
+                                                {item.definition2}
+                                            </td>
+
+                                            {renderPlanActualCells(item)}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* NOTES */}
+
+                        <div
+                            style={{
+                                minWidth: "2200px",
+                                marginTop: "18px",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    backgroundColor: "#064E3B",
+                                    color: "white",
+                                    padding: "9px",
+                                    fontWeight: "700",
+                                }}
+                            >
+                                NOTES / REMARKS
                             </div>
-
-                            {/* NOTES */}
 
                             <div
                                 style={{
-                                    minWidth:
-                                        "2200px",
-                                    marginTop:
-                                        "18px",
+                                    padding: "15px",
+                                    minHeight: "60px",
+                                    backgroundColor: "#F5FFD0",
+                                    border: "1px solid #222",
+                                }}
+                            >
+                                {latestReport?.remarks ||
+                                    "Report dibuat berdasarkan data HSE yang tersimpan pada database."}
+                            </div>
+                        </div>
+
+                        {/* SIGNATURE */}
+
+                        <div
+                            style={{
+                                minWidth: "2200px",
+                                marginTop: "18px",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr 1fr",
                                 }}
                             >
                                 <div
                                     style={{
-                                        backgroundColor:
-                                            "#064E3B",
-                                        color:
-                                            "white",
-                                        padding:
-                                            "9px",
-                                        fontWeight:
-                                            "700",
+                                        textAlign: "center",
+                                        padding: "7px",
+                                        backgroundColor: "#F1DDDC",
+                                        border: "1px solid #222",
                                     }}
                                 >
-                                    NOTES /
-                                    REMARKS
+                                    Dilaporkan oleh,
                                 </div>
 
                                 <div
                                     style={{
-                                        padding:
-                                            "15px",
-                                        minHeight:
-                                            "60px",
-                                        backgroundColor:
-                                            "#F5FFD0",
-                                        border:
-                                            "1px solid #222",
+                                        textAlign: "center",
+                                        padding: "7px",
+                                        backgroundColor: "#F1DDDC",
+                                        border: "1px solid #222",
                                     }}
                                 >
-                                    {latestReport?.remarks ||
-                                        "Report dibuat berdasarkan data HSE yang tersimpan pada database."}
+                                    Disetujui oleh,
+                                </div>
+
+                                <div
+                                    style={{
+                                        textAlign: "center",
+                                        padding: "7px",
+                                        backgroundColor: "#F1DDDC",
+                                        border: "1px solid #222",
+                                    }}
+                                >
+                                    Diketahui Oleh,
                                 </div>
                             </div>
 
-                            {/* SIGNATURE */}
-
                             <div
                                 style={{
-                                    minWidth:
-                                        "2200px",
-                                    marginTop:
-                                        "18px",
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr 1fr",
                                 }}
                             >
                                 <div
                                     style={{
-                                        display:
-                                            "grid",
-                                        gridTemplateColumns:
-                                            "1fr 1fr 1fr",
+                                        height: "120px",
+                                        border: "1px solid #222",
                                     }}
-                                >
-                                    <div
-                                        style={{
-                                            textAlign:
-                                                "center",
-                                            padding:
-                                                "7px",
-                                            backgroundColor:
-                                                "#F1DDDC",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        Dilaporkan
-                                        oleh,
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            textAlign:
-                                                "center",
-                                            padding:
-                                                "7px",
-                                            backgroundColor:
-                                                "#F1DDDC",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        Disetujui
-                                        oleh,
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            textAlign:
-                                                "center",
-                                            padding:
-                                                "7px",
-                                            backgroundColor:
-                                                "#F1DDDC",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        Diketahui
-                                        Oleh,
-                                    </div>
-                                </div>
+                                />
 
                                 <div
                                     style={{
-                                        display:
-                                            "grid",
-                                        gridTemplateColumns:
-                                            "1fr 1fr 1fr",
+                                        height: "120px",
+                                        border: "1px solid #222",
                                     }}
-                                >
-                                    <div
-                                        style={{
-                                            height:
-                                                "120px",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    />
-
-                                    <div
-                                        style={{
-                                            height:
-                                                "120px",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    />
-
-                                    <div
-                                        style={{
-                                            height:
-                                                "120px",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    />
-                                </div>
+                                />
 
                                 <div
                                     style={{
-                                        display:
-                                            "grid",
-                                        gridTemplateColumns:
-                                            "1fr 1fr 1fr",
+                                        height: "120px",
+                                        border: "1px solid #222",
                                     }}
-                                >
-                                    <div
-                                        style={{
-                                            textAlign:
-                                                "center",
-                                            fontWeight:
-                                                "700",
-                                            padding:
-                                                "5px",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        FENNIELLY
-                                        DHINAWALY
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            textAlign:
-                                                "center",
-                                            fontWeight:
-                                                "700",
-                                            padding:
-                                                "5px",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        SAIDO
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            padding:
-                                                "5px",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    />
-                                </div>
-
-                                <div
-                                    style={{
-                                        display:
-                                            "grid",
-                                        gridTemplateColumns:
-                                            "1fr 1fr 1fr",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            textAlign:
-                                                "center",
-                                            padding:
-                                                "5px",
-                                            backgroundColor:
-                                                "#F1DDDC",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        HSE & ISO
-                                        Jr.
-                                        Manager
-                                    </div>
-
-                                    <div
-                                        style={{
-                                            textAlign:
-                                                "center",
-                                            padding:
-                                                "5px",
-                                            backgroundColor:
-                                                "#F1DDDC",
-                                            border:
-                                                "1px solid #222",
-                                        }}
-                                    >
-                                        General
-                                        Manager
-                                    </div>
-
-                                    <div   
-                                        style={{
-                                            padding:
-                                                "5px",
-                                            backgroundColor:
-                                                "#F1DDDC",
-                                            border:
-                                                "1px solid #222", 
-                                        }}                                            
-                                    />
-                                </div>  
+                                />
                             </div>
-                        </section>
-                    )}
+
+                            <div
+                                style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr 1fr",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        textAlign: "center",
+                                        fontWeight: "700",
+                                        padding: "5px",
+                                        border: "1px solid #222",
+                                    }}
+                                >
+                                    FENNIELLY DHINAWALY
+                                </div>
+
+                                <div
+                                    style={{
+                                        textAlign: "center",
+                                        fontWeight: "700",
+                                        padding: "5px",
+                                        border: "1px solid #222",
+                                    }}
+                                >
+                                    SAIDO
+                                </div>
+
+                                <div
+                                    style={{
+                                        padding: "5px",
+                                        border: "1px solid #222",
+                                    }}
+                                />
+                            </div>
+
+                            <div
+                                style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "1fr 1fr 1fr",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        textAlign: "center",
+                                        padding: "5px",
+                                        backgroundColor: "#F1DDDC",
+                                        border: "1px solid #222",
+                                    }}
+                                >
+                                    HSE & ISO Jr. Manager
+                                </div>
+
+                                <div
+                                    style={{
+                                        textAlign: "center",
+                                        padding: "5px",
+                                        backgroundColor: "#F1DDDC",
+                                        border: "1px solid #222",
+                                    }}
+                                >
+                                    General Manager
+                                </div>
+
+                                <div
+                                    style={{
+                                        padding: "5px",
+                                        backgroundColor: "#F1DDDC",
+                                        border: "1px solid #222",
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </section>
+                )}
             </main>
         </div>
     );
