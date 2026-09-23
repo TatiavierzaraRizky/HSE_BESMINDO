@@ -14,19 +14,22 @@ import {
 } from "lucide-react";
 
 const MONTHS = [
-    { value: "01", label: "Jan-26" },
-    { value: "02", label: "Feb-26" },
-    { value: "03", label: "Mar-26" },
-    { value: "04", label: "Apr-26" },
-    { value: "05", label: "May-26" },
-    { value: "06", label: "Jun-26" },
-    { value: "07", label: "Jul-26" },
-    { value: "08", label: "Aug-26" },
-    { value: "09", label: "Sep-26" },
-    { value: "10", label: "Oct-26" },
-    { value: "11", label: "Nov-26" },
-    { value: "12", label: "Dec-26" },
+    { value: "01", label: "Januari" },
+    { value: "02", label: "Februari" },
+    { value: "03", label: "Maret" },
+    { value: "04", label: "April" },
+    { value: "05", label: "Mei" },
+    { value: "06", label: "Juni" },
+    { value: "07", label: "Juli" },
+    { value: "08", label: "Agustus" },
+    { value: "09", label: "September" },
+    { value: "10", label: "Oktober" },
+    { value: "11", label: "November" },
+    { value: "12", label: "Desember" },
 ];
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 15 }, (_, i) => String(2024 + i));
 
 const LAGGING_INDICATORS = [
     "FATALITY",
@@ -82,12 +85,16 @@ const LEADING_INDICATORS = [
     "ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)",
 ];
 
+const initialMo = String(new Date().getMonth() + 1).padStart(2, "0");
+const initialYr = String(CURRENT_YEAR);
+
 const INITIAL_FORM = {
-    date: "",
+    date: `${initialYr}-${initialMo}-01`,
     contractNo: "",
     rigNo: "",
     locationDistrict: "",
-    period: "",
+    period: initialMo,
+    year: initialYr,
     submitterName: "",
     submitterEmail: "",
 
@@ -163,10 +170,28 @@ export default function UserInputData() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm((previous) => ({
-            ...previous,
-            [name]: value,
-        }));
+        setForm((previous) => {
+            const updated = {
+                ...previous,
+                [name]: value,
+            };
+
+            if (name === "period") {
+                const yr = previous.year || String(CURRENT_YEAR);
+                updated.date = `${yr}-${value}-01`;
+            } else if (name === "year") {
+                const mo = previous.period || "01";
+                updated.date = `${value}-${mo}-01`;
+            } else if (name === "date" && value) {
+                const parts = value.split("-");
+                if (parts.length >= 2) {
+                    updated.year = parts[0];
+                    updated.period = parts[1];
+                }
+            }
+
+            return updated;
+        });
     };
 
     const handleIndicatorChange = (type, indicator, field, value) => {
@@ -555,6 +580,7 @@ export default function UserInputData() {
                                     value={form.rigNo}
                                     onChange={handleChange}
                                     options={[
+                                        "BMS#01",
                                         "BMS#02",
                                         "BMS#03",
                                         "BMS#03A",
@@ -562,6 +588,7 @@ export default function UserInputData() {
                                         "BMS#06",
                                         "BMS#07",
                                         "BMS#08",
+                                        "BMS#09",
                                         "BMS#10",
                                         "BMS#11",
                                         "BMS#15",
@@ -571,6 +598,8 @@ export default function UserInputData() {
                                         "BMS#19",
                                         "BMS#20",
                                         "BMS#21",
+                                        "BMS#22",
+                                        "BMS#23",
                                     ]}
                                     required
                                 />
@@ -583,6 +612,19 @@ export default function UserInputData() {
                                     options={MONTHS.map((month) => month.value)}
                                     optionLabels={MONTHS.reduce((result, month) => {
                                         result[month.value] = month.label;
+                                        return result;
+                                    }, {})}
+                                    required
+                                />
+
+                                <SelectField
+                                    label="Tahun Kinerja"
+                                    name="year"
+                                    value={form.year}
+                                    onChange={handleChange}
+                                    options={YEARS}
+                                    optionLabels={YEARS.reduce((result, yr) => {
+                                        result[yr] = `Tahun ${yr}`;
                                         return result;
                                     }, {})}
                                     required
@@ -1117,9 +1159,10 @@ function SelectField({
     name,
     value,
     onChange,
-    options,
+    options = [],
     optionLabels = {},
-    required,
+    required = false,
+    placeholder,
 }) {
     return (
         <div>
@@ -1155,7 +1198,7 @@ function SelectField({
                 }}
             >
                 <option value="">
-                    {name === "period" ? "Pilih Periode Bulan" : "Pilih Rig"}
+                    {placeholder || (name === "period" ? "Pilih Periode (Bulan)" : name === "year" ? "Pilih Tahun" : name === "rigNo" ? "Pilih Rig" : `-- Pilih ${label || "Pilihan"} --`)}
                 </option>
 
                 {options.map((option) => (

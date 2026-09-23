@@ -3,19 +3,22 @@ import AdminSidebar from "../../Components/AdminSidebar";
 import { usePage } from "@inertiajs/react";
 
 const MONTHS = [
-    { value: "01", label: "Jan-26" },
-    { value: "02", label: "Feb-26" },
-    { value: "03", label: "Mar-26" },
-    { value: "04", label: "Apr-26" },
-    { value: "05", label: "May-26" },
-    { value: "06", label: "Jun-26" },
-    { value: "07", label: "Jul-26" },
-    { value: "08", label: "Aug-26" },
-    { value: "09", label: "Sep-26" },
-    { value: "10", label: "Oct-26" },
-    { value: "11", label: "Nov-26" },
-    { value: "12", label: "Dec-26" },
+    { value: "01", label: "Januari" },
+    { value: "02", label: "Februari" },
+    { value: "03", label: "Maret" },
+    { value: "04", label: "April" },
+    { value: "05", label: "Mei" },
+    { value: "06", label: "Juni" },
+    { value: "07", label: "Juli" },
+    { value: "08", label: "Agustus" },
+    { value: "09", label: "September" },
+    { value: "10", label: "Oktober" },
+    { value: "11", label: "November" },
+    { value: "12", label: "Desember" },
 ];
+
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: 15 }, (_, i) => String(2024 + i));
 
 const LAGGING_INDICATORS = [
     "FATALITY",
@@ -71,12 +74,16 @@ const LEADING_INDICATORS = [
     "ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)",
 ];
 
+const initialMo = String(new Date().getMonth() + 1).padStart(2, "0");
+const initialYr = String(CURRENT_YEAR);
+
 const INITIAL_FORM = {
-    date: "",
+    date: `${initialYr}-${initialMo}-01`,
     contractNo: "",
     rigNo: "",
     locationDistrict: "",
-    period: "",
+    period: initialMo,
+    year: initialYr,
     submitterName: "",
     submitterEmail: "",
 
@@ -112,6 +119,8 @@ function createIndicatorValues(names) {
         result[name] = {
             actual: 0,
             plan: 0,
+            customName: name,
+            definition: "",
         };
         return result;
     }, {});
@@ -151,10 +160,28 @@ export default function InputData() {
     const handleChange = (e) => {
         const { name, value } = e.target;
 
-        setForm((previous) => ({
-            ...previous,
-            [name]: value,
-        }));
+        setForm((previous) => {
+            const updated = {
+                ...previous,
+                [name]: value,
+            };
+
+            if (name === "period") {
+                const yr = previous.year || String(CURRENT_YEAR);
+                updated.date = `${yr}-${value}-01`;
+            } else if (name === "year") {
+                const mo = previous.period || "01";
+                updated.date = `${value}-${mo}-01`;
+            } else if (name === "date" && value) {
+                const parts = value.split("-");
+                if (parts.length >= 2) {
+                    updated.year = parts[0];
+                    updated.period = parts[1];
+                }
+            }
+
+            return updated;
+        });
     };
 
     const handleIndicatorChange = (type, indicator, field, value) => {
@@ -197,6 +224,7 @@ export default function InputData() {
 
                 // Periode
                 period: form.period,
+                year: form.year,
 
                 submitterName: form.submitterName,
                 submitterEmail: form.submitterEmail,
@@ -246,12 +274,12 @@ export default function InputData() {
                 lagging: Object.entries(form.lagging).map(
                     ([name, values], index) => ({
                         name: name,
-                        indicator_name: name,
+                        indicator_name: values.customName || name,
                         indicator_no: index + 1,
-
                         plan: Number(values.plan) || 0,
-
                         actual: Number(values.actual) || 0,
+                        definition: values.definition || "",
+                        notes: values.definition || "",
                     }),
                 ),
 
@@ -262,12 +290,12 @@ export default function InputData() {
                 leading: Object.entries(form.leading).map(
                     ([name, values], index) => ({
                         name: name,
-                        indicator_name: name,
+                        indicator_name: values.customName || name,
                         indicator_no: index + 1,
-
                         plan: Number(values.plan) || 0,
-
                         actual: Number(values.actual) || 0,
+                        definition: values.definition || "",
+                        notes: values.definition || "",
                     }),
                 ),
 
@@ -511,6 +539,7 @@ export default function InputData() {
                                     value={form.rigNo}
                                     onChange={handleChange}
                                     options={[
+                                        "BMS#01",
                                         "BMS#02",
                                         "BMS#03",
                                         "BMS#03A",
@@ -518,6 +547,7 @@ export default function InputData() {
                                         "BMS#06",
                                         "BMS#07",
                                         "BMS#08",
+                                        "BMS#09",
                                         "BMS#10",
                                         "BMS#11",
                                         "BMS#15",
@@ -527,12 +557,14 @@ export default function InputData() {
                                         "BMS#19",
                                         "BMS#20",
                                         "BMS#21",
+                                        "BMS#22",
+                                        "BMS#23",
                                     ]}
                                     required
                                 />
 
                                 <SelectField
-                                    label="Periode Kinerja"
+                                    label="Periode Kinerja (Bulan)"
                                     name="period"
                                     value={form.period}
                                     onChange={handleChange}
@@ -540,6 +572,22 @@ export default function InputData() {
                                     optionLabels={MONTHS.reduce(
                                         (result, month) => {
                                             result[month.value] = month.label;
+                                            return result;
+                                        },
+                                        {},
+                                    )}
+                                    required
+                                />
+
+                                <SelectField
+                                    label="Tahun Kinerja"
+                                    name="year"
+                                    value={form.year}
+                                    onChange={handleChange}
+                                    options={YEARS}
+                                    optionLabels={YEARS.reduce(
+                                        (result, yr) => {
+                                            result[yr] = `Tahun ${yr}`;
                                             return result;
                                         },
                                         {},
@@ -780,6 +828,180 @@ export default function InputData() {
    INDICATOR SECTION
 ========================= */
 
+function IndicatorRow({ indicator, index, type, value, onChange }) {
+    const [editing, setEditing] = useState(false);
+    const customName = value.customName !== undefined ? value.customName : indicator;
+    const isEdited = customName !== indicator && customName.trim() !== "";
+
+    return (
+        <tr
+            style={{
+                backgroundColor: index % 2 === 0 ? "#ffffff" : "#fcfdfd",
+                borderBottom: "1px solid #f1f5f9",
+            }}
+        >
+            <td
+                style={{
+                    ...tableCellStyle,
+                    fontWeight: "700",
+                    color: "#004d32",
+                }}
+            >
+                {index + 1}
+            </td>
+
+            <td
+                style={{
+                    ...tableCellStyle,
+                    textAlign: "left",
+                    padding: "8px 12px",
+                }}
+            >
+                {editing ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <input
+                            type="text"
+                            autoFocus
+                            value={customName}
+                            onChange={(event) =>
+                                onChange(type, indicator, "customName", event.target.value)
+                            }
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") setEditing(false);
+                            }}
+                            style={{
+                                flex: 1,
+                                height: "34px",
+                                boxSizing: "border-box",
+                                border: "1.5px solid #004d32",
+                                borderRadius: "6px",
+                                padding: "0 10px",
+                                outline: "none",
+                                fontSize: "13px",
+                                color: "#1e293b",
+                                fontWeight: "600",
+                                backgroundColor: "#ffffff",
+                            }}
+                            placeholder="Ketik poin yang diukur..."
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setEditing(false)}
+                            style={{
+                                padding: "4px 12px",
+                                height: "34px",
+                                backgroundColor: "#004d32",
+                                color: "#efff00",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                fontWeight: "700",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                flexShrink: 0,
+                            }}
+                        >
+                            ✓ Simpan
+                        </button>
+                        {isEdited && (
+                            <button
+                                type="button"
+                                title="Kembalikan ke nama default"
+                                onClick={() => {
+                                    onChange(type, indicator, "customName", indicator);
+                                    setEditing(false);
+                                }}
+                                style={{
+                                    padding: "4px 8px",
+                                    height: "34px",
+                                    backgroundColor: "#f1f5f9",
+                                    color: "#64748b",
+                                    border: "1px solid #cbd5e1",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontSize: "11px",
+                                    fontWeight: "600",
+                                    flexShrink: 0,
+                                }}
+                            >
+                                Reset
+                            </button>
+                        )}
+                    </div>
+                ) : (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                            <span style={{ fontSize: "13px", fontWeight: isEdited ? "700" : "500", color: isEdited ? "#004d32" : "#1e293b" }}>
+                                {customName}
+                            </span>
+                            {isEdited && (
+                                <span
+                                    style={{
+                                        fontSize: "10.5px",
+                                        fontWeight: "800",
+                                        padding: "2px 7px",
+                                        borderRadius: "4px",
+                                        backgroundColor: "#fef3c7",
+                                        color: "#92400e",
+                                        border: "1px solid #fde68a",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "3px",
+                                    }}
+                                >
+                                    ✏️ Telah Diedit
+                                </span>
+                            )}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setEditing(true)}
+                            title="Edit nama poin indikator ini"
+                            style={{
+                                padding: "4px 9px",
+                                backgroundColor: isEdited ? "#e0f2fe" : "#f8fafc",
+                                color: isEdited ? "#0369a1" : "#475569",
+                                border: isEdited ? "1px solid #bae6fd" : "1px solid #cbd5e1",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "11.5px",
+                                fontWeight: "700",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "5px",
+                                flexShrink: 0,
+                                transition: "all 0.15s ease",
+                            }}
+                        >
+                            ✏️ Edit Poin
+                        </button>
+                    </div>
+                )}
+            </td>
+
+            <td style={tableCellStyle}>
+                <NumberTableField
+                    value={value.plan}
+                    onChange={(event) =>
+                        onChange(type, indicator, "plan", event.target.value)
+                    }
+                />
+            </td>
+
+            <td style={tableCellStyle}>
+                <NumberTableField
+                    value={value.actual}
+                    onChange={(event) =>
+                        onChange(type, indicator, "actual", event.target.value)
+                    }
+                />
+            </td>
+        </tr>
+    );
+}
+
 function IndicatorSection({ title, type, indicators, values, onChange }) {
     return (
         <Section title={title}>
@@ -805,21 +1027,21 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                                 borderBottom: "2px solid #efff00",
                             }}
                         >
-                            <th style={tableHeaderStyle}>No</th>
+                            <th style={{ ...tableHeaderStyle, width: "50px" }}>No</th>
 
                             <th
                                 style={{
                                     ...tableHeaderStyle,
                                     textAlign: "left",
-                                    minWidth: "390px",
+                                    minWidth: "380px",
                                 }}
                             >
-                                Point yang Diukur
+                                Point yang Diukur / Indikator
                             </th>
 
-                            <th style={tableHeaderStyle}>Plan</th>
+                            <th style={{ ...tableHeaderStyle, width: "130px" }}>Target / Plan</th>
 
-                            <th style={tableHeaderStyle}>Actual</th>
+                            <th style={{ ...tableHeaderStyle, width: "130px" }}>Realisasi / Actual</th>
                         </tr>
                     </thead>
 
@@ -828,68 +1050,18 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                             const value = values[indicator] || {
                                 plan: 0,
                                 actual: 0,
+                                customName: indicator,
                             };
 
                             return (
-                                <tr
+                                <IndicatorRow
                                     key={indicator}
-                                    style={{
-                                        backgroundColor:
-                                            index % 2 === 0
-                                                ? "#ffffff"
-                                                : "#fcfdfd",
-                                        borderBottom: "1px solid #f1f5f9",
-                                    }}
-                                >
-                                    <td
-                                        style={{
-                                            ...tableCellStyle,
-                                            fontWeight: "700",
-                                            color: "#004d32",
-                                        }}
-                                    >
-                                        {index + 1}
-                                    </td>
-
-                                    <td
-                                        style={{
-                                            ...tableCellStyle,
-                                            textAlign: "left",
-                                            color: "#1e293b",
-                                            fontWeight: "500",
-                                        }}
-                                    >
-                                        {indicator}
-                                    </td>
-
-                                    <td style={tableCellStyle}>
-                                        <NumberTableField
-                                            value={value.plan}
-                                            onChange={(event) =>
-                                                onChange(
-                                                    type,
-                                                    indicator,
-                                                    "plan",
-                                                    event.target.value,
-                                                )
-                                            }
-                                        />
-                                    </td>
-
-                                    <td style={tableCellStyle}>
-                                        <NumberTableField
-                                            value={value.actual}
-                                            onChange={(event) =>
-                                                onChange(
-                                                    type,
-                                                    indicator,
-                                                    "actual",
-                                                    event.target.value,
-                                                )
-                                            }
-                                        />
-                                    </td>
-                                </tr>
+                                    indicator={indicator}
+                                    index={index}
+                                    type={type}
+                                    value={value}
+                                    onChange={onChange}
+                                />
                             );
                         })}
                     </tbody>
@@ -1166,9 +1338,10 @@ function SelectField({
     name,
     value,
     onChange,
-    options,
+    options = [],
     optionLabels = {},
-    required,
+    required = false,
+    placeholder,
 }) {
     return (
         <div>
@@ -1214,7 +1387,7 @@ function SelectField({
                 }}
             >
                 <option value="">
-                    {name === "period" ? "Pilih Periode" : "Select Rig"}
+                    {placeholder || (name === "period" ? "Pilih Periode (Bulan)" : name === "year" ? "Pilih Tahun" : name === "rigNo" ? "Pilih Rig" : `-- Pilih ${label || "Pilihan"} --`)}
                 </option>
 
                 {options.map((option) => (

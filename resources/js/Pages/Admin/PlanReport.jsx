@@ -169,9 +169,9 @@ export default function PlanReport() {
     }, [reports]);
 
     const ALL_MASTER_RIGS = [
-        "BMS#02", "BMS#03", "BMS#03A", "BMS#05", "BMS#06", "BMS#07",
-        "BMS#08", "BMS#10", "BMS#11", "BMS#15", "BMS#16", "BMS#17",
-        "BMS#18", "BMS#19", "BMS#20", "BMS#21"
+        "BMS#01", "BMS#02", "BMS#03", "BMS#03A", "BMS#05", "BMS#06", "BMS#07",
+        "BMS#08", "BMS#09", "BMS#10", "BMS#11", "BMS#15", "BMS#16", "BMS#17",
+        "BMS#18", "BMS#19", "BMS#20", "BMS#21", "BMS#22", "BMS#23"
     ];
 
     const availableRigs = useMemo(() => {
