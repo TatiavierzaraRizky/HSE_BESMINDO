@@ -11,8 +11,9 @@ export default function ContractManagement() {
             id: 1,
             contractNo: "CNT-2024-01",
             contractName: "HSE Management Contract",
-            rigNo: "Rig-01",
-            rigName: "Rig Alpha",
+            rigs: ["BMS#01", "BMS#02", "BMS#03"],
+            rigNo: "BMS#01, BMS#02, BMS#03",
+            rigName: "Rig Alpha & Fleet",
             location: "Sector Alpha",
             contractor: "PT Besmindo",
             startDate: "2024-01-01",
@@ -24,8 +25,9 @@ export default function ContractManagement() {
             id: 2,
             contractNo: "CNT-2024-02",
             contractName: "Drilling Operation Contract",
-            rigNo: "Rig-02",
-            rigName: "Rig Bravo",
+            rigs: ["BMS#05", "BMS#06"],
+            rigNo: "BMS#05, BMS#06",
+            rigName: "Rig Bravo & Echo",
             location: "Sector Bravo",
             contractor: "PT Besmindo",
             startDate: "2024-02-01",
@@ -37,8 +39,9 @@ export default function ContractManagement() {
             id: 3,
             contractNo: "CNT-2024-03",
             contractName: "Safety Inspection Contract",
-            rigNo: "Rig-03",
-            rigName: "Rig Charlie",
+            rigs: ["BMS#07", "BMS#08", "BMS#09"],
+            rigNo: "BMS#07, BMS#08, BMS#09",
+            rigName: "Rig Fleet Charlie",
             location: "Sector Charlie",
             contractor: "PT Rigindo",
             startDate: "2024-03-01",
@@ -50,8 +53,9 @@ export default function ContractManagement() {
             id: 4,
             contractNo: "CNT-2024-04",
             contractName: "Environmental Monitoring",
-            rigNo: "Rig-04",
-            rigName: "Rig Delta",
+            rigs: ["BMS#10", "BMS#11", "BMS#15", "BMS#16"],
+            rigNo: "BMS#10, BMS#11, BMS#15, BMS#16",
+            rigName: "Rig Delta Fleet",
             location: "Sector Alpha",
             contractor: "PT Besmindo",
             startDate: "2024-04-01",
@@ -63,8 +67,9 @@ export default function ContractManagement() {
             id: 5,
             contractNo: "CNT-2024-05",
             contractName: "Maintenance Support Contract",
-            rigNo: "Rig-05",
-            rigName: "Rig Echo",
+            rigs: ["BMS#17", "BMS#18", "BMS#19", "BMS#20", "BMS#21", "BMS#22", "BMS#23"],
+            rigNo: "BMS#17, BMS#18, BMS#19, BMS#20, BMS#21, BMS#22, BMS#23",
+            rigName: "Maintenance Fleet",
             location: "Sector Delta",
             contractor: "PT Petro Energy",
             startDate: "2024-05-01",
@@ -833,15 +838,28 @@ export default function ContractManagement() {
                                                     >
                                                         <div
                                                             style={{
-                                                                fontWeight:
-                                                                    "700",
-                                                                fontSize:
-                                                                    "13px",
+                                                                display: "flex",
+                                                                flexWrap: "wrap",
+                                                                gap: "4px",
+                                                                maxWidth: "240px",
                                                             }}
                                                         >
-                                                            {
-                                                                contract.rigNo
-                                                            }
+                                                            {(contract.rigs || (contract.rigNo ? contract.rigNo.split(",") : [])).map((rigItem) => (
+                                                                <span
+                                                                    key={typeof rigItem === "string" ? rigItem.trim() : rigItem}
+                                                                    style={{
+                                                                        backgroundColor: "#004d32",
+                                                                        color: "#efff00",
+                                                                        padding: "2px 7px",
+                                                                        borderRadius: "4px",
+                                                                        fontSize: "11px",
+                                                                        fontWeight: "800",
+                                                                        display: "inline-block",
+                                                                    }}
+                                                                >
+                                                                    {typeof rigItem === "string" ? rigItem.trim() : rigItem}
+                                                                </span>
+                                                            ))}
                                                         </div>
 
                                                         <div

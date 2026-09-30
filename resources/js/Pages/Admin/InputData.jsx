@@ -55,7 +55,8 @@ const LEADING_INDICATORS = [
     "RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)",
     "PRE HITCH MEETING",
     "RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.",
-    "SAFETY TALK MONTHLY MEETING : SUPPORT YARD & RIG",
+    "SAFETY TALK MONTHLY MEETING : 20.1 SUPPORT YARD",
+    "SAFETY TALK MONTHLY MEETING : 20.2 SUPPORT RIG",
     "LEADERSHIP FORUM ***)",
     "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK) *)",
     "REVIEW, TINJAUAN MANAJEMEN *)",
@@ -533,33 +534,9 @@ export default function InputData() {
                                     required
                                 />
 
-                                <SelectField
-                                    label="Rig No"
-                                    name="rigNo"
+                                <MultiRigSelect
                                     value={form.rigNo}
                                     onChange={handleChange}
-                                    options={[
-                                        "BMS#01",
-                                        "BMS#02",
-                                        "BMS#03",
-                                        "BMS#03A",
-                                        "BMS#05",
-                                        "BMS#06",
-                                        "BMS#07",
-                                        "BMS#08",
-                                        "BMS#09",
-                                        "BMS#10",
-                                        "BMS#11",
-                                        "BMS#15",
-                                        "BMS#16",
-                                        "BMS#17",
-                                        "BMS#18",
-                                        "BMS#19",
-                                        "BMS#20",
-                                        "BMS#21",
-                                        "BMS#22",
-                                        "BMS#23",
-                                    ]}
                                     required
                                 />
 
@@ -982,21 +959,31 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
             </td>
 
             <td style={tableCellStyle}>
-                <NumberTableField
-                    value={value.plan}
-                    onChange={(event) =>
-                        onChange(type, indicator, "plan", event.target.value)
-                    }
-                />
+                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <NumberTableField
+                        value={value.plan}
+                        onChange={(event) =>
+                            onChange(type, indicator, "plan", event.target.value)
+                        }
+                    />
+                    {type === "leading" && (index === 11 || Number(value.plan) === 100) && (
+                        <span style={{ fontSize: "11px", fontWeight: "800", color: "#004d32" }}>%</span>
+                    )}
+                </div>
             </td>
 
             <td style={tableCellStyle}>
-                <NumberTableField
-                    value={value.actual}
-                    onChange={(event) =>
-                        onChange(type, indicator, "actual", event.target.value)
-                    }
-                />
+                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <NumberTableField
+                        value={value.actual}
+                        onChange={(event) =>
+                            onChange(type, indicator, "actual", event.target.value)
+                        }
+                    />
+                    {type === "leading" && (index === 11 || Number(value.actual) === 100) && (
+                        <span style={{ fontSize: "11px", fontWeight: "800", color: "#004d32" }}>%</span>
+                    )}
+                </div>
             </td>
         </tr>
     );
@@ -1247,6 +1234,8 @@ function InputField({
 ========================= */
 
 function NumberField({ label, name, value, onChange, required }) {
+    const displayValue = (value === 0 || value === "0") ? "" : value;
+
     return (
         <div>
             <label
@@ -1277,7 +1266,9 @@ function NumberField({ label, name, value, onChange, required }) {
                 min="0"
                 step="any"
                 name={name}
-                value={value}
+                value={displayValue}
+                placeholder="0"
+                onFocus={(e) => e.target.select()}
                 onChange={onChange}
                 required={required}
                 style={{
@@ -1303,13 +1294,17 @@ function NumberField({ label, name, value, onChange, required }) {
 ========================= */
 
 function NumberTableField({ value, onChange }) {
+    const displayValue = (value === 0 || value === "0") ? "" : value;
+
     return (
         <input
             type="number"
             min="0"
             step="any"
             required
-            value={value}
+            value={displayValue}
+            placeholder="0"
+            onFocus={(e) => e.target.select()}
             onChange={onChange}
             style={{
                 width: "100%",
@@ -1396,6 +1391,88 @@ function SelectField({
                     </option>
                 ))}
             </select>
+        </div>
+    );
+}
+
+const ALL_BMS_RIGS = [
+    "BMS#01", "BMS#02", "BMS#03", "BMS#03A", "BMS#05",
+    "BMS#06", "BMS#07", "BMS#08", "BMS#09", "BMS#10",
+    "BMS#11", "BMS#15", "BMS#16", "BMS#17", "BMS#18",
+    "BMS#19", "BMS#20", "BMS#21", "BMS#22", "BMS#23"
+];
+
+function MultiRigSelect({ value = "", onChange, required = false }) {
+    const selectedList = React.useMemo(() => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        return value.split(",").map((s) => s.trim()).filter(Boolean);
+    }, [value]);
+
+    const toggleRig = (rig) => {
+        let updated;
+        if (selectedList.includes(rig)) {
+            updated = selectedList.filter((r) => r !== rig);
+        } else {
+            updated = [...selectedList, rig];
+        }
+        onChange({ target: { name: "rigNo", value: updated.join(", ") } });
+    };
+
+    const selectAll = () => {
+        onChange({ target: { name: "rigNo", value: ALL_BMS_RIGS.join(", ") } });
+    };
+
+    const clearAll = () => {
+        onChange({ target: { name: "rigNo", value: "" } });
+    };
+
+    return (
+        <div style={{ gridColumn: "span 2" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <label style={{ fontSize: "12.5px", fontWeight: "700", color: "#004d32" }}>
+                    Nomor Rig (Bisa Pilih Banyak Rig per No Kontrak) {required && <span style={{ color: "#dc2626" }}>*</span>}
+                </label>
+                <div style={{ display: "flex", gap: "6px" }}>
+                    <button type="button" onClick={selectAll} style={{ fontSize: "11px", fontWeight: "800", color: "#004d32", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>+ Pilih Semua</button>
+                    <span style={{ fontSize: "11px", color: "#94a3b8" }}>|</span>
+                    <button type="button" onClick={clearAll} style={{ fontSize: "11px", fontWeight: "800", color: "#dc2626", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Reset</button>
+                </div>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", backgroundColor: "#ffffff", border: "1px solid #ccd8d3", borderRadius: "8px", padding: "10px", minHeight: "44px" }}>
+                {ALL_BMS_RIGS.map((rig) => {
+                    const isSelected = selectedList.includes(rig);
+                    return (
+                        <button
+                            type="button"
+                            key={rig}
+                            onClick={() => toggleRig(rig)}
+                            style={{
+                                padding: "4px 10px",
+                                borderRadius: "6px",
+                                fontSize: "12px",
+                                fontWeight: "800",
+                                cursor: "pointer",
+                                border: isSelected ? "1px solid #004d32" : "1px solid #cbd5e1",
+                                backgroundColor: isSelected ? "#004d32" : "#f8fafc",
+                                color: isSelected ? "#efff00" : "#475569",
+                                transition: "all 0.15s ease",
+                            }}
+                        >
+                            {isSelected ? `✓ ${rig}` : `+ ${rig}`}
+                        </button>
+                    );
+                })}
+            </div>
+            {selectedList.length > 0 ? (
+                <div style={{ marginTop: "6px", fontSize: "12px", color: "#004d32", fontWeight: "700" }}>
+                    📌 Terpilih ({selectedList.length} Rig): {selectedList.join(", ")}
+                </div>
+            ) : (
+                <div style={{ marginTop: "4px", fontSize: "11.5px", color: "#dc2626", fontWeight: "600" }}>
+                    * Silakan pilih minimal 1 Rig untuk nomor kontrak ini.
+                </div>
+            )}
         </div>
     );
 }
