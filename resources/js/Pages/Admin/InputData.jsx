@@ -115,20 +115,75 @@ const INITIAL_FORM = {
     remarks: "",
 };
 
-function createIndicatorValues(names) {
+const DEFAULT_LAGGING_DEFINITIONS = {
+    "FATALITY": "",
+    "SERIOUS LOST TIME INJURY (>21 LOST DAY)": "",
+    "RESTRICTED WORK CASE": "",
+    "MEDICAL TREATMENT CASE (MTC)": "",
+    "TOTAL RECORDABLE INJURY": "Frequency rate = (kasus cedera × 200.000) / Jam Kerja",
+    "MOTOR VEHICLE CRASH (MVC)": "MVC FR = (kasus × 1.000.000) / KM perjalanan",
+    "TUMPAHAN / OIL SPILL": "Record case > 1 barrel",
+    "FIRE": "Record case > Rp. 100 Jt",
+    "PROPERTY DAMAGE": "Record case > Rp. 100 Jt",
+    "SECURITY CASE": "Record case",
+    "ILLNESS FATALITY": "Record case",
+    "REPORTABLE CASE": "Reportable case (Nearmiss / FAC / ETA)",
+};
+
+const DEFAULT_LEADING_DEFINITIONS = {
+    "OBSERVASI PERILAKU (PEKA) *)": "Kru Operasi (Min 4x / bulan)",
+    "IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)": "Kru Operasi",
+    "SWA REPORT": "Stop Work Authority",
+    "INSPEKSI SAFETY EQUIPMENT & APD *) (Eye wash, Shower, Fire, P3K, Tandu, FBH, SCBA)": "Inspeksi APD & Peralatan Keselamatan",
+    "EKSTERNAL INSPEKSI LR COLOR CODE": "Inspeksi Color Code",
+    "INSPEKSI BENDA JATUH / DROPS **)": "Inspeksi Benda Jatuh",
+    "INTERNAL INSPEKSI / V&V OLEH TEAM": "Mencakup pelaksanaan V&V SIFP's",
+    "INSPEKSI / AUDIT SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR": "Subkontraktor",
+    "SPOT CHECK KENDARAAN *) **)": "Spot Check Kendaraan",
+    "AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)": "Audit Sistem Manajemen",
+    "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)": "PIC Transport",
+    "Laporan Inspeksi Kendaraan (PTI)": "Inspeksi Kendaraan (PTI)",
+    "SPESIFIK MCU RANDOM : (NAPZA & MIRAS TEST *)": "Random 5 personil / kontrak",
+    "PRA MCU (MCU TAHUNAN BAGI YANG KONSULTASI TAHUN SEBELUMNYA)": "Karyawan history konsul pada tahun sebelumnya",
+    "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)": "1x / Caturwulan (Level GM / Dir. Ops / Dirut)",
+    "MANAGEMENT VISIT / MWT (Level Coord level s/d Manager *)": "4x / Rig / bulan",
+    "RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)": "380 / 546 / 372 (1x / shift / hari)",
+    "PRE HITCH MEETING": "1 atau 2 hari sebelum kru masuk kerja",
+    "RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.": "HMM, HES Council Meeting bulanan",
+    "SAFETY TALK MONTHLY MEETING : 20.1 SUPPORT YARD": "1x / caturwulan (Support Yard)",
+    "SAFETY TALK MONTHLY MEETING : 20.2 SUPPORT RIG": "1x / caturwulan (Support Rig)",
+    "LEADERSHIP FORUM ***)": "Leadership Forum",
+    "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK) *)": "Pin / Poster / Stiker / Spanduk",
+    "REVIEW, TINJAUAN MANAJEMEN *)": "Tinjauan Manajemen",
+    "HYGIENE MONITORING : NOISE & LUX MONITORING **)": "Pengukuran Bising & Pencahayaan",
+    "HYGIENE MONITORING : Mess, Catering, DAM*)": "Mess, Catering, DAM (Min 1x / tahun)",
+    "INSPEKSI \"HOUSEKEEPING RIG\"": "Min 1x / bulan / Rig",
+    "PENGHARGAAN: KONTES \"HOUSEKEEPING RIG\" *)": "Kontes Housekeeping",
+    "PELAPORAN LINGKUNGAN KE DINAS LH": "1x / semester",
+    "PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL **)": "Rig of the Month",
+    "PENGHARGAAN THE BEST BBS / PEKA": "Penghargaan PEKA",
+    "PENGHARGAAN THE BEST DRIVER": "Penghargaan Driver",
+    "PENGHARGAAN: PENCAPAIAN KERJA SELAMAT TAHUNAN": "Voucher Belanja / Insentif",
+    "PENGHARGAAN HES REFRESHING": "HES Refreshing",
+    "\"ON SITE TRAINING\" DI LOKASI *)": "Training di lokasi",
+    "ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)": "ERP Drill Rig",
+    "ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)": "1x / Semester (Yard)",
+};
+
+function createIndicatorValues(names, defaultDefs = {}) {
     return names.reduce((result, name) => {
         result[name] = {
             actual: 0,
             plan: 0,
             customName: name,
-            definition: "",
+            definition: defaultDefs[name] || "",
         };
         return result;
     }, {});
 }
 
-const DEFAULT_LAGGING = createIndicatorValues(LAGGING_INDICATORS);
-const DEFAULT_LEADING = createIndicatorValues(LEADING_INDICATORS);
+const DEFAULT_LAGGING = createIndicatorValues(LAGGING_INDICATORS, DEFAULT_LAGGING_DEFINITIONS);
+const DEFAULT_LEADING = createIndicatorValues(LEADING_INDICATORS, DEFAULT_LEADING_DEFINITIONS);
 
 export default function InputData() {
     const { auth } = usePage().props;
@@ -806,9 +861,12 @@ export default function InputData() {
 ========================= */
 
 function IndicatorRow({ indicator, index, type, value, onChange }) {
-    const [editing, setEditing] = useState(false);
+    const [editingName, setEditingName] = useState(false);
+    const [editingDef, setEditingDef] = useState(false);
     const customName = value.customName !== undefined ? value.customName : indicator;
-    const isEdited = customName !== indicator && customName.trim() !== "";
+    const isNameEdited = customName !== indicator && customName.trim() !== "";
+
+    const definition = value.definition !== undefined ? value.definition : "";
 
     return (
         <tr
@@ -822,20 +880,23 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                     ...tableCellStyle,
                     fontWeight: "700",
                     color: "#004d32",
+                    width: "45px",
                 }}
             >
                 {index + 1}
             </td>
 
+            {/* POINT YANG DIUKUR / INDIKATOR */}
             <td
                 style={{
                     ...tableCellStyle,
                     textAlign: "left",
                     padding: "8px 12px",
+                    minWidth: "260px",
                 }}
             >
-                {editing ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {editingName ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <input
                             type="text"
                             autoFocus
@@ -844,7 +905,7 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                                 onChange(type, indicator, "customName", event.target.value)
                             }
                             onKeyDown={(e) => {
-                                if (e.key === "Enter") setEditing(false);
+                                if (e.key === "Enter") setEditingName(false);
                             }}
                             style={{
                                 flex: 1,
@@ -852,9 +913,9 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                                 boxSizing: "border-box",
                                 border: "1.5px solid #004d32",
                                 borderRadius: "6px",
-                                padding: "0 10px",
+                                padding: "0 8px",
                                 outline: "none",
-                                fontSize: "13px",
+                                fontSize: "12.5px",
                                 color: "#1e293b",
                                 fontWeight: "600",
                                 backgroundColor: "#ffffff",
@@ -863,16 +924,16 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                         />
                         <button
                             type="button"
-                            onClick={() => setEditing(false)}
+                            onClick={() => setEditingName(false)}
                             style={{
-                                padding: "4px 12px",
+                                padding: "4px 10px",
                                 height: "34px",
                                 backgroundColor: "#004d32",
                                 color: "#efff00",
                                 border: "none",
                                 borderRadius: "6px",
                                 cursor: "pointer",
-                                fontSize: "12px",
+                                fontSize: "11.5px",
                                 fontWeight: "700",
                                 display: "flex",
                                 alignItems: "center",
@@ -882,74 +943,46 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                         >
                             ✓ Simpan
                         </button>
-                        {isEdited && (
-                            <button
-                                type="button"
-                                title="Kembalikan ke nama default"
-                                onClick={() => {
-                                    onChange(type, indicator, "customName", indicator);
-                                    setEditing(false);
-                                }}
-                                style={{
-                                    padding: "4px 8px",
-                                    height: "34px",
-                                    backgroundColor: "#f1f5f9",
-                                    color: "#64748b",
-                                    border: "1px solid #cbd5e1",
-                                    borderRadius: "6px",
-                                    cursor: "pointer",
-                                    fontSize: "11px",
-                                    fontWeight: "600",
-                                    flexShrink: 0,
-                                }}
-                            >
-                                Reset
-                            </button>
-                        )}
                     </div>
                 ) : (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                            <span style={{ fontSize: "13px", fontWeight: isEdited ? "700" : "500", color: isEdited ? "#004d32" : "#1e293b" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                            <span style={{ fontSize: "12.5px", fontWeight: isNameEdited ? "700" : "500", color: isNameEdited ? "#004d32" : "#1e293b" }}>
                                 {customName}
                             </span>
-                            {isEdited && (
+                            {isNameEdited && (
                                 <span
                                     style={{
-                                        fontSize: "10.5px",
+                                        fontSize: "10px",
                                         fontWeight: "800",
-                                        padding: "2px 7px",
+                                        padding: "2px 6px",
                                         borderRadius: "4px",
                                         backgroundColor: "#fef3c7",
                                         color: "#92400e",
                                         border: "1px solid #fde68a",
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: "3px",
                                     }}
                                 >
-                                    ✏️ Telah Diedit
+                                    ✏️ Edited
                                 </span>
                             )}
                         </div>
                         <button
                             type="button"
-                            onClick={() => setEditing(true)}
+                            onClick={() => setEditingName(true)}
                             title="Edit nama poin indikator ini"
                             style={{
-                                padding: "4px 9px",
-                                backgroundColor: isEdited ? "#e0f2fe" : "#f8fafc",
-                                color: isEdited ? "#0369a1" : "#475569",
-                                border: isEdited ? "1px solid #bae6fd" : "1px solid #cbd5e1",
+                                padding: "3px 7px",
+                                backgroundColor: isNameEdited ? "#e0f2fe" : "#f8fafc",
+                                color: isNameEdited ? "#0369a1" : "#475569",
+                                border: isNameEdited ? "1px solid #bae6fd" : "1px solid #cbd5e1",
                                 borderRadius: "6px",
                                 cursor: "pointer",
-                                fontSize: "11.5px",
+                                fontSize: "11px",
                                 fontWeight: "700",
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: "5px",
+                                gap: "3px",
                                 flexShrink: 0,
-                                transition: "all 0.15s ease",
                             }}
                         >
                             ✏️ Edit Poin
@@ -958,32 +991,176 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                 )}
             </td>
 
-            <td style={tableCellStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <NumberTableField
-                        value={value.plan}
-                        onChange={(event) =>
-                            onChange(type, indicator, "plan", event.target.value)
-                        }
-                    />
-                    {type === "leading" && (index === 11 || Number(value.plan) === 100) && (
-                        <span style={{ fontSize: "11px", fontWeight: "800", color: "#004d32" }}>%</span>
-                    )}
-                </div>
+            {/* DEFINISI / FORMULA / KETERANGAN */}
+            <td
+                style={{
+                    ...tableCellStyle,
+                    textAlign: "left",
+                    padding: "8px 12px",
+                    minWidth: "260px",
+                }}
+            >
+                {editingDef ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <input
+                            type="text"
+                            autoFocus
+                            value={definition}
+                            onChange={(event) =>
+                                onChange(type, indicator, "definition", event.target.value)
+                            }
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") setEditingDef(false);
+                            }}
+                            style={{
+                                flex: 1,
+                                height: "34px",
+                                boxSizing: "border-box",
+                                border: "1.5px solid #004d32",
+                                borderRadius: "6px",
+                                padding: "0 8px",
+                                outline: "none",
+                                fontSize: "12.5px",
+                                color: "#1e293b",
+                                fontWeight: "500",
+                                backgroundColor: "#ffffff",
+                            }}
+                            placeholder="Ketik definisi / formula / keterangan..."
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setEditingDef(false)}
+                            style={{
+                                padding: "4px 10px",
+                                height: "34px",
+                                backgroundColor: "#004d32",
+                                color: "#efff00",
+                                border: "none",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "11.5px",
+                                fontWeight: "700",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                flexShrink: 0,
+                            }}
+                        >
+                            ✓ Simpan
+                        </button>
+                    </div>
+                ) : (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                        <span style={{ fontSize: "12px", color: definition ? "#475569" : "#94a3b8", fontStyle: definition ? "normal" : "italic" }}>
+                            {definition || "— Belum ada definisi (Klik Edit) —"}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => setEditingDef(true)}
+                            title="Edit definisi / formula indikator ini"
+                            style={{
+                                padding: "3px 7px",
+                                backgroundColor: definition ? "#f0fdf4" : "#f8fafc",
+                                color: definition ? "#166534" : "#475569",
+                                border: definition ? "1px solid #bbf7d0" : "1px solid #cbd5e1",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "3px",
+                                flexShrink: 0,
+                            }}
+                        >
+                            ✏️ Edit Definisi
+                        </button>
+                    </div>
+                )}
             </td>
 
+            {/* TARGET / PLAN */}
             <td style={tableCellStyle}>
-                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <NumberTableField
-                        value={value.actual}
-                        onChange={(event) =>
-                            onChange(type, indicator, "actual", event.target.value)
-                        }
-                    />
-                    {type === "leading" && (index === 11 || Number(value.actual) === 100) && (
-                        <span style={{ fontSize: "11px", fontWeight: "800", color: "#004d32" }}>%</span>
-                    )}
-                </div>
+                {type === "lagging" && (index === 4 || index === 5) ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px", width: "100%" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "2px", fontSize: "10px", fontWeight: "800", color: "#475569", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px" }}>
+                            <span style={{ flex: 1, textAlign: "center" }}>CASE</span>
+                            <span style={{ flex: 1, textAlign: "center" }}>FR</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <div style={{ flex: 1 }}>
+                                <NumberTableField
+                                    value={value.plan}
+                                    onChange={(event) =>
+                                        onChange(type, indicator, "plan", event.target.value)
+                                    }
+                                />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <NumberTableField
+                                    value={value.planFr !== undefined ? value.planFr : 0}
+                                    onChange={(event) =>
+                                        onChange(type, indicator, "planFr", event.target.value)
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <NumberTableField
+                            value={value.plan}
+                            onChange={(event) =>
+                                onChange(type, indicator, "plan", event.target.value)
+                            }
+                        />
+                        {type === "leading" && (index === 11 || Number(value.plan) === 100) && (
+                            <span style={{ fontSize: "11px", fontWeight: "800", color: "#004d32" }}>%</span>
+                        )}
+                    </div>
+                )}
+            </td>
+
+            {/* REALISASI / ACTUAL */}
+            <td style={tableCellStyle}>
+                {type === "lagging" && (index === 4 || index === 5) ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px", width: "100%" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "2px", fontSize: "10px", fontWeight: "800", color: "#475569", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px" }}>
+                            <span style={{ flex: 1, textAlign: "center" }}>CASE</span>
+                            <span style={{ flex: 1, textAlign: "center" }}>FR</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <div style={{ flex: 1 }}>
+                                <NumberTableField
+                                    value={value.actual}
+                                    onChange={(event) =>
+                                        onChange(type, indicator, "actual", event.target.value)
+                                    }
+                                />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <NumberTableField
+                                    value={value.actualFr !== undefined ? value.actualFr : 0}
+                                    onChange={(event) =>
+                                        onChange(type, indicator, "actualFr", event.target.value)
+                                    }
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <NumberTableField
+                            value={value.actual}
+                            onChange={(event) =>
+                                onChange(type, indicator, "actual", event.target.value)
+                            }
+                        />
+                        {type === "leading" && (index === 11 || Number(value.actual) === 100) && (
+                            <span style={{ fontSize: "11px", fontWeight: "800", color: "#004d32" }}>%</span>
+                        )}
+                    </div>
+                )}
             </td>
         </tr>
     );
@@ -1003,7 +1180,7 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                     style={{
                         width: "100%",
                         borderCollapse: "collapse",
-                        minWidth: "850px",
+                        minWidth: "900px",
                     }}
                 >
                     <thead>
@@ -1014,21 +1191,31 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                                 borderBottom: "2px solid #efff00",
                             }}
                         >
-                            <th style={{ ...tableHeaderStyle, width: "50px" }}>No</th>
+                            <th style={{ ...tableHeaderStyle, width: "45px" }}>No</th>
 
                             <th
                                 style={{
                                     ...tableHeaderStyle,
                                     textAlign: "left",
-                                    minWidth: "380px",
+                                    minWidth: "260px",
                                 }}
                             >
                                 Point yang Diukur / Indikator
                             </th>
 
-                            <th style={{ ...tableHeaderStyle, width: "130px" }}>Target / Plan</th>
+                            <th
+                                style={{
+                                    ...tableHeaderStyle,
+                                    textAlign: "left",
+                                    minWidth: "260px",
+                                }}
+                            >
+                                Definisi / Formula / Keterangan
+                            </th>
 
-                            <th style={{ ...tableHeaderStyle, width: "130px" }}>Realisasi / Actual</th>
+                            <th style={{ ...tableHeaderStyle, width: "120px" }}>Target / Plan</th>
+
+                            <th style={{ ...tableHeaderStyle, width: "120px" }}>Realisasi / Actual</th>
                         </tr>
                     </thead>
 

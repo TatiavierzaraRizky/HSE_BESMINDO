@@ -16,8 +16,6 @@ import {
     ShieldAlert,
     ShieldCheck,
     Layers,
-    ChevronLeft,
-    ChevronRight,
     SlidersHorizontal,
     Sparkles,
     BarChart3,
@@ -40,12 +38,12 @@ import {
 ============================================================ */
 
 const LAGGING_MASTER = [
-    { no: "1.1", key: "fatality", name: "FATALITY", category: "Lagging", isLagging: true, unit: "Case", definition: "FR = (kasus cedera x 200.000) / Jam Kerja" },
-    { no: "1.2", key: "serious_lost_time_injury", name: "SERIOUS LOST TIME INJURY (>21 LOST DAY)", category: "Lagging", isLagging: true, unit: "Case", definition: "FR = (kasus cedera x 200.000) / Jam Kerja" },
-    { no: "1.3", key: "restricted_work_case", name: "RESTRICTED WORK CASE (RWC)", category: "Lagging", isLagging: true, unit: "Case", definition: "FR = (kasus cedera x 200.000) / Jam Kerja" },
-    { no: "1.4", key: "medical_treatment_case", name: "MEDICAL TREATMENT CASE (MTC)", category: "Lagging", isLagging: true, unit: "Case", definition: "FR = (kasus cedera x 200.000) / Jam Kerja" },
-    { no: "1.5", key: "total_recordable_injury", name: "TOTAL RECORDABLE INJURY (TRI)", category: "Lagging", isLagging: true, unit: "Case", definition: "TRI = 1.1 + 1.2 + 1.3 + 1.4" },
-    { no: "1.6", key: "motor_vehicle_crash", name: "MOTOR VEHICLE CRASH (MVC)", category: "Lagging", isLagging: true, unit: "Case", definition: "MVC FR = (kasus x 1.000.000) / KM" },
+    { no: "1.1", key: "fatality", name: "FATALITY", category: "Lagging", isLagging: true, unit: "Case", definition: "" },
+    { no: "1.2", key: "serious_lost_time_injury", name: "SERIOUS LOST TIME INJURY (>21 LOST DAY)", category: "Lagging", isLagging: true, unit: "Case", definition: "" },
+    { no: "1.3", key: "restricted_work_case", name: "RESTRICTED WORK CASE (RWC)", category: "Lagging", isLagging: true, unit: "Case", definition: "" },
+    { no: "1.4", key: "medical_treatment_case", name: "MEDICAL TREATMENT CASE (MTC)", category: "Lagging", isLagging: true, unit: "Case", definition: "" },
+    { no: "1.5", key: "total_recordable_injury", name: "TOTAL RECORDABLE INJURY (TRI)", category: "Lagging", isLagging: true, unit: "Case", definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja", isCaseFrCombo: true },
+    { no: "1.6", key: "motor_vehicle_crash", name: "MOTOR VEHICLE CRASH (MVC)", category: "Lagging", isLagging: true, unit: "Case", definition: "MVC FR = (kasus x 1.000.000) / KM", isCaseFrCombo: true },
     { no: "1.7", key: "oil_spill", name: "TUMPAHAN / OIL SPILL", category: "Lagging", isLagging: true, unit: "Case", definition: "Record case >1 barrel" },
     { no: "1.8", key: "fire_incident", name: "FIRE", category: "Lagging", isLagging: true, unit: "Case", definition: "Record case > Rp. 100 Jt" },
     { no: "1.9", key: "property_damage", name: "PROPERTY DAMAGE", category: "Lagging", isLagging: true, unit: "Case", definition: "Record case > Rp. 100 Jt" },
@@ -195,11 +193,8 @@ export default function KPIPerRig() {
 
     const [performanceMode, setPerformanceMode] = useState("Monthly");
     const [tableCategory, setTableCategory] = useState("All"); // All | Leading | Lagging
-    const [currentPage, setCurrentPage] = useState(1);
     const [selectedKpi, setSelectedKpi] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
-
-    const rowsPerPage = 6;
 
     // =====================================================
     // FILTERED REPORTS
@@ -548,32 +543,12 @@ export default function KPIPerRig() {
         return result;
     }, [kpiMetrics, tableCategory, searchTerm]);
 
-    const totalPages = Math.max(
-        1,
-        Math.ceil(displayTableData.length / rowsPerPage),
-    );
-
-    const currentData = useMemo(() => {
-        return displayTableData.slice(
-            (currentPage - 1) * rowsPerPage,
-            currentPage * rowsPerPage,
-        );
-    }, [displayTableData, currentPage, rowsPerPage]);
-
     // =====================================================
     // HANDLERS
     // =====================================================
 
     const handleFilterSubmit = () => {
-        setCurrentPage(1);
-    };
-
-    const handlePrevious = () => {
-        if (currentPage > 1) setCurrentPage(currentPage - 1);
-    };
-
-    const handleNext = () => {
-        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+        // Filters are reactive via state
     };
 
     const handleExport = () => {
@@ -1563,7 +1538,6 @@ export default function KPIPerRig() {
                                                 key={cat}
                                                 onClick={() => {
                                                     setTableCategory(cat);
-                                                    setCurrentPage(1);
                                                 }}
                                                 style={{
                                                     border: "none",
@@ -1617,7 +1591,6 @@ export default function KPIPerRig() {
                                         value={searchTerm}
                                         onChange={(e) => {
                                             setSearchTerm(e.target.value);
-                                            setCurrentPage(1);
                                         }}
                                         style={{
                                             border: "none",
@@ -1722,8 +1695,8 @@ export default function KPIPerRig() {
                                 </thead>
 
                                 <tbody>
-                                    {currentData.length > 0 ? (
-                                        currentData.map((row, index) => (
+                                    {displayTableData.length > 0 ? (
+                                        displayTableData.map((row, index) => (
                                             <tr
                                                 key={`${row.indicator}-${index}`}
                                                 style={{
@@ -1949,7 +1922,7 @@ export default function KPIPerRig() {
                             </table>
                         </div>
 
-                        {/* TABLE FOOTER / PAGINATION */}
+                        {/* TABLE FOOTER */}
                         <div
                             style={{
                                 padding: "16px 24px",
@@ -1965,80 +1938,10 @@ export default function KPIPerRig() {
                             <span>
                                 Showing{" "}
                                 <strong style={{ color: "#0f172a" }}>
-                                    {displayTableData.length > 0
-                                        ? (currentPage - 1) * rowsPerPage + 1
-                                        : 0}
-                                </strong>{" "}
-                                to{" "}
-                                <strong style={{ color: "#0f172a" }}>
-                                    {Math.min(
-                                        currentPage * rowsPerPage,
-                                        displayTableData.length,
-                                    )}
-                                </strong>{" "}
-                                of{" "}
-                                <strong style={{ color: "#0f172a" }}>
                                     {displayTableData.length}
                                 </strong>{" "}
                                 indicators
                             </span>
-
-                            <div
-                                style={{
-                                    display: "flex",
-                                    gap: "6px",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <button
-                                    onClick={handlePrevious}
-                                    disabled={currentPage === 1}
-                                    style={modernPageBtn(currentPage === 1)}
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-
-                                {Array.from(
-                                    { length: totalPages },
-                                    (_, index) => index + 1,
-                                ).map((page) => (
-                                    <button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page)}
-                                        style={{
-                                            ...modernPageBtn(false),
-                                            backgroundColor:
-                                                currentPage === page
-                                                    ? "#059669"
-                                                    : "#ffffff",
-                                            color:
-                                                currentPage === page
-                                                    ? "#ffffff"
-                                                    : "#334155",
-                                            fontWeight:
-                                                currentPage === page
-                                                    ? "800"
-                                                    : "600",
-                                            boxShadow:
-                                                currentPage === page
-                                                    ? "0 2px 8px rgba(5, 150, 105, 0.35)"
-                                                    : "none",
-                                        }}
-                                    >
-                                        {page}
-                                    </button>
-                                ))}
-
-                                <button
-                                    onClick={handleNext}
-                                    disabled={currentPage === totalPages}
-                                    style={modernPageBtn(
-                                        currentPage === totalPages,
-                                    )}
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
-                            </div>
                         </div>
                     </section>
                 </div>
@@ -2469,20 +2372,3 @@ const modernTd = {
     color: "#1e293b",
     whiteSpace: "nowrap",
 };
-
-const modernPageBtn = (disabled) => ({
-    minWidth: "34px",
-    height: "34px",
-    border: "1px solid #004d32",
-    borderRadius: "8px",
-    backgroundColor: "#ffffff",
-    color: disabled ? "#cbd5e1" : "#004d32",
-    cursor: disabled ? "not-allowed" : "pointer",
-    fontSize: "13px",
-    fontWeight: "700",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "0 8px",
-    transition: "all 0.2s",
-});

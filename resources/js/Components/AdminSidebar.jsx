@@ -8,12 +8,10 @@ import {
     BarChart3,
     Target,
     FileText,
-    Settings2,
     CheckCircle2,
     FileBarChart,
     CalendarDays,
     TrendingUp,
-    Users,
     Settings,
     CircleHelp,
     LogOut,
@@ -138,18 +136,6 @@ function AdminSidebar({
             name: "Target KPI Management",
             href: "/admin/target-kpi",
             icon: Target,
-        },
-
-        {
-            name: "Rig & Contract",
-            href: "/admin/rig-management",
-            icon: Settings2,
-        },
-
-        {
-            name: "User Management",
-            href: "/admin/users",
-            icon: Users,
         },
 
         {

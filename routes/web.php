@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HseReportController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingController;
 
 /*
@@ -171,28 +170,6 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | CONTRACT MANAGEMENT
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/contract-management', function () {
-        return Inertia::render('Admin/ContractManagement');
-    })->name('admin.contract-management');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | RIG MANAGEMENT
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/rig-management', function () {
-        return Inertia::render('Admin/RigManagement');
-    })->name('admin.rig-management');
-
-
-    /*
-    |--------------------------------------------------------------------------
     | APPROVAL
     |--------------------------------------------------------------------------
     */
@@ -256,19 +233,6 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
         HseReportController::class,
         'actual',
     ])->name('admin.reports.actual');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | USER MANAGEMENT
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get('/users', [UserController::class, 'index'])->name('admin.users');
-    Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
-    Route::put('/users/{id}', [UserController::class, 'update'])->name('admin.users.update');
-    Route::patch('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('admin.users.toggle-status');
-    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
 
 
     /*

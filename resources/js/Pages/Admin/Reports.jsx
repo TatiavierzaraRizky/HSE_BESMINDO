@@ -119,11 +119,16 @@ function getMonthFromReport(report) {
     return 0;
 }
 
-function quarter(values, q) {
+function quarter(values, q, activeMonthCount = 12) {
     const start = q * 3;
+    const end = Math.min(start + 3, activeMonthCount);
+
+    if (start >= activeMonthCount) {
+        return 0;
+    }
 
     return values
-        .slice(start, start + 3)
+        .slice(start, end)
         .reduce((total, value) => total + number(value), 0);
 }
 
@@ -173,25 +178,25 @@ const LAGGING_INDICATOR_MASTER = [
     {
         no: "1.1",
         name: "FATALITY",
-        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
+        definition: "",
         unit: "Case",
     },
     {
         no: "1.2",
         name: "SERIOUS LOST TIME INJURY (>21 LOST DAY)",
-        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
+        definition: "",
         unit: "Case",
     },
     {
         no: "1.3",
         name: "RESTRICTED WORK CASE (RWC)",
-        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
+        definition: "",
         unit: "Case",
     },
     {
         no: "1.4",
         name: "MEDICAL TREATMENT CASE (MTC)",
-        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
+        definition: "",
         unit: "Case",
     },
     {
@@ -199,6 +204,7 @@ const LAGGING_INDICATOR_MASTER = [
         name: "TOTAL RECORDABLE INJURY",
         definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
+        isCaseFrCombo: true,
     },
     {
         no: "1.6",
@@ -206,6 +212,7 @@ const LAGGING_INDICATOR_MASTER = [
         definition:
             "MVC FR = (kasus x 1.000.000) / kilometer Perjalanan Kendaraan",
         unit: "Case",
+        isCaseFrCombo: true,
     },
     {
         no: "1.7",
@@ -609,26 +616,32 @@ function createValueObject() {
     };
 }
 
-function calculateSummary(values) {
+function calculateSummary(values, activeMonthCount = 12) {
     const plan = values?.plan || [];
     const actual = values?.actual || [];
 
+    const planSlice = plan.slice(0, activeMonthCount);
+    const actualSlice = actual.slice(0, activeMonthCount);
+
     return {
-        planQ1: quarter(plan, 0),
-        actualQ1: quarter(actual, 0),
+        planQ1: quarter(plan, 0, activeMonthCount),
+        actualQ1: quarter(actual, 0, activeMonthCount),
 
-        planQ2: quarter(plan, 1),
-        actualQ2: quarter(actual, 1),
+        planQ2: quarter(plan, 1, activeMonthCount),
+        actualQ2: quarter(actual, 1, activeMonthCount),
 
-        planQ3: quarter(plan, 2),
-        actualQ3: quarter(actual, 2),
+        planQ3: quarter(plan, 2, activeMonthCount),
+        actualQ3: quarter(actual, 2, activeMonthCount),
 
-        planQ4: quarter(plan, 3),
-        actualQ4: quarter(actual, 3),
+        planQ4: quarter(plan, 3, activeMonthCount),
+        actualQ4: quarter(actual, 3, activeMonthCount),
 
-        planYtd: plan.reduce((total, value) => total + number(value), 0),
+        planYtd: planSlice.reduce((total, value) => total + number(value), 0),
 
-        actualYtd: actual.reduce((total, value) => total + number(value), 0),
+        actualYtd: actualSlice.reduce(
+            (total, value) => total + number(value),
+            0,
+        ),
     };
 }
 
@@ -636,7 +649,7 @@ function calculateSummary(values) {
    BUILD LAGGING
 ============================================================ */
 
-function buildLaggingRows(reports) {
+function buildLaggingRows(reports, activeMonthCount = 12) {
     const map = new Map();
 
     LAGGING_INDICATOR_MASTER.forEach((master) => {
@@ -723,7 +736,7 @@ function buildLaggingRows(reports) {
 
     return Array.from(map.values()).map((item) => ({
         ...item,
-        ...calculateSummary(item.values),
+        ...calculateSummary(item.values, activeMonthCount),
     }));
 }
 
@@ -731,7 +744,7 @@ function buildLaggingRows(reports) {
    BUILD LEADING
 ============================================================ */
 
-function buildLeadingRows(reports) {
+function buildLeadingRows(reports, activeMonthCount = 12) {
     const map = new Map();
 
     LEADING_INDICATOR_MASTER.forEach((master) => {
@@ -836,14 +849,18 @@ function buildLeadingRows(reports) {
     return Array.from(map.values()).map((item) => {
         if (item.isPercentage) {
             const calcQuarterActual = (start, end) => {
-                const slice = item.values.actual.slice(start, end);
+                const limit = Math.min(end, activeMonthCount);
+                if (start >= activeMonthCount) return "-";
+                const slice = item.values.actual.slice(start, limit);
                 const filled = slice.filter((v) => v > 0);
                 if (filled.length === 0) return `${item.targetNumber}.00%`;
                 const avg = filled.reduce((a, b) => a + b, 0) / filled.length;
                 return `${avg.toFixed(2)}%`;
             };
 
-            const allFilled = item.values.actual.filter((v) => v > 0);
+            const allFilled = item.values.actual
+                .slice(0, activeMonthCount)
+                .filter((v) => v > 0);
             const actualYtd =
                 allFilled.length === 0
                     ? `${item.targetNumber}.00%`
@@ -866,7 +883,7 @@ function buildLeadingRows(reports) {
 
         return {
             ...item,
-            ...calculateSummary(item.values),
+            ...calculateSummary(item.values, activeMonthCount),
         };
     });
 }
@@ -875,7 +892,7 @@ function buildLeadingRows(reports) {
    MAN HOURS
 ============================================================ */
 
-function buildManHourRows(reports) {
+function buildManHourRows(reports, activeMonthCount = 12) {
     const configs = [
         {
             no: "2.1",
@@ -962,7 +979,7 @@ function buildManHourRows(reports) {
             target: 0,
             values,
             notes: config.notes,
-            ...calculateSummary(values),
+            ...calculateSummary(values, activeMonthCount),
         };
     });
 
@@ -983,7 +1000,7 @@ function buildManHourRows(reports) {
         target: rows[0].target + rows[1].target,
         values: totalManHoursValues,
         notes: "Ops : Dihitung Jml orang / km",
-        ...calculateSummary(totalManHoursValues),
+        ...calculateSummary(totalManHoursValues, activeMonthCount),
     };
 
     // TOTAL KILOMETER DRIVEN (Total) = 2.4 + 2.5
@@ -1003,7 +1020,7 @@ function buildManHourRows(reports) {
         target: rows[3].target + rows[4].target,
         values: totalKilometerValues,
         notes: "Jml Ops : sesuai kontrak (Roco 2unit, Bus 2unit, Vacuum 1unit, tandem 1unit, LV 5unit, dll)",
-        ...calculateSummary(totalKilometerValues),
+        ...calculateSummary(totalKilometerValues, activeMonthCount),
     };
 
     return [
@@ -1068,7 +1085,7 @@ const OPS_MASTER = [
     },
 ];
 
-function buildOpsRows(reports) {
+function buildOpsRows(reports, activeMonthCount = 12) {
     return OPS_MASTER.map((config) => {
         const values = createValueObject();
 
@@ -1144,14 +1161,18 @@ function buildOpsRows(reports) {
 
         if (config.isPercentage) {
             const calcQuarterActual = (start, end) => {
-                const slice = values.actual.slice(start, end);
+                const limit = Math.min(end, activeMonthCount);
+                if (start >= activeMonthCount) return "-";
+                const slice = values.actual.slice(start, limit);
                 const filled = slice.filter((v) => v > 0);
                 if (filled.length === 0) return `${config.targetNumber}.00%`;
                 const avg = filled.reduce((a, b) => a + b, 0) / filled.length;
                 return `${avg.toFixed(2)}%`;
             };
 
-            const allFilled = values.actual.filter((v) => v > 0);
+            const allFilled = values.actual
+                .slice(0, activeMonthCount)
+                .filter((v) => v > 0);
             const actualYtd =
                 allFilled.length === 0
                     ? `${config.targetNumber}.00%`
@@ -1210,7 +1231,7 @@ function buildOpsRows(reports) {
             target: config.target,
             notes: config.notes,
             values,
-            ...calculateSummary(values),
+            ...calculateSummary(values, activeMonthCount),
         };
     });
 }
@@ -1287,14 +1308,6 @@ export default function Reports() {
         ];
     }, [reports]);
 
-    const availableDates = useMemo(() => {
-        return [
-            ...new Set(
-                reports.map((report) => report.report_date).filter(Boolean),
-            ),
-        ].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-    }, [reports]);
-
     const defaultYear =
         availableYears.length > 0
             ? String(availableYears[0])
@@ -1317,6 +1330,45 @@ export default function Reports() {
     const [preview, setPreview] = useState(false);
 
     const [exporting, setExporting] = useState(false);
+
+    const availableDates = useMemo(() => {
+        return [
+            ...new Set(
+                reports
+                    .filter(
+                        (report) =>
+                            !year ||
+                            year === "All" ||
+                            String(getReportYear(report)) === String(year),
+                    )
+                    .map((report) => report.report_date)
+                    .filter(Boolean),
+            ),
+        ].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    }, [reports, year]);
+
+    /* ========================================================
+       CUTOFF MONTH FROM SELECTED REPORT DATE
+    ======================================================== */
+
+    const selectedCutoffMonth = useMemo(() => {
+        if (reportDate === "All Dates") return -1;
+
+        const selectedReport = reports.find(
+            (r) => String(r.report_date) === String(reportDate),
+        );
+
+        if (selectedReport) {
+            return getMonthFromReport(selectedReport);
+        }
+
+        const d = new Date(reportDate);
+        if (!Number.isNaN(d.getTime())) {
+            return d.getMonth();
+        }
+
+        return -1;
+    }, [reportDate, reports]);
 
     /* ========================================================
        FILTERED REPORT
@@ -1341,9 +1393,9 @@ export default function Reports() {
             );
         }
 
-        if (reportDate !== "All Dates") {
+        if (selectedCutoffMonth >= 0) {
             result = result.filter(
-                (report) => String(report.report_date) === String(reportDate),
+                (report) => getMonthFromReport(report) <= selectedCutoffMonth,
             );
         }
 
@@ -1358,30 +1410,61 @@ export default function Reports() {
 
             return dateB.getTime() - dateA.getTime();
         });
-    }, [reports, year, rig, project, location, reportDate]);
+    }, [reports, year, rig, project, location, selectedCutoffMonth]);
+
+    const activeMonths = useMemo(() => {
+        if (selectedCutoffMonth >= 0) {
+            return MONTHS.slice(0, selectedCutoffMonth + 1);
+        }
+
+        if (filteredReports.length === 0) return MONTHS;
+
+        let maxMonth = -1;
+        filteredReports.forEach((r) => {
+            const m = getMonthFromReport(r);
+            if (m > maxMonth) {
+                maxMonth = m;
+            }
+        });
+
+        if (maxMonth < 0) maxMonth = 11;
+
+        return MONTHS.slice(0, maxMonth + 1);
+    }, [filteredReports, selectedCutoffMonth]);
 
     /* ========================================================
        REPORT DATA
     ======================================================== */
 
     const lagging = useMemo(
-        () => buildLaggingRows(filteredReports),
-        [filteredReports],
+        () => buildLaggingRows(filteredReports, activeMonths.length),
+        [filteredReports, activeMonths.length],
     );
 
     const manHours = useMemo(
-        () => buildManHourRows(filteredReports),
-        [filteredReports],
+        () => buildManHourRows(filteredReports, activeMonths.length),
+        [filteredReports, activeMonths.length],
     );
 
-    const ops = useMemo(() => buildOpsRows(filteredReports), [filteredReports]);
+    const ops = useMemo(
+        () => buildOpsRows(filteredReports, activeMonths.length),
+        [filteredReports, activeMonths.length],
+    );
 
     const leading = useMemo(
-        () => buildLeadingRows(filteredReports),
-        [filteredReports],
+        () => buildLeadingRows(filteredReports, activeMonths.length),
+        [filteredReports, activeMonths.length],
     );
 
-    const latestReport = filteredReports.length > 0 ? filteredReports[0] : null;
+    const latestReport = useMemo(() => {
+        if (reportDate !== "All Dates") {
+            const matched = filteredReports.find(
+                (r) => String(r.report_date) === String(reportDate),
+            );
+            if (matched) return matched;
+        }
+        return filteredReports.length > 0 ? filteredReports[0] : null;
+    }, [filteredReports, reportDate]);
 
     /* ========================================================
        RESET
@@ -2269,6 +2352,74 @@ export default function Reports() {
     const formatMetricCell = (val, item, isPlan = false) => {
         if (val === undefined || val === null || val === "") return "-";
         if (typeof val === "string") return val;
+
+        const isTri =
+            item?.no === "1.5" ||
+            (item?.indicator &&
+                item.indicator.includes("TOTAL RECORDABLE INJURY"));
+        const isMvc =
+            item?.no === "1.6" ||
+            (item?.indicator && item.indicator.includes("MOTOR VEHICLE CRASH"));
+
+        if (isTri || isMvc || item?.isCaseFrCombo) {
+            const cases = Number(val) || 0;
+            const frFormatted = "0.00";
+
+            return (
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        width: "100%",
+                        height: "100%",
+                        fontSize: "9px",
+                    }}
+                >
+                    <div
+                        style={{
+                            display: "flex",
+                            borderBottom: "1px solid #cbd5e1",
+                            backgroundColor: "#e2e8f0",
+                            fontWeight: "700",
+                            color: "#1e293b",
+                            padding: "1px 0",
+                        }}
+                    >
+                        <span
+                            style={{
+                                flex: 1,
+                                textAlign: "center",
+                                borderRight: "1px solid #cbd5e1",
+                            }}
+                        >
+                            Case
+                        </span>
+                        <span style={{ flex: 1, textAlign: "center" }}>FR</span>
+                    </div>
+                    <div
+                        style={{
+                            display: "flex",
+                            padding: "2px 0",
+                            alignItems: "center",
+                        }}
+                    >
+                        <span
+                            style={{
+                                flex: 1,
+                                textAlign: "center",
+                                borderRight: "1px solid #e2e8f0",
+                            }}
+                        >
+                            {cases}
+                        </span>
+                        <span style={{ flex: 1, textAlign: "center" }}>
+                            {frFormatted}
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
         if (item?.isPercentage) {
             if (isPlan && val === 0 && item.targetNumber) {
                 return `${item.targetNumber}.00%`;
@@ -2320,7 +2471,7 @@ export default function Reports() {
             </td>,
         );
 
-        MONTHS.forEach((month, index) => {
+        activeMonths.forEach((month, index) => {
             cells.push(
                 <td key={`${month}-plan`} style={tdCenter}>
                     {formatMetricCell(item.values.plan[index], item, true)}
@@ -2368,7 +2519,7 @@ export default function Reports() {
                     whiteSpace: "pre-line",
                 }}
             >
-                {item.definition || "-"}
+                {item.definition || ""}
             </td>
 
             <td style={tdCenter}>
@@ -2603,7 +2754,10 @@ export default function Reports() {
                             Year
                             <select
                                 value={year}
-                                onChange={(e) => setYear(e.target.value)}
+                                onChange={(e) => {
+                                    setYear(e.target.value);
+                                    setReportDate("All Dates");
+                                }}
                                 style={selectStyle}
                             >
                                 {availableYears.map((item) => (
@@ -3063,10 +3217,30 @@ export default function Reports() {
                                                 backgroundColor: "#F1DDDC",
                                             }}
                                         >
-                                            TOTAL KUMULATIF YTD
+                                            <div>TOTAL KUMULATIF YTD</div>
+                                            {activeMonths.length > 0 &&
+                                                activeMonths.length < 12 && (
+                                                    <div
+                                                        style={{
+                                                            fontSize: "9px",
+                                                            fontWeight:
+                                                                "normal",
+                                                            color: "#475569",
+                                                        }}
+                                                    >
+                                                        ({activeMonths[0]} -{" "}
+                                                        {
+                                                            activeMonths[
+                                                                activeMonths.length -
+                                                                    1
+                                                            ]
+                                                        }
+                                                        )
+                                                    </div>
+                                                )}
                                         </th>
 
-                                        {MONTHS.map((month) => (
+                                        {activeMonths.map((month) => (
                                             <th
                                                 key={month}
                                                 colSpan={2}
@@ -3082,7 +3256,7 @@ export default function Reports() {
 
                                     <tr>
                                         {Array.from({
-                                            length: 17,
+                                            length: 5 + activeMonths.length,
                                         }).map((_, index) => (
                                             <React.Fragment key={index}>
                                                 <th
@@ -3116,7 +3290,10 @@ export default function Reports() {
 
                                     <tr>
                                         <td
-                                            colSpan={38}
+                                            colSpan={
+                                                4 +
+                                                (5 + activeMonths.length) * 2
+                                            }
                                             style={{
                                                 ...tdStyle,
                                                 backgroundColor: "#D9D9D9",
@@ -3136,7 +3313,10 @@ export default function Reports() {
 
                                     <tr>
                                         <td
-                                            colSpan={38}
+                                            colSpan={
+                                                4 +
+                                                (5 + activeMonths.length) * 2
+                                            }
                                             style={{
                                                 ...tdStyle,
                                                 backgroundColor: "#D9D9D9",
@@ -3155,7 +3335,10 @@ export default function Reports() {
 
                                     <tr>
                                         <td
-                                            colSpan={38}
+                                            colSpan={
+                                                4 +
+                                                (5 + activeMonths.length) * 2
+                                            }
                                             style={{
                                                 ...tdStyle,
                                                 backgroundColor: "#D9D9D9",
@@ -3285,10 +3468,30 @@ export default function Reports() {
                                                 backgroundColor: "#F1DDDC",
                                             }}
                                         >
-                                            TOTAL KUMULATIF YTD
+                                            <div>TOTAL KUMULATIF YTD</div>
+                                            {activeMonths.length > 0 &&
+                                                activeMonths.length < 12 && (
+                                                    <div
+                                                        style={{
+                                                            fontSize: "9px",
+                                                            fontWeight:
+                                                                "normal",
+                                                            color: "#475569",
+                                                        }}
+                                                    >
+                                                        ({activeMonths[0]} -{" "}
+                                                        {
+                                                            activeMonths[
+                                                                activeMonths.length -
+                                                                    1
+                                                            ]
+                                                        }
+                                                        )
+                                                    </div>
+                                                )}
                                         </th>
 
-                                        {MONTHS.map((month) => (
+                                        {activeMonths.map((month) => (
                                             <th
                                                 key={month}
                                                 colSpan={2}
@@ -3304,7 +3507,7 @@ export default function Reports() {
 
                                     <tr>
                                         {Array.from({
-                                            length: 17,
+                                            length: 5 + activeMonths.length,
                                         }).map((_, index) => (
                                             <React.Fragment key={index}>
                                                 <th
