@@ -10,8 +10,6 @@ import {
     CheckCircle2,
     ArrowRight,
     Sparkles,
-    UserCheck,
-    Shield,
 } from "lucide-react";
 
 export default function Login({ status }) {
@@ -55,603 +53,770 @@ export default function Login({ status }) {
         <>
             <Head title="Login Portal HSE - PT Besmindo Materi Sewatama" />
 
+            <style>{`
+                @keyframes logoGifFloat {
+                    0%, 100% {
+                        transform: translateY(0px) rotate(0deg) scale(1);
+                    }
+                    25% {
+                        transform: translateY(-6px) rotate(-1deg) scale(1.015);
+                    }
+                    50% {
+                        transform: translateY(-1px) rotate(1deg) scale(1.008);
+                    }
+                    75% {
+                        transform: translateY(-5px) rotate(-0.5deg) scale(1.018);
+                    }
+                }
+
+                @keyframes logoGlowPulse {
+                    0%, 100% {
+                        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12), 0 0 18px rgba(239, 255, 0, 0.25);
+                        border-color: #efff00;
+                    }
+                    50% {
+                        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.18), 0 0 28px rgba(239, 255, 0, 0.45);
+                        border-color: #10b981;
+                    }
+                }
+
+                @keyframes logoShimmerSwipe {
+                    0% {
+                        transform: translateX(-140%) skewX(-20deg);
+                    }
+                    35%, 100% {
+                        transform: translateX(240%) skewX(-20deg);
+                    }
+                }
+
+                @keyframes logoStarTwinkle {
+                    0%, 100% {
+                        transform: scale(0.65) rotate(0deg);
+                        opacity: 0.4;
+                    }
+                    50% {
+                        transform: scale(1.2) rotate(45deg);
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes beaconPulse {
+                    0% {
+                        transform: scale(0.95);
+                        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+                    }
+                    70% {
+                        transform: scale(1.1);
+                        box-shadow: 0 0 0 7px rgba(16, 185, 129, 0);
+                    }
+                    100% {
+                        transform: scale(0.95);
+                        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+                    }
+                }
+
+                @keyframes buttonSheen {
+                    0% {
+                        left: -100%;
+                    }
+                    100% {
+                        left: 200%;
+                    }
+                }
+
+                .clean-input-box:focus-within {
+                    border-color: #004d32 !important;
+                    background-color: #ffffff !important;
+                    box-shadow: 0 0 0 3.5px rgba(0, 77, 50, 0.12), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+                }
+
+                .clean-input-box:focus-within .input-icon {
+                    color: #004d32 !important;
+                }
+
+                .clean-login-btn:hover {
+                    transform: translateY(-1.5px);
+                    box-shadow: 0 8px 24px rgba(0, 77, 50, 0.35), 0 0 18px rgba(239, 255, 0, 0.25) !important;
+                }
+
+                .clean-login-btn:hover .btn-sheen {
+                    animation: buttonSheen 1.2s infinite;
+                }
+
+                .clean-login-btn:hover .btn-arrow {
+                    transform: translateX(4px);
+                }
+            `}</style>
+
+            {/* FULLSCREEN WRAPPER WITH VISIBLE OILFIELD BACKGROUND PHOTO */}
             <div
                 style={{
                     minHeight: "100vh",
-                    backgroundColor: "#00281b",
-                    backgroundImage: `
-                        radial-gradient(circle at 15% 20%, rgba(239, 255, 0, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 85% 80%, rgba(0, 77, 50, 0.6) 0%, transparent 50%),
-                        linear-gradient(135deg, #001f15 0%, #003824 50%, #002417 100%)
-                    `,
-                    fontFamily:
-                        "'Instrument Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+                    position: "relative",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    padding: "24px 16px",
+                    padding: "28px 16px",
                     boxSizing: "border-box",
-                    position: "relative",
-                    overflow: "hidden",
+                    fontFamily:
+                        "'Instrument Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
                 }}
             >
-                {/* AMBIENT BACKGROUND GLOW LINES */}
+                {/* BACKGROUND IMAGE - FOTO KEDUA RIG MINYAK TERLIHAT JELAS */}
                 <div
                     style={{
-                        position: "absolute",
-                        top: "-150px",
-                        right: "-150px",
-                        width: "450px",
-                        height: "450px",
-                        borderRadius: "50%",
-                        background:
-                            "radial-gradient(circle, rgba(239, 255, 0, 0.12) 0%, transparent 70%)",
-                        pointerEvents: "none",
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundImage: "url('/images/auth-bg.jpg')",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                        zIndex: 0,
                     }}
                 />
 
+                {/* SOFT TRANSLUCENT OVERLAY - TIDAK MENGGELAPKAN FOTO SECARA BERLEBIHAN */}
                 <div
                     style={{
-                        position: "absolute",
-                        bottom: "-150px",
-                        left: "-150px",
-                        width: "500px",
-                        height: "500px",
-                        borderRadius: "50%",
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
                         background:
-                            "radial-gradient(circle, rgba(0, 77, 50, 0.8) 0%, transparent 70%)",
-                        pointerEvents: "none",
+                            "linear-gradient(135deg, rgba(0, 24, 16, 0.38) 0%, rgba(0, 15, 10, 0.48) 100%)",
+                        zIndex: 1,
                     }}
                 />
 
-                {/* MAIN CONTAINER */}
+                {/* MAIN CLEAN GLASS CARD */}
                 <div
                     style={{
-                        width: "100%",
-                        maxWidth: "490px",
-                        zIndex: 10,
                         position: "relative",
+                        zIndex: 10,
+                        width: "100%",
+                        maxWidth: "460px",
+                        borderRadius: "24px",
+                        backgroundColor: "rgba(255, 255, 255, 0.94)",
+                        backdropFilter: "blur(24px)",
+                        WebkitBackdropFilter: "blur(24px)",
+                        border: "1.5px solid rgba(255, 255, 255, 0.8)",
+                        boxShadow:
+                            "0 25px 60px -10px rgba(0, 0, 0, 0.45), 0 0 35px rgba(0, 77, 50, 0.25)",
+                        padding: "36px 32px 30px",
+                        boxSizing: "border-box",
+                        overflow: "hidden",
                     }}
                 >
-                    {/* BRANDING HEADER */}
-                    <div style={{ textAlign: "center", marginBottom: "26px" }}>
+                    {/* ACCENT LINE ON TOP */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: "4px",
+                            background:
+                                "linear-gradient(90deg, #004d32 0%, #efff00 50%, #004d32 100%)",
+                        }}
+                    />
+
+                    {/* HEADER / ANIMATED LOGO SECTION */}
+                    <div style={{ textAlign: "center", marginBottom: "22px" }}>
+                        {/* ANIMATED FLOATING LOGO (ALA GIF) */}
                         <div
                             style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                position: "relative",
+                                display: "inline-block",
+                                maxWidth: "340px",
                                 width: "100%",
-                                maxWidth: "430px",
-                                padding: "18px 28px",
-                                borderRadius: "22px",
-                                backgroundColor: "#ffffff",
-                                border: "2.5px solid #efff00",
-                                boxShadow:
-                                    "0 12px 36px rgba(0, 0, 0, 0.35), 0 0 28px rgba(239, 255, 0, 0.3)",
-                                marginBottom: "18px",
-                                boxSizing: "border-box",
+                                marginBottom: "14px",
                             }}
                         >
-                            <img
-                                src="/images/besmindo-logo.png"
-                                alt="PT BESMINDO MATERI SEWATAMA"
+                            {/* CUTE SPARKLE STARS */}
+                            <span
                                 style={{
-                                    height: "auto",
-                                    maxHeight: "95px",
-                                    width: "100%",
-                                    maxWidth: "370px",
-                                    objectFit: "contain",
-                                    display: "block",
+                                    position: "absolute",
+                                    top: "-8px",
+                                    right: "-6px",
+                                    fontSize: "18px",
+                                    zIndex: 15,
+                                    pointerEvents: "none",
+                                    animation: "logoStarTwinkle 1.8s infinite ease-in-out",
                                 }}
-                            />
-                        </div>
+                            >
+                                ✨
+                            </span>
+                            <span
+                                style={{
+                                    position: "absolute",
+                                    bottom: "-6px",
+                                    left: "-6px",
+                                    fontSize: "17px",
+                                    zIndex: 15,
+                                    pointerEvents: "none",
+                                    animation:
+                                        "logoStarTwinkle 1.8s infinite ease-in-out 0.9s",
+                                }}
+                            >
+                                🌟
+                            </span>
 
-                        <div>
+                            {/* LOGO PLATE */}
                             <div
                                 style={{
                                     display: "inline-flex",
                                     alignItems: "center",
-                                    gap: "6px",
-                                    padding: "6px 18px",
-                                    borderRadius: "20px",
-                                    backgroundColor: "rgba(0, 77, 50, 0.85)",
-                                    border: "1px solid rgba(239, 255, 0, 0.4)",
-                                    color: "#efff00",
-                                    fontSize: "12px",
-                                    fontWeight: "800",
-                                    letterSpacing: "0.06em",
-                                    textTransform: "uppercase",
-                                    boxShadow: "0 4px 14px rgba(0, 0, 0, 0.2)",
+                                    justifyContent: "center",
+                                    width: "100%",
+                                    padding: "14px 22px",
+                                    borderRadius: "18px",
+                                    backgroundColor: "#ffffff",
+                                    border: "2px solid #efff00",
+                                    boxSizing: "border-box",
+                                    position: "relative",
+                                    overflow: "hidden",
+                                    animation:
+                                        "logoGifFloat 3s infinite ease-in-out, logoGlowPulse 2.4s infinite ease-in-out",
+                                    transformOrigin: "center center",
                                 }}
                             >
-                                <Sparkles size={14} />
-                                HSE Integrated Management Portal
+                                {/* SHIMMER LIGHT BEAM PASSING ACROSS */}
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        width: "60%",
+                                        height: "100%",
+                                        background:
+                                            "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent)",
+                                        pointerEvents: "none",
+                                        animation:
+                                            "logoShimmerSwipe 3.5s infinite ease-in-out",
+                                    }}
+                                />
+
+                                <img
+                                    src="/images/besmindo-logo.png"
+                                    alt="PT BESMINDO MATERI SEWATAMA"
+                                    style={{
+                                        height: "auto",
+                                        maxHeight: "78px",
+                                        width: "100%",
+                                        maxWidth: "290px",
+                                        objectFit: "contain",
+                                        display: "block",
+                                        position: "relative",
+                                        zIndex: 2,
+                                    }}
+                                />
                             </div>
                         </div>
-                    </div>
 
-                    {/* LOGIN CARD */}
-                    <div
-                        style={{
-                            backgroundColor: "#ffffff",
-                            borderRadius: "20px",
-                            padding: "32px 30px",
-                            boxShadow: "0 20px 50px rgba(0, 0, 0, 0.35)",
-                            border: "1px solid rgba(239, 255, 0, 0.4)",
-                            position: "relative",
-                            overflow: "hidden",
-                        }}
-                    >
-                        {/* TOP ACCENT LINE */}
+                        {/* SYSTEM PILL BADGE */}
                         <div
                             style={{
-                                position: "absolute",
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                height: "4px",
-                                background:
-                                    "linear-gradient(90deg, #004d32 0%, #efff00 50%, #004d32 100%)",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                padding: "4px 12px",
+                                borderRadius: "20px",
+                                backgroundColor: "rgba(0, 77, 50, 0.08)",
+                                border: "1px solid rgba(0, 77, 50, 0.15)",
+                                color: "#004d32",
+                                fontSize: "11px",
+                                fontWeight: "800",
+                                letterSpacing: "0.05em",
+                                textTransform: "uppercase",
+                                marginBottom: "8px",
                             }}
-                        />
-
-                        {/* ROLE SELECTOR TITLE */}
-                        <div style={{ marginBottom: "16px" }}>
-                            <label
+                        >
+                            <span
                                 style={{
-                                    display: "block",
-                                    fontSize: "12.5px",
-                                    fontWeight: "800",
-                                    color: "#004d32",
-                                    textTransform: "uppercase",
-                                    letterSpacing: "0.04em",
-                                    marginBottom: "10px",
+                                    width: "6px",
+                                    height: "6px",
+                                    borderRadius: "50%",
+                                    backgroundColor: "#10b981",
+                                    display: "inline-block",
+                                    animation: "beaconPulse 1.8s infinite",
                                 }}
-                            >
-                                Pilih Peran Masuk (Role Access)
-                            </label>
-
-                            {/* 2 ROLE SELECTOR TABS */}
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "1fr 1fr",
-                                    gap: "10px",
-                                }}
-                            >
-                                {/* TAB 1: ADMIN */}
-                                <button
-                                    type="button"
-                                    onClick={() => handleRoleSelect("admin")}
-                                    style={{
-                                        padding: "12px 10px",
-                                        borderRadius: "12px",
-                                        border:
-                                            selectedRole === "admin"
-                                                ? "2px solid #004d32"
-                                                : "1px solid #e2e8f0",
-                                        backgroundColor:
-                                            selectedRole === "admin"
-                                                ? "#004d32"
-                                                : "#f8fafc",
-                                        color:
-                                            selectedRole === "admin"
-                                                ? "#efff00"
-                                                : "#475569",
-                                        cursor: "pointer",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        alignItems: "center",
-                                        gap: "4px",
-                                        boxShadow:
-                                            selectedRole === "admin"
-                                                ? "0 4px 14px rgba(0, 77, 50, 0.25)"
-                                                : "none",
-                                        transition: "all 0.2s ease",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "6px",
-                                            fontWeight: "800",
-                                            fontSize: "13px",
-                                        }}
-                                    >
-                                        <ShieldCheck size={16} />
-                                        HSE Admin
-                                    </div>
-                                    <span
-                                        style={{
-                                            fontSize: "10.5px",
-                                            color:
-                                                selectedRole === "admin"
-                                                    ? "#a7f3d0"
-                                                    : "#94a3b8",
-                                            fontWeight: "600",
-                                        }}
-                                    >
-                                        Dashboard & Approval
-                                    </span>
-                                </button>
-
-                                {/* TAB 2: FIELD USER */}
-                                <button
-                                    type="button"
-                                    onClick={() => handleRoleSelect("user")}
-                                    style={{
-                                        padding: "12px 10px",
-                                        borderRadius: "12px",
-                                        border:
-                                            selectedRole === "user"
-                                                ? "2px solid #004d32"
-                                                : "1px solid #e2e8f0",
-                                        backgroundColor:
-                                            selectedRole === "user"
-                                                ? "#004d32"
-                                                : "#f8fafc",
-                                        color:
-                                            selectedRole === "user"
-                                                ? "#efff00"
-                                                : "#475569",
-                                        cursor: "pointer",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        alignItems: "center",
-                                        gap: "4px",
-                                        boxShadow:
-                                            selectedRole === "user"
-                                                ? "0 4px 14px rgba(0, 77, 50, 0.25)"
-                                                : "none",
-                                        transition: "all 0.2s ease",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "6px",
-                                            fontWeight: "800",
-                                            fontSize: "13px",
-                                        }}
-                                    >
-                                        <ClipboardList size={16} />
-                                        Field User
-                                    </div>
-                                    <span
-                                        style={{
-                                            fontSize: "10.5px",
-                                            color:
-                                                selectedRole === "user"
-                                                    ? "#a7f3d0"
-                                                    : "#94a3b8",
-                                            fontWeight: "600",
-                                        }}
-                                    >
-                                        Penginputan Data HSE
-                                    </span>
-                                </button>
-                            </div>
+                            />
+                            <span>HSE Integrated Portal</span>
                         </div>
 
-                        {/* SUCCESS STATUS ALERT */}
-                        {status && (
-                            <div
-                                style={{
-                                    backgroundColor: "#ecfdf5",
-                                    border: "1px solid #34d399",
-                                    borderRadius: "10px",
-                                    padding: "10px 14px",
-                                    marginBottom: "16px",
-                                    color: "#065f46",
-                                    fontSize: "12.5px",
-                                    fontWeight: "700",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "8px",
-                                }}
-                            >
-                                <CheckCircle2 size={16} color="#059669" />
-                                <span>{status}</span>
-                            </div>
-                        )}
+                        <h2
+                            style={{
+                                margin: "0 0 4px",
+                                fontSize: "20px",
+                                fontWeight: "900",
+                                color: "#0f172a",
+                                letterSpacing: "-0.02em",
+                            }}
+                        >
+                            Selamat Datang Kembali
+                        </h2>
+                        <p
+                            style={{
+                                margin: 0,
+                                fontSize: "12.5px",
+                                color: "#64748b",
+                            }}
+                        >
+                            Pilih peran dan masukkan kredensial untuk masuk.
+                        </p>
+                    </div>
 
-                        {/* ERROR ALERT */}
-                        {errors.email && (
-                            <div
-                                style={{
-                                    backgroundColor: "#fee2e2",
-                                    border: "1px solid #f87171",
-                                    borderRadius: "10px",
-                                    padding: "10px 14px",
-                                    marginBottom: "16px",
-                                    color: "#991b1b",
-                                    fontSize: "12.5px",
-                                    fontWeight: "700",
-                                }}
-                            >
-                                {errors.email}
-                            </div>
-                        )}
-
-                        {/* FORM */}
-                        <form onSubmit={handleSubmit}>
-                            {/* EMAIL FIELD */}
-                            <div style={{ marginBottom: "16px" }}>
-                                <label
-                                    style={{
-                                        display: "block",
-                                        fontSize: "12.5px",
-                                        fontWeight: "700",
-                                        color: "#334155",
-                                        marginBottom: "6px",
-                                    }}
-                                >
-                                    Alamat Email / Username
-                                </label>
-                                <div
-                                    style={{
-                                        position: "relative",
-                                        display: "flex",
-                                        alignItems: "center",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            position: "absolute",
-                                            left: "12px",
-                                            color: "#64748b",
-                                            display: "flex",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <Mail size={16} />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={data.email}
-                                        onChange={(e) =>
-                                            setData("email", e.target.value)
-                                        }
-                                        placeholder="nama@besmindo.com"
-                                        style={{
-                                            width: "100%",
-                                            height: "42px",
-                                            padding: "0 14px 0 38px",
-                                            borderRadius: "10px",
-                                            border: "1px solid #cbd5e1",
-                                            outline: "none",
-                                            fontSize: "13.5px",
-                                            color: "#1e293b",
-                                            backgroundColor: "#f8fafc",
-                                            boxSizing: "border-box",
-                                            transition: "border-color 0.2s",
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* PASSWORD FIELD */}
-                            <div style={{ marginBottom: "18px" }}>
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                        marginBottom: "6px",
-                                    }}
-                                >
-                                    <label
-                                        style={{
-                                            fontSize: "12.5px",
-                                            fontWeight: "700",
-                                            color: "#334155",
-                                        }}
-                                    >
-                                        Kata Sandi (Password)
-                                    </label>
-                                    <Link
-                                        href="/forgot-password"
-                                        style={{
-                                            fontSize: "12px",
-                                            color: "#004d32",
-                                            fontWeight: "700",
-                                            textDecoration: "none",
-                                        }}
-                                    >
-                                        Lupa kata sandi?
-                                    </Link>
-                                </div>
-                                <div
-                                    style={{
-                                        position: "relative",
-                                        display: "flex",
-                                        alignItems: "center",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            position: "absolute",
-                                            left: "12px",
-                                            color: "#64748b",
-                                            display: "flex",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        <Lock size={16} />
-                                    </div>
-                                    <input
-                                        type={
-                                            showPassword ? "text" : "password"
-                                        }
-                                        required
-                                        value={data.password}
-                                        onChange={(e) =>
-                                            setData("password", e.target.value)
-                                        }
-                                        placeholder="Masukkan kata sandi..."
-                                        style={{
-                                            width: "100%",
-                                            height: "42px",
-                                            padding: "0 40px 0 38px",
-                                            borderRadius: "10px",
-                                            border: "1px solid #cbd5e1",
-                                            outline: "none",
-                                            fontSize: "13.5px",
-                                            color: "#1e293b",
-                                            backgroundColor: "#f8fafc",
-                                            boxSizing: "border-box",
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setShowPassword(!showPassword)
-                                        }
-                                        style={{
-                                            position: "absolute",
-                                            right: "12px",
-                                            background: "none",
-                                            border: "none",
-                                            color: "#64748b",
-                                            cursor: "pointer",
-                                            display: "flex",
-                                            alignItems: "center",
-                                        }}
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff size={16} />
-                                        ) : (
-                                            <Eye size={16} />
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* REMEMBER ME & ROLE HINT */}
-                            <div
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    marginBottom: "22px",
-                                    fontSize: "12.5px",
-                                }}
-                            >
-                                <label
-                                    style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "8px",
-                                        color: "#475569",
-                                        cursor: "pointer",
-                                    }}
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={data.remember}
-                                        onChange={(e) =>
-                                            setData(
-                                                "remember",
-                                                e.target.checked
-                                            )
-                                        }
-                                        style={{ accentColor: "#004d32" }}
-                                    />
-                                    Ingat sesi masuk
-                                </label>
-
-                                <span
-                                    style={{
-                                        fontSize: "11.5px",
-                                        color: "#047857",
-                                        fontWeight: "700",
-                                    }}
-                                >
-                                    Tujuan:{" "}
-                                    {selectedRole === "admin"
-                                        ? "Admin Dashboard"
-                                        : "Form User Input"}
-                                </span>
-                            </div>
-
-                            {/* SUBMIT BUTTON */}
+                    {/* ROLE SELECTOR (CLEAN SEGMENTED PILL) */}
+                    <div style={{ marginBottom: "18px" }}>
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns: "1fr 1fr",
+                                gap: "6px",
+                                backgroundColor: "#f1f5f9",
+                                padding: "4px",
+                                borderRadius: "14px",
+                                border: "1px solid #e2e8f0",
+                            }}
+                        >
+                            {/* TAB 1: HSE ADMIN */}
                             <button
-                                type="submit"
-                                disabled={processing}
+                                type="button"
+                                onClick={() => handleRoleSelect("admin")}
                                 style={{
-                                    width: "100%",
-                                    height: "46px",
+                                    padding: "9px 12px",
                                     borderRadius: "10px",
-                                    backgroundColor: "#004d32",
-                                    color: "#efff00",
-                                    border: "1px solid #efff00",
-                                    fontWeight: "900",
-                                    fontSize: "14px",
-                                    letterSpacing: "0.02em",
-                                    cursor: processing
-                                        ? "not-allowed"
-                                        : "pointer",
+                                    border: "none",
+                                    backgroundColor:
+                                        selectedRole === "admin"
+                                            ? "#004d32"
+                                            : "transparent",
+                                    color:
+                                        selectedRole === "admin"
+                                            ? "#efff00"
+                                            : "#475569",
+                                    cursor: "pointer",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    gap: "8px",
+                                    gap: "6px",
+                                    fontWeight: "800",
+                                    fontSize: "12.5px",
                                     boxShadow:
-                                        "0 0 16px rgba(239, 255, 0, 0.3)",
-                                    opacity: processing ? 0.7 : 1,
+                                        selectedRole === "admin"
+                                            ? "0 2px 8px rgba(0, 77, 50, 0.25)"
+                                            : "none",
                                     transition: "all 0.2s ease",
                                 }}
                             >
-                                <span>
-                                    {processing
-                                        ? "Memverifikasi..."
-                                        : selectedRole === "admin"
-                                        ? "Masuk ke Dashboard Admin"
-                                        : "Masuk ke Form Input User"}
-                                </span>
-                                <ArrowRight size={16} strokeWidth={2.8} />
+                                <ShieldCheck size={15} strokeWidth={2.4} />
+                                <span>HSE Admin</span>
                             </button>
-                        </form>
 
-                        {/* REGISTER NEW ACCOUNT LINK */}
-                        <div
-                            style={{
-                                marginTop: "22px",
-                                paddingTop: "18px",
-                                borderTop: "1px solid #f1f5f9",
-                                textAlign: "center",
-                            }}
-                        >
-                            <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
-                                Belum memiliki akun terdaftar?{" "}
-                                <Link
-                                    href="/register"
-                                    style={{
-                                        color: "#004d32",
-                                        fontWeight: "800",
-                                        textDecoration: "none",
-                                        marginLeft: "4px",
-                                    }}
-                                >
-                                    Daftar Akun Baru
-                                </Link>
-                            </p>
+                            {/* TAB 2: FIELD USER */}
+                            <button
+                                type="button"
+                                onClick={() => handleRoleSelect("user")}
+                                style={{
+                                    padding: "9px 12px",
+                                    borderRadius: "10px",
+                                    border: "none",
+                                    backgroundColor:
+                                        selectedRole === "user"
+                                            ? "#004d32"
+                                            : "transparent",
+                                    color:
+                                        selectedRole === "user"
+                                            ? "#efff00"
+                                            : "#475569",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: "6px",
+                                    fontWeight: "800",
+                                    fontSize: "12.5px",
+                                    boxShadow:
+                                        selectedRole === "user"
+                                            ? "0 2px 8px rgba(0, 77, 50, 0.25)"
+                                            : "none",
+                                    transition: "all 0.2s ease",
+                                }}
+                            >
+                                <ClipboardList size={15} strokeWidth={2.4} />
+                                <span>Field User</span>
+                            </button>
                         </div>
                     </div>
 
-                    {/* FOOTER */}
+                    {/* STATUS ALERT */}
+                    {status && (
+                        <div
+                            style={{
+                                backgroundColor: "#ecfdf5",
+                                border: "1px solid #34d399",
+                                borderRadius: "10px",
+                                padding: "9px 12px",
+                                marginBottom: "14px",
+                                color: "#065f46",
+                                fontSize: "12px",
+                                fontWeight: "700",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "7px",
+                            }}
+                        >
+                            <CheckCircle2 size={15} color="#059669" />
+                            <span>{status}</span>
+                        </div>
+                    )}
+
+                    {/* ERROR ALERT */}
+                    {errors.email && (
+                        <div
+                            style={{
+                                backgroundColor: "#fee2e2",
+                                border: "1px solid #f87171",
+                                borderRadius: "10px",
+                                padding: "9px 12px",
+                                marginBottom: "14px",
+                                color: "#991b1b",
+                                fontSize: "12px",
+                                fontWeight: "700",
+                            }}
+                        >
+                            {errors.email}
+                        </div>
+                    )}
+
+                    {/* MAIN FORM */}
+                    <form onSubmit={handleSubmit}>
+                        {/* EMAIL INPUT */}
+                        <div style={{ marginBottom: "14px" }}>
+                            <label
+                                style={{
+                                    display: "block",
+                                    fontSize: "12px",
+                                    fontWeight: "700",
+                                    color: "#334155",
+                                    marginBottom: "5px",
+                                }}
+                            >
+                                Alamat Email / Username
+                            </label>
+                            <div
+                                className="clean-input-box"
+                                style={{
+                                    position: "relative",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    borderRadius: "11px",
+                                    border: "1.5px solid #cbd5e1",
+                                    backgroundColor: "#f8fafc",
+                                    transition: "all 0.2s ease",
+                                }}
+                            >
+                                <div
+                                    className="input-icon"
+                                    style={{
+                                        position: "absolute",
+                                        left: "11px",
+                                        color: "#64748b",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        transition: "color 0.2s ease",
+                                    }}
+                                >
+                                    <Mail size={16} />
+                                </div>
+                                <input
+                                    type="text"
+                                    required
+                                    value={data.email}
+                                    onChange={(e) =>
+                                        setData("email", e.target.value)
+                                    }
+                                    placeholder="nama@besmindo.com"
+                                    style={{
+                                        width: "100%",
+                                        height: "40px",
+                                        padding: "0 12px 0 36px",
+                                        border: "none",
+                                        outline: "none",
+                                        fontSize: "13px",
+                                        color: "#0f172a",
+                                        backgroundColor: "transparent",
+                                        boxSizing: "border-box",
+                                        fontWeight: "500",
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* PASSWORD INPUT */}
+                        <div style={{ marginBottom: "16px" }}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    marginBottom: "5px",
+                                }}
+                            >
+                                <label
+                                    style={{
+                                        fontSize: "12px",
+                                        fontWeight: "700",
+                                        color: "#334155",
+                                    }}
+                                >
+                                    Kata Sandi
+                                </label>
+                                <Link
+                                    href="/forgot-password"
+                                    style={{
+                                        fontSize: "11.5px",
+                                        color: "#004d32",
+                                        fontWeight: "700",
+                                        textDecoration: "none",
+                                    }}
+                                >
+                                    Lupa kata sandi?
+                                </Link>
+                            </div>
+                            <div
+                                className="clean-input-box"
+                                style={{
+                                    position: "relative",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    borderRadius: "11px",
+                                    border: "1.5px solid #cbd5e1",
+                                    backgroundColor: "#f8fafc",
+                                    transition: "all 0.2s ease",
+                                }}
+                            >
+                                <div
+                                    className="input-icon"
+                                    style={{
+                                        position: "absolute",
+                                        left: "11px",
+                                        color: "#64748b",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        transition: "color 0.2s ease",
+                                    }}
+                                >
+                                    <Lock size={16} />
+                                </div>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    required
+                                    value={data.password}
+                                    onChange={(e) =>
+                                        setData("password", e.target.value)
+                                    }
+                                    placeholder="Masukkan kata sandi..."
+                                    style={{
+                                        width: "100%",
+                                        height: "40px",
+                                        padding: "0 36px 0 36px",
+                                        border: "none",
+                                        outline: "none",
+                                        fontSize: "13px",
+                                        color: "#0f172a",
+                                        backgroundColor: "transparent",
+                                        boxSizing: "border-box",
+                                        fontWeight: "500",
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                    style={{
+                                        position: "absolute",
+                                        right: "10px",
+                                        background: "none",
+                                        border: "none",
+                                        color: "#64748b",
+                                        cursor: "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        padding: "4px",
+                                    }}
+                                    title={
+                                        showPassword
+                                            ? "Sembunyikan sandi"
+                                            : "Tampilkan sandi"
+                                    }
+                                >
+                                    {showPassword ? (
+                                        <EyeOff size={16} />
+                                    ) : (
+                                        <Eye size={16} />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* REMEMBER ME & ROLE BADGE */}
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "20px",
+                                fontSize: "12px",
+                            }}
+                        >
+                            <label
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "7px",
+                                    color: "#475569",
+                                    cursor: "pointer",
+                                    userSelect: "none",
+                                }}
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={data.remember}
+                                    onChange={(e) =>
+                                        setData("remember", e.target.checked)
+                                    }
+                                    style={{
+                                        accentColor: "#004d32",
+                                        width: "14px",
+                                        height: "14px",
+                                        cursor: "pointer",
+                                    }}
+                                />
+                                <span>Ingat sesi masuk</span>
+                            </label>
+
+                            <span
+                                style={{
+                                    fontSize: "11px",
+                                    color: "#004d32",
+                                    backgroundColor: "rgba(0, 77, 50, 0.08)",
+                                    padding: "2px 7px",
+                                    borderRadius: "5px",
+                                    fontWeight: "800",
+                                }}
+                            >
+                                {selectedRole === "admin"
+                                    ? "👑 Admin Dashboard"
+                                    : "👷 Input Lapangan"}
+                            </span>
+                        </div>
+
+                        {/* SUBMIT BUTTON */}
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="clean-login-btn"
+                            style={{
+                                width: "100%",
+                                height: "45px",
+                                borderRadius: "11px",
+                                backgroundColor: "#004d32",
+                                color: "#efff00",
+                                border: "1.5px solid #efff00",
+                                fontWeight: "800",
+                                fontSize: "13.5px",
+                                letterSpacing: "0.02em",
+                                cursor: processing ? "not-allowed" : "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "8px",
+                                boxShadow: "0 4px 14px rgba(0, 77, 50, 0.3)",
+                                opacity: processing ? 0.7 : 1,
+                                position: "relative",
+                                overflow: "hidden",
+                                transition: "all 0.25s ease",
+                            }}
+                        >
+                            {/* HOVER SHEEN EFFECT */}
+                            <div
+                                className="btn-sheen"
+                                style={{
+                                    position: "absolute",
+                                    top: 0,
+                                    width: "40%",
+                                    height: "100%",
+                                    background:
+                                        "linear-gradient(90deg, transparent, rgba(239, 255, 0, 0.3), transparent)",
+                                    transform: "skewX(-20deg)",
+                                }}
+                            />
+
+                            <span>
+                                {processing
+                                    ? "Memverifikasi..."
+                                    : selectedRole === "admin"
+                                    ? "Masuk ke Dashboard Admin"
+                                    : "Masuk ke Form Input User"}
+                            </span>
+                            <ArrowRight
+                                size={16}
+                                strokeWidth={2.8}
+                                className="btn-arrow"
+                                style={{ transition: "transform 0.2s ease" }}
+                            />
+                        </button>
+                    </form>
+
+                    {/* FOOTER SECTION */}
                     <div
                         style={{
-                            textAlign: "center",
                             marginTop: "20px",
-                            color: "rgba(255, 255, 255, 0.5)",
-                            fontSize: "12px",
+                            paddingTop: "16px",
+                            borderTop: "1px solid #f1f5f9",
+                            textAlign: "center",
                         }}
                     >
-                        © {new Date().getFullYear()} PT Besmindo Materi Sewatama.
-                        All Rights Reserved.
+                        <p
+                            style={{
+                                margin: "0 0 10px",
+                                fontSize: "12.5px",
+                                color: "#64748b",
+                            }}
+                        >
+                            Belum memiliki akun?{" "}
+                            <Link
+                                href="/register"
+                                style={{
+                                    color: "#004d32",
+                                    fontWeight: "800",
+                                    textDecoration: "none",
+                                    marginLeft: "3px",
+                                }}
+                            >
+                                Daftar Akun Baru
+                            </Link>
+                        </p>
+
+                        <div
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "5px",
+                                fontSize: "10.5px",
+                                color: "#94a3b8",
+                                fontWeight: "600",
+                            }}
+                        >
+                            <Lock size={11} color="#10b981" />
+                            <span>PT Besmindo Materi Sewatama • SSL 256-Bit</span>
+                        </div>
                     </div>
                 </div>
             </div>

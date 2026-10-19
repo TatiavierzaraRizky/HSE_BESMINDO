@@ -371,30 +371,47 @@ const LEADING_INDICATOR_MASTER = [
     {
         no: 12,
         indicator: "Laporan Inspeksi Kendaraan (PTI)",
-        definition: "1 laporan (Random) / bulan / unit",
-        monthlyTarget: 11,
-        annualTarget: 132,
+        definition: "1 laporan / Hari / unit",
+        monthlyTarget: 20,
+        annualTarget: 240,
         definition2: "PIC Transport",
-        defaultPlanMonthly: [9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9],
+        defaultPlanMonthly: [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
     },
     {
         no: 13,
-        indicator: "SPESIFIK MCU RANDOM : (NAPZA & MIRAS TEST *)",
-        definition: "1x / tahun",
+        indicator: "SPESIFIK MCU RANDOM : NAPZA & MIRAS TEST *)",
+        definition: "1x / semester / kontrak",
         monthlyTarget: "TBA",
-        annualTarget: 1,
-        definition2: "Random 5 personel / kontrak",
+        annualTarget: "TBA",
+        definition2: "1x / semester / kontrak",
         defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
-        no: 14,
-        indicator:
-            "PRA MCU (MCU TAHUNAN BAGI YANG KONSULTASI TAHUN SEBELUMNYA)",
-        definition: "1x / tahun",
+        no: "14.1",
+        indicator: "Medical Check Up : 1. Pra Pekerjaan (Karyawan Baru)",
+        definition: "Bilamana ada karyawan baru",
         monthlyTarget: "TBA",
-        annualTarget: 1,
-        definition2: "Karyawan histori konsul pada tahun sebelumnya",
-        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        annualTarget: "TBA",
+        definition2: "Bilamana ada karyawan baru",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    {
+        no: "14.2",
+        indicator: "Medical Check Up : 2. Periodik (Tahunan)",
+        definition: "1x/tahun/karyawan",
+        monthlyTarget: "TBA",
+        annualTarget: "TBA",
+        definition2: "1x/tahun/karyawan",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    {
+        no: "14.3",
+        indicator: "Medical Check Up : 3. Pra MCU (histori konsul pada tahun sebelumnya)",
+        definition: "Sesuai histori MCU",
+        monthlyTarget: "TBA",
+        annualTarget: "TBA",
+        definition2: "Sesuai histori MCU",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 15,
@@ -769,25 +786,21 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
         const indicators = report.leadingIndicators || [];
 
         indicators.forEach((item) => {
-            let no = Number(item.indicator_no);
+            let key = String(item.indicator_no || "").trim();
+            if (key === "14") key = "14.3";
 
-            if (!no || no < 1 || no > 36) {
+            if (!map.has(key)) {
                 const name = String(
                     item.indicator_name || item.name || "",
                 ).toLowerCase();
                 const matched = LEADING_INDICATOR_MASTER.find((m) =>
-                    name.includes(m.indicator.slice(0, 15).toLowerCase()),
+                    name.includes(m.indicator.slice(0, 15).toLowerCase()) ||
+                    m.indicator.toLowerCase().includes(name.slice(0, 15))
                 );
                 if (matched) {
-                    no = matched.no;
+                    key = String(matched.no);
                 }
             }
-
-            if (!no || no < 1 || no > 36) {
-                return;
-            }
-
-            const key = String(no);
 
             if (!map.has(key)) {
                 return;
@@ -1412,12 +1425,10 @@ export default function Reports() {
         });
     }, [reports, year, rig, project, location, selectedCutoffMonth]);
 
-    const activeMonths = useMemo(() => {
+    const latestMonthIndex = useMemo(() => {
         if (selectedCutoffMonth >= 0) {
-            return MONTHS.slice(0, selectedCutoffMonth + 1);
+            return selectedCutoffMonth;
         }
-
-        if (filteredReports.length === 0) return MONTHS;
 
         let maxMonth = -1;
         filteredReports.forEach((r) => {
@@ -1427,33 +1438,51 @@ export default function Reports() {
             }
         });
 
-        if (maxMonth < 0) maxMonth = 11;
+        if (maxMonth >= 0) return maxMonth;
 
-        return MONTHS.slice(0, maxMonth + 1);
-    }, [filteredReports, selectedCutoffMonth]);
+        const currentYear = new Date().getFullYear();
+        if (String(year) === String(currentYear)) {
+            return new Date().getMonth();
+        } else if (Number(year) < currentYear) {
+            return 11;
+        }
+        return 2;
+    }, [filteredReports, selectedCutoffMonth, year]);
+
+    const activeMonths = useMemo(() => {
+        const startMonth = Math.max(0, latestMonthIndex - 2);
+        const list = [];
+        for (let m = startMonth; m <= latestMonthIndex; m++) {
+            list.push({
+                name: MONTHS[m],
+                index: m,
+            });
+        }
+        return list;
+    }, [latestMonthIndex]);
 
     /* ========================================================
        REPORT DATA
     ======================================================== */
 
     const lagging = useMemo(
-        () => buildLaggingRows(filteredReports, activeMonths.length),
-        [filteredReports, activeMonths.length],
+        () => buildLaggingRows(filteredReports, latestMonthIndex + 1),
+        [filteredReports, latestMonthIndex],
     );
 
     const manHours = useMemo(
-        () => buildManHourRows(filteredReports, activeMonths.length),
-        [filteredReports, activeMonths.length],
+        () => buildManHourRows(filteredReports, latestMonthIndex + 1),
+        [filteredReports, latestMonthIndex],
     );
 
     const ops = useMemo(
-        () => buildOpsRows(filteredReports, activeMonths.length),
-        [filteredReports, activeMonths.length],
+        () => buildOpsRows(filteredReports, latestMonthIndex + 1),
+        [filteredReports, latestMonthIndex],
     );
 
     const leading = useMemo(
-        () => buildLeadingRows(filteredReports, activeMonths.length),
-        [filteredReports, activeMonths.length],
+        () => buildLeadingRows(filteredReports, latestMonthIndex + 1),
+        [filteredReports, latestMonthIndex],
     );
 
     const latestReport = useMemo(() => {
@@ -2185,6 +2214,14 @@ export default function Reports() {
 
         try {
             setExporting(true);
+            window.dispatchEvent(
+                new CustomEvent("show-cute-loading", {
+                    detail: {
+                        message: "Sedang menyiapkan Excel... 📑✨",
+                        subMessage: "Menyusun baris data dan format laporan...",
+                    },
+                }),
+            );
 
             const workbook = new ExcelJS.Workbook();
 
@@ -2302,6 +2339,7 @@ export default function Reports() {
             );
         } finally {
             setExporting(false);
+            window.dispatchEvent(new CustomEvent("hide-cute-loading"));
         }
     };
 
@@ -2471,16 +2509,16 @@ export default function Reports() {
             </td>,
         );
 
-        activeMonths.forEach((month, index) => {
+        activeMonths.forEach((m) => {
             cells.push(
-                <td key={`${month}-plan`} style={tdCenter}>
-                    {formatMetricCell(item.values.plan[index], item, true)}
+                <td key={`${m.name}-plan`} style={tdCenter}>
+                    {formatMetricCell(item.values.plan[m.index], item, true)}
                 </td>,
             );
 
             cells.push(
-                <td key={`${month}-actual`} style={tdCenter}>
-                    {formatMetricCell(item.values.actual[index], item, false)}
+                <td key={`${m.name}-actual`} style={tdCenter}>
+                    {formatMetricCell(item.values.actual[m.index], item, false)}
                 </td>,
             );
         });
@@ -3218,38 +3256,30 @@ export default function Reports() {
                                             }}
                                         >
                                             <div>TOTAL KUMULATIF YTD</div>
-                                            {activeMonths.length > 0 &&
-                                                activeMonths.length < 12 && (
-                                                    <div
-                                                        style={{
-                                                            fontSize: "9px",
-                                                            fontWeight:
-                                                                "normal",
-                                                            color: "#475569",
-                                                        }}
-                                                    >
-                                                        ({activeMonths[0]} -{" "}
-                                                        {
-                                                            activeMonths[
-                                                                activeMonths.length -
-                                                                    1
-                                                            ]
-                                                        }
-                                                        )
-                                                    </div>
-                                                )}
+                                            {latestMonthIndex < 11 && (
+                                                <div
+                                                    style={{
+                                                        fontSize: "9px",
+                                                        fontWeight:
+                                                            "normal",
+                                                        color: "#475569",
+                                                    }}
+                                                >
+                                                    (Jan - {MONTHS[latestMonthIndex]})
+                                                </div>
+                                            )}
                                         </th>
 
-                                        {activeMonths.map((month) => (
+                                        {activeMonths.map((m) => (
                                             <th
-                                                key={month}
+                                                key={m.name}
                                                 colSpan={2}
                                                 style={{
                                                     ...thStyle,
                                                     backgroundColor: "#F1DDDC",
                                                 }}
                                             >
-                                                {month}-{String(year).slice(-2)}
+                                                {m.name}-{String(year).slice(-2)}
                                             </th>
                                         ))}
                                     </tr>
@@ -3469,38 +3499,30 @@ export default function Reports() {
                                             }}
                                         >
                                             <div>TOTAL KUMULATIF YTD</div>
-                                            {activeMonths.length > 0 &&
-                                                activeMonths.length < 12 && (
-                                                    <div
-                                                        style={{
-                                                            fontSize: "9px",
-                                                            fontWeight:
-                                                                "normal",
-                                                            color: "#475569",
-                                                        }}
-                                                    >
-                                                        ({activeMonths[0]} -{" "}
-                                                        {
-                                                            activeMonths[
-                                                                activeMonths.length -
-                                                                    1
-                                                            ]
-                                                        }
-                                                        )
-                                                    </div>
-                                                )}
+                                            {latestMonthIndex < 11 && (
+                                                <div
+                                                    style={{
+                                                        fontSize: "9px",
+                                                        fontWeight:
+                                                            "normal",
+                                                        color: "#475569",
+                                                    }}
+                                                >
+                                                    (Jan - {MONTHS[latestMonthIndex]})
+                                                </div>
+                                            )}
                                         </th>
 
-                                        {activeMonths.map((month) => (
+                                        {activeMonths.map((m) => (
                                             <th
-                                                key={month}
+                                                key={m.name}
                                                 colSpan={2}
                                                 style={{
                                                     ...thStyle,
                                                     backgroundColor: "#F1DDDC",
                                                 }}
                                             >
-                                                {month}-{String(year).slice(-2)}
+                                                {m.name}-{String(year).slice(-2)}
                                             </th>
                                         ))}
                                     </tr>

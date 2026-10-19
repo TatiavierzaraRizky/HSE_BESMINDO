@@ -247,9 +247,7 @@ export default function PlanReport() {
         });
     }, [reports, year, rig, project, location]);
 
-    const activeMonths = useMemo(() => {
-        if (filteredReports.length === 0) return MONTHS;
-
+    const latestMonthIndex = useMemo(() => {
         let maxMonth = -1;
         filteredReports.forEach((report) => {
             const m = getMonthFromReport(report);
@@ -258,10 +256,28 @@ export default function PlanReport() {
             }
         });
 
-        if (maxMonth < 0) return MONTHS;
+        if (maxMonth >= 0) return maxMonth;
 
-        return MONTHS.slice(0, maxMonth + 1);
-    }, [filteredReports]);
+        const currentYear = new Date().getFullYear();
+        if (String(year) === String(currentYear)) {
+            return new Date().getMonth();
+        } else if (Number(year) < currentYear) {
+            return 11;
+        }
+        return 2;
+    }, [filteredReports, year]);
+
+    const activeMonths = useMemo(() => {
+        const startMonth = Math.max(0, latestMonthIndex - 2);
+        const list = [];
+        for (let m = startMonth; m <= latestMonthIndex; m++) {
+            list.push({
+                name: MONTHS[m],
+                index: m,
+            });
+        }
+        return list;
+    }, [latestMonthIndex]);
 
     /*
     |--------------------------------------------------------------------------
@@ -367,25 +383,25 @@ export default function PlanReport() {
 
             annualTarget: item.annualTarget || item.monthlyTarget * 12,
 
-            q1: quarter(item.values, 0, activeMonths.length),
-            q2: quarter(item.values, 1, activeMonths.length),
-            q3: quarter(item.values, 2, activeMonths.length),
-            q4: quarter(item.values, 3, activeMonths.length),
+            q1: quarter(item.values, 0, latestMonthIndex + 1),
+            q2: quarter(item.values, 1, latestMonthIndex + 1),
+            q3: quarter(item.values, 2, latestMonthIndex + 1),
+            q4: quarter(item.values, 3, latestMonthIndex + 1),
 
             ytd: item.values
-                .slice(0, activeMonths.length)
+                .slice(0, latestMonthIndex + 1)
                 .reduce((total, value) => total + number(value), 0),
         }));
     };
 
     const lagging = useMemo(
         () => buildIndicators("lagging"),
-        [filteredReports, activeMonths],
+        [filteredReports, latestMonthIndex],
     );
 
     const leading = useMemo(
         () => buildIndicators("leading"),
-        [filteredReports, activeMonths],
+        [filteredReports, latestMonthIndex],
     );
 
     /*
@@ -494,12 +510,12 @@ export default function PlanReport() {
             monthlyTarget: 0,
             annualTarget: 0,
             values: totalManHoursValues,
-            q1: quarter(totalManHoursValues, 0, activeMonths.length),
-            q2: quarter(totalManHoursValues, 1, activeMonths.length),
-            q3: quarter(totalManHoursValues, 2, activeMonths.length),
-            q4: quarter(totalManHoursValues, 3, activeMonths.length),
+            q1: quarter(totalManHoursValues, 0, latestMonthIndex + 1),
+            q2: quarter(totalManHoursValues, 1, latestMonthIndex + 1),
+            q3: quarter(totalManHoursValues, 2, latestMonthIndex + 1),
+            q4: quarter(totalManHoursValues, 3, latestMonthIndex + 1),
             ytd: totalManHoursValues
-                .slice(0, activeMonths.length)
+                .slice(0, latestMonthIndex + 1)
                 .reduce((total, value) => total + number(value), 0),
         };
 
@@ -517,23 +533,23 @@ export default function PlanReport() {
             monthlyTarget: 0,
             annualTarget: 0,
             values: totalKmValues,
-            q1: quarter(totalKmValues, 0, activeMonths.length),
-            q2: quarter(totalKmValues, 1, activeMonths.length),
-            q3: quarter(totalKmValues, 2, activeMonths.length),
-            q4: quarter(totalKmValues, 3, activeMonths.length),
+            q1: quarter(totalKmValues, 0, latestMonthIndex + 1),
+            q2: quarter(totalKmValues, 1, latestMonthIndex + 1),
+            q3: quarter(totalKmValues, 2, latestMonthIndex + 1),
+            q4: quarter(totalKmValues, 3, latestMonthIndex + 1),
             ytd: totalKmValues
-                .slice(0, activeMonths.length)
+                .slice(0, latestMonthIndex + 1)
                 .reduce((total, value) => total + number(value), 0),
         };
 
         const wrapRow = (row) => ({
             ...row,
-            q1: quarter(row.values, 0, activeMonths.length),
-            q2: quarter(row.values, 1, activeMonths.length),
-            q3: quarter(row.values, 2, activeMonths.length),
-            q4: quarter(row.values, 3, activeMonths.length),
+            q1: quarter(row.values, 0, latestMonthIndex + 1),
+            q2: quarter(row.values, 1, latestMonthIndex + 1),
+            q3: quarter(row.values, 2, latestMonthIndex + 1),
+            q4: quarter(row.values, 3, latestMonthIndex + 1),
             ytd: row.values
-                .slice(0, activeMonths.length)
+                .slice(0, latestMonthIndex + 1)
                 .reduce((total, value) => total + number(value), 0),
         });
 
@@ -547,7 +563,7 @@ export default function PlanReport() {
             wrapRow(rowKmNonPremises),
             wrapRow(rowVehicles),
         ];
-    }, [filteredReports, activeMonths]);
+    }, [filteredReports, latestMonthIndex]);
 
     /*
     |--------------------------------------------------------------------------
@@ -681,15 +697,14 @@ export default function PlanReport() {
 
                                 <th style={thStyle}>
                                     YTD{" "}
-                                    {activeMonths.length > 0 &&
-                                    activeMonths.length < 12
-                                        ? `(${activeMonths[0]} - ${activeMonths[activeMonths.length - 1]})`
+                                    {latestMonthIndex < 11
+                                        ? `(Jan - ${MONTHS[latestMonthIndex]})`
                                         : ""}
                                 </th>
 
-                                {activeMonths.map((month) => (
-                                    <th key={month} style={thStyle}>
-                                        {month}
+                                {activeMonths.map((m) => (
+                                    <th key={m.name} style={thStyle}>
+                                        {m.name}
                                     </th>
                                 ))}
                             </tr>
@@ -744,16 +759,14 @@ export default function PlanReport() {
                                             {formatNumber(item.ytd)}
                                         </td>
 
-                                        {item.values
-                                            .slice(0, activeMonths.length)
-                                            .map((value, monthIndex) => (
-                                                <td
-                                                    key={monthIndex}
-                                                    style={tdCenter}
-                                                >
-                                                    {formatNumber(value)}
-                                                </td>
-                                            ))}
+                                        {activeMonths.map((m) => (
+                                            <td
+                                                key={m.index}
+                                                style={tdCenter}
+                                            >
+                                                {formatNumber(item.values[m.index])}
+                                            </td>
+                                        ))}
                                     </tr>
                                 ))
                             ) : (

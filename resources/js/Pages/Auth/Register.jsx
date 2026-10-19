@@ -35,15 +35,66 @@ export default function Register() {
         <>
             <Head title="Registrasi Akun Baru - PT Besmindo Materi Sewatama" />
 
+            <style>{`
+                @keyframes logoGifFloat {
+                    0%, 100% {
+                        transform: translateY(0) rotate(0deg) scale(1);
+                    }
+                    25% {
+                        transform: translateY(-8px) rotate(-1.5deg) scale(1.02);
+                    }
+                    50% {
+                        transform: translateY(-2px) rotate(1.5deg) scale(1.01);
+                    }
+                    75% {
+                        transform: translateY(-9px) rotate(-0.8deg) scale(1.025);
+                    }
+                }
+
+                @keyframes logoGlowPulse {
+                    0%, 100% {
+                        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(239, 255, 0, 0.35);
+                        border-color: #efff00;
+                    }
+                    50% {
+                        box-shadow: 0 16px 45px rgba(0, 0, 0, 0.5), 0 0 35px rgba(239, 255, 0, 0.6), 0 0 15px #10b981;
+                        border-color: #ffffff;
+                    }
+                }
+
+                @keyframes logoShimmerSwipe {
+                    0% {
+                        transform: translateX(-120%) skewX(-20deg);
+                    }
+                    35%, 100% {
+                        transform: translateX(220%) skewX(-20deg);
+                    }
+                }
+
+                @keyframes logoStarTwinkle {
+                    0%, 100% {
+                        transform: scale(0.6) rotate(0deg);
+                        opacity: 0.3;
+                    }
+                    50% {
+                        transform: scale(1.25) rotate(45deg);
+                        opacity: 1;
+                    }
+                }
+            `}</style>
+
             <div
                 style={{
                     minHeight: "100vh",
-                    backgroundColor: "#00281b",
+                    backgroundColor: "#001f15",
                     backgroundImage: `
-                        radial-gradient(circle at 15% 20%, rgba(239, 255, 0, 0.08) 0%, transparent 40%),
-                        radial-gradient(circle at 85% 80%, rgba(0, 77, 50, 0.6) 0%, transparent 50%),
-                        linear-gradient(135deg, #001f15 0%, #003824 50%, #002417 100%)
+                        linear-gradient(135deg, rgba(0, 25, 16, 0.4) 0%, rgba(0, 15, 10, 0.5) 100%),
+                        url('/images/auth-bg.jpg')
                     `,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    backgroundAttachment: "fixed",
                     fontFamily:
                         "'Instrument Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
                     display: "flex",
@@ -82,33 +133,91 @@ export default function Register() {
                     <div style={{ textAlign: "center", marginBottom: "24px" }}>
                         <div
                             style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                position: "relative",
+                                display: "inline-block",
                                 width: "100%",
-                                maxWidth: "390px",
-                                padding: "16px 24px",
-                                borderRadius: "20px",
-                                backgroundColor: "#ffffff",
-                                border: "2.5px solid #efff00",
-                                boxShadow:
-                                    "0 10px 30px rgba(0, 0, 0, 0.3), 0 0 24px rgba(239, 255, 0, 0.25)",
+                                maxWidth: "400px",
                                 marginBottom: "16px",
-                                boxSizing: "border-box",
                             }}
                         >
-                            <img
-                                src="/images/besmindo-logo.png"
-                                alt="PT BESMINDO MATERI SEWATAMA"
+                            {/* CUTE FLOATING SPARKLE STARS */}
+                            <span
                                 style={{
-                                    height: "auto",
-                                    maxHeight: "85px",
-                                    width: "100%",
-                                    maxWidth: "330px",
-                                    objectFit: "contain",
-                                    display: "block",
+                                    position: "absolute",
+                                    top: "-10px",
+                                    right: "-8px",
+                                    fontSize: "20px",
+                                    zIndex: 15,
+                                    pointerEvents: "none",
+                                    animation: "logoStarTwinkle 1.8s infinite ease-in-out",
                                 }}
-                            />
+                            >
+                                ✨
+                            </span>
+                            <span
+                                style={{
+                                    position: "absolute",
+                                    bottom: "-6px",
+                                    left: "-6px",
+                                    fontSize: "18px",
+                                    zIndex: 15,
+                                    pointerEvents: "none",
+                                    animation: "logoStarTwinkle 1.8s infinite ease-in-out 0.9s",
+                                }}
+                            >
+                                🌟
+                            </span>
+
+                            {/* ANIMATED LOGO CARD (ALA GIF) */}
+                            <div
+                                style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    width: "100%",
+                                    padding: "16px 24px",
+                                    borderRadius: "20px",
+                                    backgroundColor: "#ffffff",
+                                    border: "2.5px solid #efff00",
+                                    boxSizing: "border-box",
+                                    position: "relative",
+                                    overflow: "hidden",
+                                    animation:
+                                        "logoGifFloat 3.2s infinite ease-in-out, logoGlowPulse 2.4s infinite ease-in-out",
+                                    transformOrigin: "center center",
+                                }}
+                            >
+                                {/* SHIMMER LIGHT BEAM PASSING ACROSS */}
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        width: "60%",
+                                        height: "100%",
+                                        background:
+                                            "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent)",
+                                        pointerEvents: "none",
+                                        animation:
+                                            "logoShimmerSwipe 3.5s infinite ease-in-out",
+                                    }}
+                                />
+
+                                <img
+                                    src="/images/besmindo-logo.png"
+                                    alt="PT BESMINDO MATERI SEWATAMA"
+                                    style={{
+                                        height: "auto",
+                                        maxHeight: "85px",
+                                        width: "100%",
+                                        maxWidth: "330px",
+                                        objectFit: "contain",
+                                        display: "block",
+                                        position: "relative",
+                                        zIndex: 2,
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         <div>

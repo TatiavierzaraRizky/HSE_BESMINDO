@@ -64,9 +64,11 @@ const LEADING_MASTER = [
     { no: 9, key: "spot_check", name: "SPOT CHECK KENDARAAN *) **)", definition: "1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
     { no: 10, key: "audit_sistem", name: "AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)", definition: "1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
     { no: 11, key: "monitoring_kepatuhan", name: "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)", definition: "100% tak ada pelanggaran", category: "Leading", unit: "%", targetMonthly: "100%", targetAnnual: "100%", isPercentage: true },
-    { no: 12, key: "pti", name: "Laporan Inspeksi Kendaraan (PTI)", definition: "1 laporan (Random) / bulan / unit (Jika 100% otomatis %)", category: "Leading", unit: "Laporan", targetMonthly: 11, targetAnnual: 132, autoPercentageOn100: true },
-    { no: 13, key: "mcu_random", name: "SPESIFIK MCU RANDOM : (NAPZA & MIRAS TEST *)", definition: "1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
-    { no: 14, key: "pra_mcu", name: "PRA MCU (MCU TAHUNAN BAGI YANG KONSULTASI TAHUN SEBELUMNYA)", definition: "1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
+    { no: 12, key: "pti", name: "Laporan Inspeksi Kendaraan (PTI)", definition: "1 laporan / Hari / unit", category: "Leading", unit: "Laporan", targetMonthly: 20, targetAnnual: 240, autoPercentageOn100: true },
+    { no: 13, key: "mcu_random", name: "SPESIFIK MCU RANDOM : NAPZA & MIRAS TEST *)", definition: "1x / semester / kontrak", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
+    { no: "14.1", key: "mcu_pra_kerja", name: "Medical Check Up : 1. Pra Pekerjaan (Karyawan Baru)", definition: "Bilamana ada karyawan baru", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
+    { no: "14.2", key: "mcu_periodik", name: "Medical Check Up : 2. Periodik (Tahunan)", definition: "1x/tahun/karyawan", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
+    { no: "14.3", key: "pra_mcu", name: "Medical Check Up : 3. Pra MCU (histori konsul pada tahun sebelumnya)", definition: "Sesuai histori MCU", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
     { no: 15, key: "top_mwt", name: "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)", definition: "1x / Caturwulan (Bln 4: 1)", category: "Leading", unit: "Kunjungan", targetMonthly: "TBA (Bln 4: 1)", targetAnnual: 3 },
     { no: 16, key: "mwt", name: "MANAGEMENT VISIT / MWT (Level Coord level s/d Manager *)", definition: "4X / Rig / bulan", category: "Leading", unit: "Kunjungan", targetMonthly: 4, targetAnnual: 48 },
     { no: 17, key: "tgm", name: "RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)", definition: "1x / shift / hari", category: "Leading", unit: "Rapat", targetMonthly: 60, targetAnnual: 720 },
@@ -278,7 +280,10 @@ export default function KPIPerRig() {
                 const repMonth = getReportMonth(rep);
                 if (targetMonths.includes(repMonth)) {
                     const found = rep.leadingIndicators?.find((item) => {
-                        if (item.indicator_no && Number(item.indicator_no) === Number(def.no)) {
+                        if (item.indicator_no && String(item.indicator_no) === String(def.no)) {
+                            return true;
+                        }
+                        if (String(item.indicator_no) === "14" && String(def.no) === "14.3") {
                             return true;
                         }
                         const name = (
