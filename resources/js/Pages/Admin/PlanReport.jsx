@@ -168,9 +168,11 @@ export default function PlanReport() {
     */
 
     const availableYears = useMemo(() => {
-        return [
+        const list = [
             ...new Set(reports.map((report) => getReportYear(report))),
-        ].sort((a, b) => b - a);
+        ].filter(Boolean);
+        if (!list.includes(2027)) list.push(2027);
+        return list.sort((a, b) => b - a);
     }, [reports]);
 
     const ALL_MASTER_RIGS = [
@@ -206,7 +208,7 @@ export default function PlanReport() {
     const defaultYear =
         availableYears.length > 0
             ? String(availableYears[0])
-            : String(new Date().getFullYear());
+            : "2027";
 
     const [year, setYear] = useState(defaultYear);
     const [rig, setRig] = useState("All Rigs");

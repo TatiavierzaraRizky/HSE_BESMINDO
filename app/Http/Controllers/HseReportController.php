@@ -112,6 +112,12 @@ class HseReportController extends Controller
             ->pluck('year')
             ->values();
 
+        if ($years->isEmpty()) {
+            $years = collect([2027]);
+        } elseif (!$years->contains(2027)) {
+            $years->prepend(2027);
+        }
+
         $periods = HseReport::query()
             ->whereNotNull('period')
             ->where('period', '!=', '')
@@ -243,6 +249,7 @@ class HseReportController extends Controller
             'rigNo' => ['required', 'string', 'max:100'],
             'workPeriod' => ['nullable', 'string', 'max:100'],
             'period' => ['required', 'string', 'max:10'],
+            'year' => ['nullable', 'integer'],
             'focusProject' => ['nullable', 'string', 'max:150'],
             'locationDistrict' => ['required', 'string', 'max:150'],
             'issuedDate' => ['nullable', 'date'],
@@ -301,7 +308,7 @@ class HseReportController extends Controller
 
         try {
             $report = DB::transaction(function () use ($validated, $request) {
-                $year = (int) date('Y', strtotime($validated['date']));
+                $year = !empty($validated['year']) ? (int) $validated['year'] : (int) date('Y', strtotime($validated['date']));
                 $month = (int) date('n', strtotime($validated['date']));
                 $approvalToken = \Illuminate\Support\Str::random(40);
                 $submitterRole = $validated['submitterRole'] ?? ($request->is('admin/*') ? 'admin' : 'user');

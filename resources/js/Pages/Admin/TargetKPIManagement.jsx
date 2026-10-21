@@ -5,7 +5,7 @@ export default function TargetKPIManagement() {
     // ================================
     // FILTER
     // ================================
-    const [year, setYear] = useState("2024");
+    const [year, setYear] = useState("2027");
     const [rig, setRig] = useState("All Rigs");
     const [contract, setContract] = useState("All Contracts");
 
@@ -113,37 +113,65 @@ export default function TargetKPIManagement() {
             status: "Approved",
         },
 
-        // LEADING INDICATORS (1 - 36)
+                        // LEADING INDICATORS (1 - 37)
         {
             id: 13,
             category: "Leading",
-            indicator: "1. Observasi Perilaku (PEKA / BBS)",
-            monthly: "180 Laporan",
-            annual: "2.160 Laporan",
+            indicator: "1. Observasi Perilaku (PEKA) *)",
+            monthly: "373 Laporan",
+            annual: "4.480 Laporan",
             status: "Approved",
         },
         {
             id: 14,
             category: "Leading",
             indicator: "2. Identifikasi Bahaya (HAZID / 5 Mnt Risk Assessment)",
-            monthly: "900 Laporan",
-            annual: "10.800 Laporan",
+            monthly: "600 Laporan",
+            annual: "7.200 Laporan",
             status: "Approved",
         },
         {
             id: 15,
             category: "Leading",
             indicator: "3. Stop Work Authority (SWA Report)",
-            monthly: "60 Laporan",
-            annual: "720 Laporan",
+            monthly: "180 Laporan",
+            annual: "2.160 Laporan",
             status: "Approved",
         },
         {
-            id: 16,
+            id: 160,
             category: "Leading",
-            indicator: "4. Inspeksi Safety Equipment & APD",
-            monthly: "1 Laporan",
-            annual: "12 Laporan",
+            indicator: "4. Inspeksi Safety Equipment & APD :",
+            isHeader: true,
+            monthly: "-",
+            annual: "-",
+            status: "Approved",
+        },
+        {
+            id: 161,
+            category: "Leading",
+            parentNo: 4,
+            indicator: "4.1 - Eye wash & Shower",
+            monthly: "30 Pemeriksaan",
+            annual: "365 Pemeriksaan",
+            status: "Approved",
+        },
+        {
+            id: 162,
+            category: "Leading",
+            parentNo: 4,
+            indicator: "4.2 - APD & P3K",
+            monthly: "4 Pemeriksaan",
+            annual: "48 Pemeriksaan",
+            status: "Approved",
+        },
+        {
+            id: 163,
+            category: "Leading",
+            parentNo: 4,
+            indicator: "4.3 - Firex, Tandu, SCBA, FBH",
+            monthly: "1 Pemeriksaan",
+            annual: "12 Pemeriksaan",
             status: "Approved",
         },
         {
@@ -157,117 +185,121 @@ export default function TargetKPIManagement() {
         {
             id: 18,
             category: "Leading",
-            indicator: "6. Inspeksi Benda Jatuh / Drops",
+            indicator: "6. Inspeksi Benda Jatuh / Drops **)",
             monthly: "TBA",
-            annual: "TBA",
+            annual: "48 Kegiatan",
             status: "Approved",
         },
         {
             id: 19,
             category: "Leading",
-            indicator: "7. Internal Inspeksi / V&V Oleh Team",
-            monthly: "1 Laporan",
-            annual: "12 Laporan",
+            indicator: "7. Inspeksi / Audit SMK3L: Peralatan, Data Personal Milik Subkontraktor",
+            monthly: "TBA",
+            annual: "1 Kegiatan",
             status: "Approved",
         },
         {
             id: 20,
             category: "Leading",
-            indicator: "8. Inspeksi / Audit SMK3L Subkontraktor",
-            monthly: "TBA",
-            annual: "1 Kegiatan",
-            status: "Approved",
-        },
-        {
-            id: 21,
-            category: "Leading",
-            indicator: "9. Spot Check Kendaraan",
+            indicator: "8. Spot Check Kendaraan *) **)",
             monthly: "TBA",
             annual: "2 Kegiatan",
             status: "Approved",
         },
         {
-            id: 22,
+            id: 21,
             category: "Leading",
-            indicator: "10. Audit Internal & Eksternal Sistem",
+            indicator: "9. Audit Internal & Eksternal (Sistem Manajemen *)",
             monthly: "TBA",
             annual: "1 Kegiatan",
             status: "Approved",
         },
         {
-            id: 23,
+            id: 22,
             category: "Leading",
-            indicator: "11. Monitoring Kepatuhan Pengemudi (IVMS)",
+            indicator: "10. Monitoring Kepatuhan Pengemudi (Mencakup Speed / IVMS Report / Fatigue *)",
             monthly: "100%",
             annual: "100%",
             status: "Approved",
         },
         {
-            id: 24,
+            id: 23,
             category: "Leading",
-            indicator: "12. Laporan Inspeksi Kendaraan (PTI)",
-            monthly: "20 Laporan",
-            annual: "240 Laporan (1 lap/hari/unit)",
+            indicator: "11. Inspeksi Kendaraan (PTI) Harian dalam Laporan Mingguan",
+            monthly: "32 Laporan",
+            annual: "384 Laporan",
             status: "Approved",
         },
         {
-            id: 25,
+            id: 24,
             category: "Leading",
-            indicator: "13. SPESIFIK MCU RANDOM : NAPZA & MIRAS TEST *)",
+            indicator: "13. SPESIFIK RANDOM : NAPZA & MIRAS TEST *)",
             monthly: "TBA",
-            annual: "TBA (1x/semester/kontrak)",
+            annual: "1 Kegiatan",
+            status: "Approved",
+        },
+        {
+            id: 250,
+            category: "Leading",
+            indicator: "14. Medical Check Up :",
+            isHeader: true,
+            monthly: "-",
+            annual: "-",
+            status: "Approved",
+        },
+        {
+            id: 251,
+            category: "Leading",
+            parentNo: 14,
+            indicator: "14.1 - Pra Pekerjaan (Karyawan Baru)",
+            monthly: "TBA",
+            annual: "100%",
+            status: "Approved",
+        },
+        {
+            id: 252,
+            category: "Leading",
+            parentNo: 14,
+            indicator: "14.2 - Periodik (Tahunan)",
+            monthly: "TBA",
+            annual: "100%",
+            status: "Approved",
+        },
+        {
+            id: 253,
+            category: "Leading",
+            parentNo: 14,
+            indicator: "14.3 - Pra MCU (histori konsul pada tahun sebelumnya)",
+            monthly: "TBA",
+            annual: "TBA",
             status: "Approved",
         },
         {
             id: 26,
             category: "Leading",
-            indicator: "14.1 Medical Check Up : Pra Pekerjaan (Karyawan Baru)",
+            indicator: "15. Top Management Visit / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)",
             monthly: "TBA",
-            annual: "TBA (Bilamana ada karyawan baru)",
-            status: "Approved",
-        },
-        {
-            id: 261,
-            category: "Leading",
-            indicator: "14.2 Medical Check Up : Periodik (Tahunan)",
-            monthly: "TBA",
-            annual: "TBA (1x/tahun/karyawan)",
-            status: "Approved",
-        },
-        {
-            id: 262,
-            category: "Leading",
-            indicator: "14.3 Medical Check Up : Pra MCU (histori konsul pada tahun sebelumnya)",
-            monthly: "TBA",
-            annual: "TBA (Sesuai histori MCU)",
+            annual: "2 Kunjungan",
             status: "Approved",
         },
         {
             id: 27,
             category: "Leading",
-            indicator: "15. Top Management Visit / MWT",
-            monthly: "TBA (Bln 4: 1)",
-            annual: "3 Kunjungan",
-            status: "Approved",
-        },
-        {
-            id: 28,
-            category: "Leading",
-            indicator: "16. Management Visit / MWT Coord-Manager",
+            indicator: "16. Management Visit / MWT (Level Coord level s/d Manager *)",
             monthly: "4 Kunjungan",
             annual: "48 Kunjungan",
             status: "Approved",
         },
         {
-            id: 29,
+            id: 28,
             category: "Leading",
-            indicator: "17. Rapat Rutin Keselamatan (TGM)",
+            indicator: "17. Rapat Rutin Keselamatan (TGM Per Shift/PJM)",
             monthly: "60 Rapat",
             annual: "720 Rapat",
             status: "Approved",
         },
         {
-            id: 30,
+            id: 29,
             category: "Leading",
             indicator: "18. Pre Hitch Meeting",
             monthly: "3 Rapat",
@@ -275,111 +307,122 @@ export default function TargetKPIManagement() {
             status: "Approved",
         },
         {
-            id: 31,
+            id: 30,
             category: "Leading",
-            indicator: "19. Rapat Bersama Leader BMS & PHR",
+            indicator: "19. Rapat/Forum Bersama Leader BMS dan PHR.",
             monthly: "4 Rapat",
             annual: "48 Rapat",
             status: "Approved",
         },
         {
-            id: 32,
+            id: 310,
             category: "Leading",
-            indicator: "20.1 Safety Talk Monthly Meeting (Support Yard)",
+            indicator: "20. Safety Talk Monthly Meeting :",
+            isHeader: true,
+            monthly: "-",
+            annual: "-",
+            status: "Approved",
+        },
+        {
+            id: 311,
+            category: "Leading",
+            parentNo: 20,
+            indicator: "20.1 - SUPPORT YARD",
             monthly: "1 Rapat",
             annual: "12 Rapat",
             status: "Approved",
         },
         {
-            id: 321,
+            id: 312,
             category: "Leading",
-            indicator: "20.2 Safety Talk Monthly Meeting (Support Rig)",
+            parentNo: 20,
+            indicator: "20.2 - RIG (Minggu ke IV jadwal PHM)",
             monthly: "1 Rapat",
             annual: "12 Rapat",
+            status: "Approved",
+        },
+        {
+            id: 32,
+            category: "Leading",
+            indicator: "21. Leadership Forum ***)",
+            monthly: "TBA",
+            annual: "3 Forum",
             status: "Approved",
         },
         {
             id: 33,
             category: "Leading",
-            indicator: "21. Leadership Forum",
-            monthly: "TBA (Bln 4: 1)",
-            annual: "TBA",
+            indicator: "22. Kampanye Keselamatan (PIN/POSTER/STIKER/ SPANDUK/ Online PHM) *)",
+            monthly: "TBA",
+            annual: "6 Kegiatan",
             status: "Approved",
         },
         {
             id: 34,
             category: "Leading",
-            indicator: "22. Kampanye Keselamatan",
+            indicator: "23. Review, Tinjauan Manajemen *)",
             monthly: "TBA",
-            annual: "3 Kegiatan",
+            annual: "1 Kegiatan",
             status: "Approved",
         },
         {
             id: 35,
             category: "Leading",
-            indicator: "23. Review Tinjauan Manajemen",
-            monthly: "TBA",
-            annual: "1 Kegiatan",
-            status: "Approved",
-        },
-        {
-            id: 36,
-            category: "Leading",
-            indicator: "24. Hygiene Monitoring (Noise & Lux)",
+            indicator: "24. Hygiene Monitoring : Noise & Lux Monitoring **)",
             monthly: "TBA",
             annual: "2 Kegiatan",
             status: "Approved",
         },
         {
-            id: 37,
+            id: 36,
             category: "Leading",
-            indicator: "25. Hygiene Monitoring (Mess & Catering)",
+            indicator: "25. Hygiene Monitoring : Mess, Catering, DAM*)",
             monthly: "TBA",
             annual: "1 Kegiatan",
             status: "Approved",
         },
         {
-            id: 38,
+            id: 37,
             category: "Leading",
-            indicator: "26. Inspeksi Housekeeping Rig",
+            indicator: '26. Inspeksi "Housekeeping Rig"',
             monthly: "1 Laporan",
             annual: "12 Laporan",
             status: "Approved",
         },
         {
-            id: 39,
+            id: 38,
             category: "Leading",
-            indicator: "27. Penghargaan Kontes Housekeeping",
+            indicator: '27. Penghargaan: Kontes "Housekeeping Rig" *)',
             monthly: "TBA",
             annual: "2 Penghargaan",
             status: "Approved",
         },
         {
-            id: 40,
+            id: 39,
             category: "Leading",
-            indicator: "28. Pelaporan Lingkungan Dinas LH",
+            indicator: "28. Pelaporan Lingkungan Yard ke Dinas LH",
             monthly: "TBA",
             annual: "2 Laporan",
             status: "Approved",
         },
         {
-            id: 41,
+            id: 40,
             category: "Leading",
-            indicator: "29. Penghargaan Rig of The Month",
+            indicator: "29. Penghargaan: Rig of The Month Internal / External **)",
             monthly: "TBA",
             annual: "TBA",
             status: "Approved",
         },
         {
-            id: 42,
+            id: 41,
             category: "Leading",
-            indicator: "30. Penghargaan The Best BBS/PEKA",
+            indicator: "30. Penghargaan The Best BBS / PEKA",
             monthly: "1 Orang",
             annual: "12 Orang",
             status: "Approved",
         },
         {
-            id: 43,
+            id: 42,
             category: "Leading",
             indicator: "31. Penghargaan The Best Driver",
             monthly: "1 Orang",
@@ -387,33 +430,60 @@ export default function TargetKPIManagement() {
             status: "Approved",
         },
         {
-            id: 44,
+            id: 43,
             category: "Leading",
-            indicator: "32. Penghargaan Kerja Selamat Tahunan",
+            indicator: "32. Penghargaan: Pencapaian Kerja Selamat Tahunan",
             monthly: "TBA",
             annual: "1 Penghargaan",
             status: "Approved",
         },
         {
+            id: 440,
+            category: "Leading",
+            indicator: '33. Penghargaan "Healing" :',
+            isHeader: true,
+            monthly: "-",
+            annual: "-",
+            status: "Approved",
+        },
+        {
+            id: 441,
+            category: "Leading",
+            parentNo: 33,
+            indicator: '33.a - Dalam Negeri',
+            monthly: "TBA",
+            annual: "2 Kegiatan",
+            status: "Approved",
+        },
+        {
+            id: 442,
+            category: "Leading",
+            parentNo: 33,
+            indicator: '33.b - Luar Negeri - China / dll',
+            monthly: "TBA",
+            annual: "1 Kegiatan",
+            status: "Approved",
+        },
+        {
             id: 45,
             category: "Leading",
-            indicator: "33. Penghargaan HES Refreshing",
-            monthly: "TBA",
-            annual: "TBA",
+            indicator: "34. Sosialisasi (kebijakan, Prosedur sistem, KPI, Hiradc, SOP, JSA, MSDS, LOR, dll)",
+            monthly: "6 Kegiatan",
+            annual: "72 Kegiatan",
             status: "Approved",
         },
         {
             id: 46,
             category: "Leading",
-            indicator: "34. On Site Training di Lokasi",
-            monthly: "6 Sesi",
-            annual: "72 Sesi",
+            indicator: '35. "On Site Training" di Lokasi *)',
+            monthly: "3 Sesi",
+            annual: "36 Sesi",
             status: "Approved",
         },
         {
             id: 47,
             category: "Leading",
-            indicator: "35. Emergency Response Drill (Rig)",
+            indicator: "36. ERP Drill Rig : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)",
             monthly: "3 Drill",
             annual: "36 Drill",
             status: "Approved",
@@ -421,7 +491,7 @@ export default function TargetKPIManagement() {
         {
             id: 48,
             category: "Leading",
-            indicator: "36. Emergency Response Drill (Yard)",
+            indicator: "37. ERP Drill Yard : FIRE / MEDIVAC / TUMPAHAN *)",
             monthly: "TBA",
             annual: "2 Drill",
             status: "Approved",
@@ -489,7 +559,7 @@ export default function TargetKPIManagement() {
     };
 
     const handleClear = () => {
-        setYear("2024");
+        setYear("2027");
         setRig("All Rigs");
         setContract("All Contracts");
 
@@ -800,11 +870,10 @@ export default function TargetKPIManagement() {
                                 onChange={(e) => setYear(e.target.value)}
                                 style={select}
                             >
-                                <option>2024</option>
-
-                                <option>2025</option>
-
-                                <option>2026</option>
+                                <option>2027</option>
+                                <option>2028</option>
+                                <option>2029</option>
+                                <option>2030</option>
                             </select>
                         </div>
 
@@ -1039,12 +1108,25 @@ export default function TargetKPIManagement() {
                                 </thead>
 
                                 <tbody>
-                                    {kpis.map((item) => (
+                                    {kpis.map((item) => {
+                                        if (item.isHeader) {
+                                            return (
+                                                <tr key={`header-${item.id}`} style={{ backgroundColor: "#e2e8f0", borderBottom: "2px solid #cbd5e1" }}>
+                                                    <td style={td}></td>
+                                                    <td colSpan={4} style={{ ...td, fontWeight: "700", color: "#0f172a", backgroundColor: "#e2e8f0", padding: "8px 12px" }}>
+                                                        {item.indicator}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
+
+                                        return (
                                         <tr
                                             key={item.id}
                                             style={{
                                                 borderBottom:
                                                     "1px solid #d9e1e8",
+                                                backgroundColor: item.parentNo ? "#fcfdfd" : "#ffffff",
                                             }}
                                         >
                                             <td style={td}>
@@ -1088,7 +1170,8 @@ export default function TargetKPIManagement() {
                                                 <Status status={item.status} />
                                             </td>
                                         </tr>
-                                    ))}
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>

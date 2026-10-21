@@ -6,6 +6,7 @@ import {
     Search,
     Bell,
     CircleHelp,
+    BookOpen,
     UserCircle,
     CalendarDays,
     ChevronDown,
@@ -263,7 +264,7 @@ export default function Dashboard() {
         const set = new Set(
             reports.map((r) => getReportYear(r)).filter(Boolean),
         );
-        if (set.size === 0) set.add(new Date().getFullYear());
+        if (set.size === 0 || !set.has(2027)) set.add(2027);
         return Array.from(set).sort((a, b) => b - a);
     }, [reports]);
 
@@ -312,7 +313,7 @@ export default function Dashboard() {
     ========================= */
 
     const [year, setYear] = useState(
-        String(availableYears[0] || new Date().getFullYear()),
+        String(availableYears[0] || "2027"),
     );
     const [month, setMonth] = useState("All Months");
     const [rig, setRig] = useState("All Rigs");
@@ -603,25 +604,25 @@ export default function Dashboard() {
                               0,
                               Math.round(100 - (metrics.fr - 0.5) * 100),
                           ),
-                status: metrics.fr <= 0.5 ? "ACHIEVED" : "NOT ACHIEVED",
+                status: metrics.fr <= 0.5 ? "COMPLY" : "NOT COMPLY",
             },
             {
                 indicator: "Lost Time Injury Frequency (LTIF)",
                 target: "0.00",
                 actual: metrics.ltif.toFixed(2),
                 achievement: metrics.ltif === 0 ? 100 : 0,
-                status: metrics.ltif === 0 ? "ACHIEVED" : "NOT ACHIEVED",
+                status: metrics.ltif === 0 ? "COMPLY" : "NOT COMPLY",
             },
             {
                 indicator: "Motor Vehicle Crash Rate (MVC FR)",
                 target: "0.00",
                 actual: metrics.mvcFr.toFixed(2),
                 achievement: metrics.mvcFr === 0 ? 100 : 0,
-                status: metrics.mvcFr === 0 ? "ACHIEVED" : "NOT ACHIEVED",
+                status: metrics.mvcFr === 0 ? "COMPLY" : "NOT COMPLY",
             },
             {
                 indicator: "Observasi Perilaku (PEKA / BBS)",
-                target: formatNumber(metrics.pekaPlan || 180),
+                target: formatNumber(metrics.pekaPlan || 373),
                 actual: formatNumber(metrics.pekaActual),
                 achievement:
                     metrics.pekaPlan > 0
@@ -638,8 +639,8 @@ export default function Dashboard() {
                     (metrics.pekaPlan > 0 &&
                         metrics.pekaActual >= metrics.pekaPlan) ||
                     (metrics.pekaPlan === 0 && metrics.pekaActual > 0)
-                        ? "ACHIEVED"
-                        : "NOT ACHIEVED",
+                        ? "COMPLY"
+                        : "NOT COMPLY",
             },
             {
                 indicator: "Identifikasi Bahaya (HAZID / Risk Assessment)",
@@ -661,8 +662,8 @@ export default function Dashboard() {
                     (metrics.hazidPlan > 0 &&
                         metrics.hazidActual >= metrics.hazidPlan) ||
                     (metrics.hazidPlan === 0 && metrics.hazidActual > 0)
-                        ? "ACHIEVED"
-                        : "NOT ACHIEVED",
+                        ? "COMPLY"
+                        : "NOT COMPLY",
             },
             {
                 indicator: "Stop Work Authority (SWA Report)",
@@ -683,8 +684,8 @@ export default function Dashboard() {
                     (metrics.swaPlan > 0 &&
                         metrics.swaActual >= metrics.swaPlan) ||
                     (metrics.swaPlan === 0 && metrics.swaActual > 0)
-                        ? "ACHIEVED"
-                        : "NOT ACHIEVED",
+                        ? "COMPLY"
+                        : "NOT COMPLY",
             },
             {
                 indicator: "Inspeksi Safety Equipment & APD",
@@ -705,8 +706,8 @@ export default function Dashboard() {
                     (metrics.apdPlan > 0 &&
                         metrics.apdActual >= metrics.apdPlan) ||
                     (metrics.apdPlan === 0 && metrics.apdActual > 0)
-                        ? "ACHIEVED"
-                        : "NOT ACHIEVED",
+                        ? "COMPLY"
+                        : "NOT COMPLY",
             },
             {
                 indicator: "Environmental Spills (Volume > 1 bbl)",
@@ -714,7 +715,7 @@ export default function Dashboard() {
                 actual: String(metrics.oilSpillCases),
                 achievement: metrics.oilSpillCases === 0 ? 100 : 0,
                 status:
-                    metrics.oilSpillCases === 0 ? "ACHIEVED" : "NOT ACHIEVED",
+                    metrics.oilSpillCases === 0 ? "COMPLY" : "NOT COMPLY",
             },
             {
                 indicator: "Management Visit / MWT",
@@ -735,8 +736,8 @@ export default function Dashboard() {
                     (metrics.mwtPlan > 0 &&
                         metrics.mwtActual >= metrics.mwtPlan) ||
                     (metrics.mwtPlan === 0 && metrics.mwtActual > 0)
-                        ? "ACHIEVED"
-                        : "NOT ACHIEVED",
+                        ? "COMPLY"
+                        : "NOT COMPLY",
             },
             {
                 indicator: "Emergency Response Drill (ERP Rig & Yard)",
@@ -758,8 +759,8 @@ export default function Dashboard() {
                     (metrics.drillPlan > 0 &&
                         metrics.drillActual >= metrics.drillPlan) ||
                     (metrics.drillPlan === 0 && metrics.drillActual > 0)
-                        ? "ACHIEVED"
-                        : "NOT ACHIEVED",
+                        ? "COMPLY"
+                        : "NOT COMPLY",
             },
         ];
     }, [metrics]);
@@ -1297,10 +1298,12 @@ export default function Dashboard() {
                                 <h2
                                     style={{
                                         margin: 0,
-                                        fontSize: "20px",
+                                        fontSize: "18px",
+                                        fontWeight: "800",
+                                        color: "#0f172a",
                                     }}
                                 >
-                                    KPI Summary Details
+                                    Statistik Tabel Kepatuhan KPI (Comply / Not Comply)
                                 </h2>
 
                                 <button
@@ -1975,25 +1978,27 @@ function TableCell({ children, left = false }) {
 ===================================================== */
 
 function StatusBadge({ status }) {
-    const isAchieved = status === "ACHIEVED";
-    const isNotAchieved = status === "NOT ACHIEVED";
+    const isComply = status === "COMPLY" || status === "ACHIEVED";
+    const isNotComply = status === "NOT COMPLY" || status === "NOT ACHIEVED";
 
     let bg = "#004d32";
     let color = "#efff00";
     let border = "#efff00";
     let dot = "#efff00";
 
-    if (isNotAchieved) {
+    if (isNotComply) {
         bg = "#7f1d1d";
         color = "#fecaca";
         border = "#ef4444";
         dot = "#ef4444";
-    } else if (!isAchieved) {
+    } else if (!isComply) {
         bg = "#f8fafc";
         color = "#64748b";
         border = "#e2e8f0";
         dot = "#94a3b8";
     }
+
+    const label = isComply ? "COMPLY" : isNotComply ? "NOT COMPLY" : status;
 
     return (
         <span
@@ -2006,7 +2011,7 @@ function StatusBadge({ status }) {
                 backgroundColor: bg,
                 color: color,
                 border: `1px solid ${border}`,
-                boxShadow: isAchieved                                  
+                boxShadow: isComply
                     ? "0 0 8px rgba(239, 255, 0, 0.3)"
                     : "none",
                 fontSize: "11px",
@@ -2017,12 +2022,12 @@ function StatusBadge({ status }) {
                 style={{
                     width: "6px",
                     height: "6px",
-                    borderRadius: "50%",  
+                    borderRadius: "50%",
                     backgroundColor: dot,
-                    boxShadow: isAchieved ? "0 0 6px #efff00" : "none",
+                    boxShadow: isComply ? "0 0 6px #efff00" : "none",
                 }}
             />
-            {status}
+            {label}
         </span>
     );
 }

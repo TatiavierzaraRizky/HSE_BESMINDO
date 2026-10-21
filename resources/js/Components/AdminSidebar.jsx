@@ -14,17 +14,41 @@ import {
     TrendingUp,
     Settings,
     CircleHelp,
+    BookOpen,
     LogOut,
     ChevronLeft,
     ChevronRight,
+    ChevronDown,
     ArrowUpRight,
 } from "lucide-react";
+import FeatureGuideModal from "./FeatureGuideModal";
 
 function AdminSidebar({
     collapsed: collapsedProp,
     onToggle,
 }) {
     const { url } = usePage();
+
+    /*
+    |--------------------------------------------------------------------------
+    | FEATURE GUIDE MODAL
+    |--------------------------------------------------------------------------
+    */
+    const [showGuideModal, setShowGuideModal] = useState(false);
+    const [guideTab, setGuideTab] = useState("features");
+
+    useEffect(() => {
+        const handleOpenGuide = (e) => {
+            if (e?.detail?.tab) {
+                setGuideTab(e.detail.tab);
+            } else {
+                setGuideTab("features");
+            }
+            setShowGuideModal(true);
+        };
+        window.addEventListener("open-feature-guide", handleOpenGuide);
+        return () => window.removeEventListener("open-feature-guide", handleOpenGuide);
+    }, []);
 
     /*
     |--------------------------------------------------------------------------
@@ -106,30 +130,25 @@ function AdminSidebar({
             name: "Reports",
             href: "/admin/reports",
             icon: FileBarChart,
-        },
-
-        {
-            name: "Plan Report",
-            href: "/admin/reports/plan",
-            icon: CalendarDays,
-        },
-
-        {
-            name: "Actual Report",
-            href: "/admin/reports/actual",
-            icon: TrendingUp,
+            hasSubmenu: true,
+            submenus: [
+                {
+                    name: "Plan Report",
+                    href: "/admin/reports/plan",
+                    icon: CalendarDays,
+                },
+                {
+                    name: "Actual Report",
+                    href: "/admin/reports/actual",
+                    icon: TrendingUp,
+                },
+            ],
         },
 
         {
             name: "HSE Performance",
             href: "/admin/hse-performance",
             icon: ShieldCheck,
-        },
-
-        {
-            name: "KPI Per Rig",
-            href: "/admin/kpi-per-rig",
-            icon: BarChart3,
         },
 
         {
@@ -147,14 +166,27 @@ function AdminSidebar({
 
     /*
     |--------------------------------------------------------------------------
+    | REPORTS DROPDOWN STATE
+    |--------------------------------------------------------------------------
+    */
+    const isReportsRoute = url === "/admin/reports" || url.startsWith("/admin/reports/");
+    const [reportsOpen, setReportsOpen] = useState(isReportsRoute);
+
+    useEffect(() => {
+        if (url === "/admin/reports" || url.startsWith("/admin/reports/")) {
+            setReportsOpen(true);
+        } else {
+            setReportsOpen(false);
+        }
+    }, [url]);
+
+    /*
+    |--------------------------------------------------------------------------
     | ACTIVE MENU
     |--------------------------------------------------------------------------
     */
     const isActive = (href) => {
-        return (
-            url === href ||
-            url.startsWith(href + "/")
-        );
+        return url === href;
     };
 
     /*
@@ -459,13 +491,196 @@ function AdminSidebar({
                         }}
                     >
                         {menuItems.map((item) => {
-                            const active =
-                                isActive(
-                                    item.href
-                                );
+                            const isExactActive = isActive(item.href);
+                            const isChildActive = item.hasSubmenu && item.submenus?.some((sub) => isActive(sub.href));
+                            const active = isExactActive;
+                            const Icon = item.icon;
 
-                            const Icon =
-                                item.icon;
+                            if (item.hasSubmenu) {
+                                return (
+                                    <div key={item.name} style={{ marginBottom: "4px" }}>
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                width: "100%",
+                                                boxSizing: "border-box",
+                                                borderRadius: "10px",
+                                                background: active
+                                                    ? "#004d32"
+                                                    : isChildActive
+                                                    ? "#f1f5f9"
+                                                    : "transparent",
+                                                border: active
+                                                    ? "1px solid #efff00"
+                                                    : isChildActive
+                                                    ? "1px solid #cbd5e1"
+                                                    : "1px solid transparent",
+                                                boxShadow: active
+                                                    ? "0 0 14px rgba(239, 255, 0, 0.35), inset 0 0 8px rgba(239, 255, 0, 0.15)"
+                                                    : "none",
+                                                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                                            }}
+                                        >
+                                            <Link
+                                                href={item.href}
+                                                onClick={() => setReportsOpen(true)}
+                                                title={collapsed ? item.name : ""}
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    justifyContent: collapsed ? "center" : "flex-start",
+                                                    flex: 1,
+                                                    boxSizing: "border-box",
+                                                    padding: collapsed ? "10px 8px" : "10px 10px 10px 14px",
+                                                    textDecoration: "none",
+                                                    color: active
+                                                        ? "#efff00"
+                                                        : isChildActive
+                                                        ? "#004d32"
+                                                        : "#334155",
+                                                    fontSize: "12.5px",
+                                                    fontWeight: active || isChildActive ? "800" : "600",
+                                                    letterSpacing: "-0.01em",
+                                                    minHeight: "40px",
+                                                    overflow: "hidden",
+                                                }}
+                                            >
+                                                <span
+                                                    style={{
+                                                        width: "24px",
+                                                        minWidth: "24px",
+                                                        height: "24px",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        marginRight: collapsed ? "0" : "10px",
+                                                        color: active
+                                                            ? "#efff00"
+                                                            : isChildActive
+                                                            ? "#004d32"
+                                                            : "#004d32",
+                                                        flexShrink: 0,
+                                                    }}
+                                                >
+                                                    <Icon size={17} strokeWidth={active ? 2.6 : 2} />
+                                                </span>
+                                                {!collapsed && (
+                                                    <span
+                                                        style={{
+                                                            whiteSpace: "nowrap",
+                                                            textShadow: active
+                                                                ? "0 0 10px rgba(239, 255, 0, 0.5)"
+                                                                : "none",
+                                                        }}
+                                                    >
+                                                        {item.name}
+                                                    </span>
+                                                )}
+                                            </Link>
+
+                                            {!collapsed && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setReportsOpen((prev) => !prev);
+                                                    }}
+                                                    title={reportsOpen ? "Tutup submenu" : "Buka submenu"}
+                                                    style={{
+                                                        background: "transparent",
+                                                        border: "none",
+                                                        cursor: "pointer",
+                                                        padding: "8px 10px 8px 4px",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        color: active ? "#efff00" : isChildActive ? "#004d32" : "#64748b",
+                                                        borderRadius: "4px",
+                                                    }}
+                                                >
+                                                    {reportsOpen ? (
+                                                        <ChevronDown size={15} strokeWidth={2.5} />
+                                                    ) : (
+                                                        <ChevronRight size={15} strokeWidth={2.5} />
+                                                    )}
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Nested Submenus: Plan Report & Actual Report */}
+                                        {reportsOpen && !collapsed && (
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    gap: "3px",
+                                                    marginTop: "4px",
+                                                    marginBottom: "4px",
+                                                    paddingLeft: "14px",
+                                                    marginLeft: "18px",
+                                                    borderLeft: "2px solid #cbd5e1",
+                                                }}
+                                            >
+                                                {item.submenus.map((sub) => {
+                                                    const subActive = isActive(sub.href);
+                                                    const SubIcon = sub.icon;
+                                                    return (
+                                                        <Link
+                                                            key={sub.href}
+                                                            href={sub.href}
+                                                            style={{
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                width: "100%",
+                                                                boxSizing: "border-box",
+                                                                padding: "8px 12px",
+                                                                borderRadius: "8px",
+                                                                textDecoration: "none",
+                                                                background: subActive
+                                                                    ? "#004d32"
+                                                                    : "transparent",
+                                                                color: subActive
+                                                                    ? "#efff00"
+                                                                    : "#475569",
+                                                                border: subActive
+                                                                    ? "1px solid #efff00"
+                                                                    : "1px solid transparent",
+                                                                fontSize: "12px",
+                                                                fontWeight: subActive ? "750" : "550",
+                                                                minHeight: "34px",
+                                                                boxShadow: subActive
+                                                                    ? "0 0 10px rgba(239, 255, 0, 0.25)"
+                                                                    : "none",
+                                                                transition: "all 0.15s ease",
+                                                            }}
+                                                        >
+                                                            <span
+                                                                style={{
+                                                                    width: "18px",
+                                                                    height: "18px",
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "center",
+                                                                    marginRight: "8px",
+                                                                    color: subActive ? "#efff00" : "#64748b",
+                                                                    flexShrink: 0,
+                                                                }}
+                                                            >
+                                                                <SubIcon size={14} strokeWidth={subActive ? 2.5 : 2} />
+                                                            </span>
+                                                            <span style={{ whiteSpace: "nowrap" }}>
+                                                                {sub.name}
+                                                            </span>
+                                                        </Link>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
 
                             return (
                                 <Link
@@ -640,6 +855,10 @@ function AdminSidebar({
                         ================================================= */}
                         <button
                             type="button"
+                            onClick={() => {
+                                setGuideTab("features");
+                                setShowGuideModal(true);
+                            }}
                             title={
                                 collapsed
                                     ? "Support"
@@ -928,6 +1147,14 @@ function AdminSidebar({
                     )}
                 </button>
             </aside>
+
+            {/* WIDGET PANDUAN FITUR & SISTEM HSE (SEPERTI WIDGET WA DI SUDUT KANAN BAWAH) */}
+            <FeatureGuideModal
+                isOpen={showGuideModal}
+                onClose={() => setShowGuideModal(false)}
+                onOpen={() => setShowGuideModal(true)}
+                initialTab={guideTab}
+            />
         </>
     );
 }

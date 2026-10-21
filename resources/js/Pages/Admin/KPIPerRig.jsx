@@ -53,45 +53,52 @@ const LAGGING_MASTER = [
 ];
 
 const LEADING_MASTER = [
-    { no: 1, key: "peka", name: "OBSERVASI PERILAKU (PEKA) *)", definition: "2 Laporan / Org / Bln", category: "Leading", unit: "Laporan", targetMonthly: 180, targetAnnual: 2160 },
-    { no: 2, key: "hazid", name: "IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)", definition: "15 Laporan/ Shift / Hari", category: "Leading", unit: "Laporan", targetMonthly: 900, targetAnnual: 10800 },
-    { no: 3, key: "swa", name: "SWA REPORT", definition: "3 Laporan/ Shift / Hari", category: "Leading", unit: "Laporan", targetMonthly: 60, targetAnnual: 720 },
-    { no: 4, key: "safety_equipment", name: "INSPEKSI SAFETY EQUIPMENT & APD *) (Eye wash, Shower, Fire, P3K, Tandu, FBH, SCBA)", definition: "Laporan bulanan", category: "Leading", unit: "Laporan", targetMonthly: 1, targetAnnual: 12 },
-    { no: 5, key: "lr_color_code", name: "EKSTERNAL INSPEKSI LR COLOR CODE", definition: "1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
-    { no: 6, key: "drops", name: "INSPEKSI BENDA JATUH / DROPS **)", definition: "Per 7 hari / 30 hari / 90 hari / 180 hari", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
-    { no: 7, key: "vv_inspection", name: "INTERNAL INSPEKSI / V&V OLEH TEAM", definition: "Minimal 1x / bulan", category: "Leading", unit: "Laporan", targetMonthly: 1, targetAnnual: 12 },
-    { no: 8, key: "audit_smk3l", name: "INSPEKSI / AUDIT SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR", definition: "1x / Tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
-    { no: 9, key: "spot_check", name: "SPOT CHECK KENDARAAN *) **)", definition: "1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
-    { no: 10, key: "audit_sistem", name: "AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)", definition: "1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
-    { no: 11, key: "monitoring_kepatuhan", name: "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)", definition: "100% tak ada pelanggaran", category: "Leading", unit: "%", targetMonthly: "100%", targetAnnual: "100%", isPercentage: true },
-    { no: 12, key: "pti", name: "Laporan Inspeksi Kendaraan (PTI)", definition: "1 laporan / Hari / unit", category: "Leading", unit: "Laporan", targetMonthly: 20, targetAnnual: 240, autoPercentageOn100: true },
-    { no: 13, key: "mcu_random", name: "SPESIFIK MCU RANDOM : NAPZA & MIRAS TEST *)", definition: "1x / semester / kontrak", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
-    { no: "14.1", key: "mcu_pra_kerja", name: "Medical Check Up : 1. Pra Pekerjaan (Karyawan Baru)", definition: "Bilamana ada karyawan baru", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
-    { no: "14.2", key: "mcu_periodik", name: "Medical Check Up : 2. Periodik (Tahunan)", definition: "1x/tahun/karyawan", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
-    { no: "14.3", key: "pra_mcu", name: "Medical Check Up : 3. Pra MCU (histori konsul pada tahun sebelumnya)", definition: "Sesuai histori MCU", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
-    { no: 15, key: "top_mwt", name: "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)", definition: "1x / Caturwulan (Bln 4: 1)", category: "Leading", unit: "Kunjungan", targetMonthly: "TBA (Bln 4: 1)", targetAnnual: 3 },
+    { no: 1, key: "peka", name: "OBSERVASI PERILAKU (PEKA) *)", definition: "Min. 2 Laporan / Org / Minggu", category: "Leading", unit: "Laporan", targetMonthly: 373, targetAnnual: 4480 },
+    { no: 2, key: "hazid", name: "IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)", definition: "10 Laporan / Shift / Hari", category: "Leading", unit: "Laporan", targetMonthly: 600, targetAnnual: 7200 },
+    { no: 3, key: "swa", name: "SWA REPORT", definition: "3 Laporan/ Shift / Hari", category: "Leading", unit: "Laporan", targetMonthly: 180, targetAnnual: 2160 },
+    { no: 4, key: "header_safety_equipment", name: "INSPEKSI SAFETY EQUIPMENT & APD :", isHeader: true, definition: "", category: "Leading", unit: "", targetMonthly: "", targetAnnual: "" },
+    { no: "4.1", key: "eyewash_shower", name: "- Eye wash & Shower", parentNo: 4, definition: "Harian", category: "Leading", unit: "Pemeriksaan", targetMonthly: 30, targetAnnual: 365 },
+    { no: "4.2", key: "apd_p3k", name: "- APD & P3K", parentNo: 4, definition: "1x / Minggu", category: "Leading", unit: "Pemeriksaan", targetMonthly: 4, targetAnnual: 48 },
+    { no: "4.3", key: "firex_tandu_scba", name: "- Firex, Tandu, SCBA, FBH", parentNo: 4, definition: "1x / Bulan", category: "Leading", unit: "Pemeriksaan", targetMonthly: 1, targetAnnual: 12 },
+    { no: 5, key: "color_code", name: "EKSTERNAL INSPEKSI LR COLOR CODE", definition: "1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 6, key: "drops", name: "INSPEKSI BENDA JATUH / DROPS **)", definition: "Per 7 hari / 30 hari / 90 hari / 180 hari", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 48 },
+    { no: 7, key: "smk3l", name: "INSPEKSI / Audit SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR", definition: "1x / Tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 8, key: "spot", name: "SPOT CHECK KENDARAAN *) **)", definition: "1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 9, key: "audit_sys", name: "AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)", definition: "1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 10, key: "ivms", name: "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)", definition: "100% tak ada pelanggaran", category: "Leading", unit: "%", targetMonthly: "100%", targetAnnual: "100%", isPercentage: true },
+    { no: 11, key: "pti", name: "Inspeksi Kendaraan (PTI) Harian dalam laporan mingguan", definition: "4 laporan / unit / bulan", category: "Leading", unit: "Laporan", targetMonthly: 32, targetAnnual: 384 },
+    { no: 13, key: "mcu_random", name: "SPESIFIK RANDOM : NAPZA & MIRAS TEST *)", definition: "1x / semester / kontrak", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 14, key: "header_mcu", name: "Medical Check Up :", isHeader: true, definition: "", category: "Leading", unit: "", targetMonthly: "", targetAnnual: "" },
+    { no: "14.1", key: "mcu_pra_kerja", name: "- Pra Pekerjaan (Karyawan Baru)", parentNo: 14, definition: "Bilamana ada karyawan baru", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "100%" },
+    { no: "14.2", key: "mcu_periodik", name: "- Periodik (Tahunan)", parentNo: 14, definition: "1x/tahun/karyawan", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "100%" },
+    { no: "14.3", key: "pra_mcu", name: "- Pra MCU (histori konsul pada tahun sebelumnya)", parentNo: 14, definition: "Sesuai histori MCU", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
+    { no: 15, key: "top_mwt", name: "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)", definition: "1x / Semester", category: "Leading", unit: "Kunjungan", targetMonthly: "TBA", targetAnnual: 2 },
     { no: 16, key: "mwt", name: "MANAGEMENT VISIT / MWT (Level Coord level s/d Manager *)", definition: "4X / Rig / bulan", category: "Leading", unit: "Kunjungan", targetMonthly: 4, targetAnnual: 48 },
     { no: 17, key: "tgm", name: "RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)", definition: "1x / shift / hari", category: "Leading", unit: "Rapat", targetMonthly: 60, targetAnnual: 720 },
     { no: 18, key: "pre_hitch", name: "PRE HITCH MEETING", definition: "3x / Bulan", category: "Leading", unit: "Rapat", targetMonthly: 3, targetAnnual: 36 },
-    { no: 19, key: "rapat_phr", name: "RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.", definition: "Minimal 4x / bulan", category: "Leading", unit: "Rapat", targetMonthly: 4, targetAnnual: 48 },
-    { no: "20.1", key: "safety_talk_yard", name: "SAFETY TALK MONTHLY MEETING : 20.1 Support Yard", definition: "Minimal 1X / Bulan", category: "Leading", unit: "Rapat", targetMonthly: 1, targetAnnual: 12 },
-    { no: "20.2", key: "safety_talk_rig", name: "SAFETY TALK MONTHLY MEETING : 20.2 Support RIG", definition: "Minimal 1X / Bulan", category: "Leading", unit: "Rapat", targetMonthly: 1, targetAnnual: 12 },
-    { no: 21, key: "leadership_forum", name: "LEADERSHIP FORUM ***)", definition: "1X / Caturwulan (Bln 4: 1)", category: "Leading", unit: "Forum", targetMonthly: "TBA (Bln 4: 1)", targetAnnual: "TBA" },
-    { no: 22, key: "kampanye", name: "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK) *)", definition: "1X / Caturwulan", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 3 },
-    { no: 23, key: "review_manajemen", name: "REVIEW, TINJAUAN MANAJEMEN *)", definition: "1X / Tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 19, key: "phr", name: "RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.", definition: "Minimal 4x / bulan", category: "Leading", unit: "Rapat", targetMonthly: 4, targetAnnual: 48 },
+    { no: 20, key: "header_safety_talk", name: "SAFETY TALK MONTHLY MEETING :", isHeader: true, definition: "", category: "Leading", unit: "", targetMonthly: "", targetAnnual: "" },
+    { no: "20.1", key: "st_yard", name: "- SUPPORT YARD", parentNo: 20, definition: "Minimal 1X / Bulan", category: "Leading", unit: "Rapat", targetMonthly: 1, targetAnnual: 12 },
+    { no: "20.2", key: "st_rig", name: "- RIG (Minggu ke IV jadwal PHM)", parentNo: 20, definition: "Minimal 1X / Bulan", category: "Leading", unit: "Rapat", targetMonthly: 1, targetAnnual: 12 },
+    { no: 21, key: "lead_forum", name: "LEADERSHIP FORUM ***)", definition: "1X / Caturwulan", category: "Leading", unit: "Forum", targetMonthly: "TBA", targetAnnual: 3 },
+    { no: 22, key: "kampanye", name: "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK/ Online PHM) *)", definition: "1X / 2 bln", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 6 },
+    { no: 23, key: "review_man", name: "REVIEW, TINJAUAN MANAJEMEN *)", definition: "1X / Tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
     { no: 24, key: "hygiene_noise", name: "HYGIENE MONITORING : NOISE & LUX MONITORING **)", definition: "Min 1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
     { no: 25, key: "hygiene_mess", name: "HYGIENE MONITORING : Mess, Catering, DAM*)", definition: "Min 1x / tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
-    { no: 26, key: "housekeeping_rig", name: "INSPEKSI \"HOUSEKEEPING RIG\"", definition: "1x / Bulan", category: "Leading", unit: "Laporan", targetMonthly: 1, targetAnnual: 12 },
-    { no: 27, key: "kontes_housekeeping", name: "PENGHARGAAN: KONTES \"HOUSEKEEPING RIG\" *)", definition: "1x / semester", category: "Leading", unit: "Penghargaan", targetMonthly: "TBA", targetAnnual: 2 },
-    { no: 28, key: "laporan_lh", name: "PELAPORAN LINGKUNGAN KE DINAS LH", definition: "1x / semester", category: "Leading", unit: "Laporan", targetMonthly: "TBA", targetAnnual: 2 },
-    { no: 29, key: "rig_of_the_month", name: "PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL **)", definition: "Rig Yang The Best / Mencapai target nilai yang ditentukan", category: "Leading", unit: "Penghargaan", targetMonthly: "TBA", targetAnnual: "TBA" },
+    { no: 26, key: "housekeeping", name: 'INSPEKSI "HOUSEKEEPING RIG"', definition: "1x / Bulan", category: "Leading", unit: "Laporan", targetMonthly: 1, targetAnnual: 12 },
+    { no: 27, key: "kontes_hk", name: 'PENGHARGAAN: KONTES "HOUSEKEEPING RIG" *)', definition: "1x / semester", category: "Leading", unit: "Penghargaan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 28, key: "lh", name: "PELAPORAN LINGKUNGAN YARD KE DINAS LH", definition: "1x / semester", category: "Leading", unit: "Laporan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 29, key: "rig_month", name: "PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL **)", definition: "Rig Yang The Best / Mencapai target nilai yang ditentukan", category: "Leading", unit: "Penghargaan", targetMonthly: "TBA", targetAnnual: "TBA" },
     { no: 30, key: "best_peka", name: "PENGHARGAAN THE BEST BBS / PEKA", definition: "1 orang / bulan / Rig", category: "Leading", unit: "Orang", targetMonthly: 1, targetAnnual: 12 },
     { no: 31, key: "best_driver", name: "PENGHARGAAN THE BEST DRIVER", definition: "1 orang / bulan / Rig", category: "Leading", unit: "Orang", targetMonthly: 1, targetAnnual: 12 },
-    { no: 32, key: "selamat_tahunan", name: "PENGHARGAAN: PENCAPAIAN KERJA SELAMAT TAHUNAN", definition: "Non recordable case dalam 1 tahun", category: "Leading", unit: "Penghargaan", targetMonthly: "TBA", targetAnnual: 1 },
-    { no: 33, key: "hes_refreshing", name: "PENGHARGAAN HES REFRESHING", definition: "Per Semester / Per 1 tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: "TBA" },
-    { no: 34, key: "on_site_training", name: "\"ON SITE TRAINING\" DI LOKASI *)", definition: "Min 1x / kru + Hyb / bulan", category: "Leading", unit: "Sesi", targetMonthly: 6, targetAnnual: 72 },
-    { no: 35, key: "erp_drill_rig", name: "EMERGENCY RESPONSE DRILL (RIG) *)", definition: "1 x / kru + Hyb / 3 bulan (sesuai jadwal)", category: "Leading", unit: "Drill", targetMonthly: 3, targetAnnual: 36 },
-    { no: 36, key: "erp_drill_yard", name: "EMERGENCY RESPONSE DRILL (YARD/WORK SHOP) *)", definition: "1 x / Semester", category: "Leading", unit: "Drill", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: 32, key: "kerja_selamat", name: "PENGHARGAAN: PENCAPAIAN KERJA SELAMAT TAHUNAN", definition: "Non recordable case dalam 1 tahun", category: "Leading", unit: "Penghargaan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 33, key: "header_healing", name: 'PENGHARGAAN "Healing" :', isHeader: true, definition: "", category: "Leading", unit: "", targetMonthly: "", targetAnnual: "" },
+    { no: "33.a", key: "healing_domestik", name: "Dalam Negeri :\na. Dalam Provinsi atau Luar provinsi: min. 1 orang / rig dan Divisi support sesuai jumlah Departemen dan jumlah Unit).", parentNo: 33, definition: "Per Semester", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 2 },
+    { no: "33.b", key: "healing_luar_negeri", name: 'Luar Negri - China / dll (minimal 3 orang mewakili seluruh b. rig beroperasi di periode penilaian). sasaran : Sr. Supervisor s/d Manager level.', parentNo: 33, definition: "Per 1 tahun", category: "Leading", unit: "Kegiatan", targetMonthly: "TBA", targetAnnual: 1 },
+    { no: 34, key: "sosialisasi", name: "Sosialisasi (kebijakan, Prosedur sistem, KPI, Hiradc, SOP, JSA, MSDS, LOR, dll)", definition: "Min 1x / semester", category: "Leading", unit: "Kegiatan", targetMonthly: 6, targetAnnual: 72 },
+    { no: 35, key: "onsite", name: '"ON SITE TRAINING" DI LOKASI *)', definition: "Min 1x / Crew / Bulan", category: "Leading", unit: "Sesi", targetMonthly: 3, targetAnnual: 36 },
+    { no: 36, key: "erp_rig", name: "ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)", definition: "1 x / kru / 3 bulan (sesuai jadwal)", category: "Leading", unit: "Drill", targetMonthly: 3, targetAnnual: 36 },
+    { no: 37, key: "erp_yard", name: "ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)", definition: "1 x / Semester", category: "Leading", unit: "Drill", targetMonthly: "TBA", targetAnnual: 2 },
 ];
 
 function normalizeReport(report) {
@@ -162,7 +169,7 @@ export default function KPIPerRig() {
         const years = [
             ...new Set(reports.map((r) => getReportYear(r)).filter(Boolean)),
         ];
-        if (years.length === 0) years.push(new Date().getFullYear());
+        if (years.length === 0 || !years.includes(2027)) years.push(2027);
         return years.sort((a, b) => b - a);
     }, [reports]);
 
@@ -190,7 +197,7 @@ export default function KPIPerRig() {
 
     const [rig, setRig] = useState("All Rigs");
     const [contract, setContract] = useState("All Contracts");
-    const [year, setYear] = useState(String(availableYears[0] || "2024"));
+    const [year, setYear] = useState(String(availableYears[0] || "2027"));
     const [period, setPeriod] = useState("All");
 
     const [performanceMode, setPerformanceMode] = useState("Monthly");
@@ -226,12 +233,14 @@ export default function KPIPerRig() {
         LAGGING_MASTER.forEach((def) => {
             let targetSum = 0;
             let actualSum = 0;
+            let matchCount = 0;
 
             filteredReports.forEach((rep) => {
                 const repMonth = getReportMonth(rep);
                 if (targetMonths.includes(repMonth)) {
-                    const found = rep.laggingIndicators?.find((item) => {
-                        if (item.indicator_no && String(item.indicator_no).trim() === String(def.no).trim()) {
+                    matchCount++;
+                    const found = rep.leadingIndicators?.find((item) => {
+                        if (item.indicator_no && String(item.indicator_no) === String(def.no)) {
                             return true;
                         }
                         const name = (
@@ -239,8 +248,12 @@ export default function KPIPerRig() {
                             item.name ||
                             ""
                         ).toLowerCase();
+                        const defClean = def.name.replace(/^[-:\s]+/, "").toLowerCase();
+                        if (defClean && name.includes(defClean.slice(0, 20))) {
+                            return true;
+                        }
                         return (
-                            name.includes(def.key) ||
+                            (def.key && name.includes(def.key)) ||
                             def.name.toLowerCase().includes(name) ||
                             name.includes(def.name.toLowerCase())
                         );
@@ -253,6 +266,12 @@ export default function KPIPerRig() {
                     );
                 }
             });
+
+            // For percentage metrics (like IVMS), average across evaluated months instead of summing
+            if (def.isPercentage && matchCount > 0) {
+                targetSum = Math.round(targetSum / matchCount);
+                actualSum = Math.round(actualSum / matchCount);
+            }
 
             const variance = actualSum - targetSum;
             const status = actualSum === 0 ? "Achieved" : "Below Target";
@@ -271,8 +290,37 @@ export default function KPIPerRig() {
             });
         });
 
-        // 2. Leading Indicators (36 Indicators)
+        // Ensure Cumulative TRI (1.5) = Fatality (1.1) + Serious LTI (1.2) + RWC (1.3) + MTC (1.4)
+        const row1_1 = list.find((x) => x.indicator_no === "1.1");
+        const row1_2 = list.find((x) => x.indicator_no === "1.2");
+        const row1_3 = list.find((x) => x.indicator_no === "1.3");
+        const row1_4 = list.find((x) => x.indicator_no === "1.4");
+        const row1_5 = list.find((x) => x.indicator_no === "1.5");
+        if (row1_5 && row1_1 && row1_2 && row1_3 && row1_4) {
+            const sumAct = row1_1.actual + row1_2.actual + row1_3.actual + row1_4.actual;
+            row1_5.actual = Math.max(row1_5.actual, sumAct);
+            row1_5.variance = row1_5.actual - row1_5.target;
+            row1_5.status = row1_5.actual === 0 ? "Achieved" : "Below Target";
+        }
+
+        // 2. Leading Indicators
         LEADING_MASTER.forEach((def) => {
+            if (def.isHeader) {
+                list.push({
+                    indicator: def.name,
+                    indicator_no: def.no,
+                    category: "Leading",
+                    target: "-",
+                    actual: "-",
+                    variance: "-",
+                    status: "-",
+                    isLagging: false,
+                    isHeader: true,
+                    unit: "",
+                });
+                return;
+            }
+
             let targetSum = 0;
             let actualSum = 0;
 
@@ -283,16 +331,17 @@ export default function KPIPerRig() {
                         if (item.indicator_no && String(item.indicator_no) === String(def.no)) {
                             return true;
                         }
-                        if (String(item.indicator_no) === "14" && String(def.no) === "14.3") {
-                            return true;
-                        }
                         const name = (
                             item.indicator_name ||
                             item.name ||
                             ""
                         ).toLowerCase();
+                        const defClean = def.name.replace(/^[-:\s]+/, "").toLowerCase();
+                        if (defClean && name.includes(defClean.slice(0, 20))) {
+                            return true;
+                        }
                         return (
-                            name.includes(def.key) ||
+                            (def.key && name.includes(def.key)) ||
                             def.name.toLowerCase().includes(name) ||
                             name.includes(def.name.toLowerCase())
                         );
@@ -315,6 +364,7 @@ export default function KPIPerRig() {
             list.push({
                 indicator: def.name,
                 indicator_no: def.no,
+                parentNo: def.parentNo || null,
                 category: "Leading",
                 target: targetSum,
                 actual: actualSum,
@@ -1701,7 +1751,47 @@ export default function KPIPerRig() {
 
                                 <tbody>
                                     {displayTableData.length > 0 ? (
-                                        displayTableData.map((row, index) => (
+                                        displayTableData.map((row, index) => {
+                                            if (row.isHeader) {
+                                                return (
+                                                    <tr
+                                                        key={`header-${row.indicator_no}-${index}`}
+                                                        style={{
+                                                            backgroundColor: "#e2e8f0",
+                                                            borderBottom: "2px solid #cbd5e1",
+                                                        }}
+                                                    >
+                                                        <td
+                                                            colSpan={7}
+                                                            style={{
+                                                                ...modernTd,
+                                                                fontWeight: "700",
+                                                                color: "#0f172a",
+                                                                backgroundColor: "#e2e8f0",
+                                                                padding: "9px 14px",
+                                                            }}
+                                                        >
+                                                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                                <span
+                                                                    style={{
+                                                                        backgroundColor: "#FFFF00",
+                                                                        border: "1px solid #222",
+                                                                        padding: "2px 7px",
+                                                                        borderRadius: "4px",
+                                                                        fontWeight: "700",
+                                                                        fontSize: "12px",
+                                                                    }}
+                                                                >
+                                                                    {row.indicator_no}
+                                                                </span>
+                                                                <span>{row.indicator}</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            }
+
+                                            return (
                                             <tr
                                                 key={`${row.indicator}-${index}`}
                                                 style={{
@@ -1719,7 +1809,8 @@ export default function KPIPerRig() {
                                                 <td
                                                     style={{
                                                         ...modernTd,
-                                                        fontWeight: "600",
+                                                        fontWeight: row.parentNo ? "500" : "600",
+                                                        paddingLeft: row.parentNo ? "36px" : undefined,
                                                         color: "#1e293b",
                                                     }}
                                                 >
@@ -1906,7 +1997,8 @@ export default function KPIPerRig() {
                                                     </button>
                                                 </td>
                                             </tr>
-                                        ))
+                                            );
+                                        })
                                     ) : (
                                         <tr>
                                             <td

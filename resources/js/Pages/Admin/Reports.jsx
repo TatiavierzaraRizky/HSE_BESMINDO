@@ -3,6 +3,7 @@ import AdminSidebar from "../../Components/AdminSidebar";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { usePage } from "@inertiajs/react";
+import { calcFrequencyRate, calcMvcFrequencyRate } from "../../Utils/hseCalculations";
 
 /* ============================================================
    BASIC HELPER
@@ -261,43 +262,80 @@ const LEADING_INDICATOR_MASTER = [
     {
         no: 1,
         indicator: "OBSERVASI PERILAKU (PEKA) *)",
-        definition: "2 Laporan / Org / Bln",
-        monthlyTarget: 180,
-        annualTarget: 2160,
+        definition: "Min. 2 Laporan / Org / Minggu",
+        monthlyTarget: 373,
+        annualTarget: 4480,
         definition2: "Kru Operasi",
         defaultPlanMonthly: [
-            102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102, 102,
+            373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373, 373,
         ],
     },
     {
         no: 2,
         indicator: "IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)",
-        definition: "15 Laporan/ Shift / Hari",
-        monthlyTarget: 900,
-        annualTarget: 10800,
+        definition: "10 Laporan / Shift / Hari",
+        monthlyTarget: 600,
+        annualTarget: 7200,
         definition2: "Total target bulanan menyesuaikan jumlah hari / bulan",
         defaultPlanMonthly: [
-            930, 840, 930, 900, 930, 900, 930, 930, 900, 930, 900, 930,
+            600, 620, 600, 620, 620, 560, 620, 600, 620, 600, 620, 620,
         ],
     },
     {
         no: 3,
         indicator: "SWA REPORT",
         definition: "3 Laporan/ Shift / Hari",
-        monthlyTarget: 60,
-        annualTarget: 720,
+        monthlyTarget: 180,
+        annualTarget: 2160,
         definition2: "",
-        defaultPlanMonthly: [62, 56, 62, 60, 62, 60, 62, 62, 60, 62, 60, 62],
+        defaultPlanMonthly: [
+            180, 186, 180, 186, 186, 168, 186, 180, 186, 180, 186, 186,
+        ],
     },
     {
         no: 4,
-        indicator:
-            "INSPEKSI SAFETY EQUIPMENT & APD *) (Eye wash, Shower, Fire, P3K, Tandu, FBH, SCBA)",
-        definition: "Laporan bulanan",
+        indicator: "INSPEKSI SAFETY EQUIPMENT & APD :",
+        isHeader: true,
+        definition: "",
+        monthlyTarget: "",
+        annualTarget: "",
+        definition2: "",
+    },
+    {
+        no: "4.1",
+        indicator: "- Eye wash & Shower",
+        parentNo: 4,
+        definition: "Harian",
+        monthlyTarget: 30,
+        annualTarget: 365,
+        definition2: "",
+        defaultPlanMonthly: [
+            30, 31, 30, 31, 31, 28, 31, 30, 31, 30, 31, 31,
+        ],
+    },
+    {
+        no: "4.2",
+        indicator: "- APD & P3K",
+        parentNo: 4,
+        definition: "1x / Minggu",
+        monthlyTarget: 4,
+        annualTarget: 48,
+        definition2: "",
+        defaultPlanMonthly: [
+            4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+        ],
+    },
+    {
+        no: "4.3",
+        indicator: "- Firex, Tandu, SCBA, FBH",
+        parentNo: 4,
+        definition: "1x / Bulan",
         monthlyTarget: 1,
         annualTarget: 12,
         definition2: "",
-        defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        defaultPlanMonthly: [
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        ],
     },
     {
         no: 5,
@@ -306,56 +344,57 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: "TBA",
         annualTarget: 2,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+        defaultPlanMonthly: [
+            0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0,
+        ],
     },
     {
         no: 6,
         indicator: "INSPEKSI BENDA JATUH / DROPS **)",
         definition: "Per 7 hari / 30 hari / 90 hari / 180 hari",
         monthlyTarget: "TBA",
-        annualTarget: "TBA",
+        annualTarget: 48,
         definition2: "",
-        defaultPlanMonthly: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+        defaultPlanMonthly: [
+            4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+        ],
     },
     {
         no: 7,
-        indicator: "INTERNAL INSPEKSI / V&V OLEH TEAM",
-        definition: "Minimal 1x / bulan",
-        monthlyTarget: 1,
-        annualTarget: 12,
-        definition2: "",
-        defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    },
-    {
-        no: 8,
         indicator:
-            "INSPEKSI / AUDIT SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR",
-        definition: "1x / tahun",
+            "INSPEKSI / Audit SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR",
+        definition: "1x / Tahun",
         monthlyTarget: "TBA",
         annualTarget: 1,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        defaultPlanMonthly: [
+            0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ],
     },
     {
-        no: 9,
+        no: 8,
         indicator: "SPOT CHECK KENDARAAN *) **)",
         definition: "1x / semester",
         monthlyTarget: "TBA",
         annualTarget: 2,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+        defaultPlanMonthly: [
+            0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+        ],
     },
     {
-        no: 10,
+        no: 9,
         indicator: "AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)",
         definition: "1x / tahun",
         monthlyTarget: "TBA",
         annualTarget: 1,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+        defaultPlanMonthly: [
+            0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+        ],
     },
     {
-        no: 11,
+        no: 10,
         indicator:
             "MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)",
         definition: "100% tak ada pelanggaran",
@@ -369,59 +408,73 @@ const LEADING_INDICATOR_MASTER = [
         ],
     },
     {
-        no: 12,
-        indicator: "Laporan Inspeksi Kendaraan (PTI)",
-        definition: "1 laporan / Hari / unit",
-        monthlyTarget: 20,
-        annualTarget: 240,
+        no: 11,
+        indicator: "Inspeksi Kendaraan (PTI) Harian dalam laporan mingguan",
+        definition: "4 laporan / unit / bulan",
+        monthlyTarget: 32,
+        annualTarget: 384,
         definition2: "PIC Transport",
-        defaultPlanMonthly: [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+        defaultPlanMonthly: [
+            240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240,
+        ],
     },
     {
         no: 13,
-        indicator: "SPESIFIK MCU RANDOM : NAPZA & MIRAS TEST *)",
+        indicator: "SPESIFIK RANDOM : NAPZA & MIRAS TEST *)",
         definition: "1x / semester / kontrak",
         monthlyTarget: "TBA",
-        annualTarget: "TBA",
-        definition2: "1x / semester / kontrak",
+        annualTarget: 1,
+        definition2: "Random 10% jumlah personel / kontrak",
         defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
+        no: 14,
+        indicator: "Medical Check Up :",
+        isHeader: true,
+        definition: "",
+        monthlyTarget: "",
+        annualTarget: "",
+        definition2: "",
+    },
+    {
         no: "14.1",
-        indicator: "Medical Check Up : 1. Pra Pekerjaan (Karyawan Baru)",
+        indicator: "- Pra Pekerjaan (Karyawan Baru)",
+        parentNo: 14,
         definition: "Bilamana ada karyawan baru",
         monthlyTarget: "TBA",
-        annualTarget: "TBA",
-        definition2: "Bilamana ada karyawan baru",
+        annualTarget: "100%",
+        definition2: "",
         defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: "14.2",
-        indicator: "Medical Check Up : 2. Periodik (Tahunan)",
+        indicator: "- Periodik (Tahunan)",
+        parentNo: 14,
         definition: "1x/tahun/karyawan",
         monthlyTarget: "TBA",
-        annualTarget: "TBA",
-        definition2: "1x/tahun/karyawan",
+        annualTarget: "100%",
+        definition2: "",
         defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: "14.3",
-        indicator: "Medical Check Up : 3. Pra MCU (histori konsul pada tahun sebelumnya)",
+        indicator: "- Pra MCU (histori konsul pada tahun sebelumnya)",
+        parentNo: 14,
         definition: "Sesuai histori MCU",
         monthlyTarget: "TBA",
         annualTarget: "TBA",
-        definition2: "Sesuai histori MCU",
+        definition2: "",
         defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 15,
         indicator:
             "TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)",
-        definition: "1x / Caturwulan",
+        definition: "1x / Semester",
         monthlyTarget: "TBA",
-        annualTarget: 3,
+        annualTarget: 2,
         definition2: "",
-        defaultPlanMonthly: [0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+        defaultPlanMonthly: [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
     },
     {
         no: 16,
@@ -439,7 +492,7 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: 60,
         annualTarget: 720,
         definition2: "",
-        defaultPlanMonthly: [62, 56, 62, 60, 62, 60, 62, 62, 60, 62, 60, 62],
+        defaultPlanMonthly: [60, 62, 60, 62, 62, 56, 62, 60, 62, 60, 62, 62],
     },
     {
         no: 18,
@@ -463,13 +516,32 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 20,
-        indicator:
-            "SAFETY TALK MONTHLY MEETING :\n- Support Yard\n- RIG (Minggu ke IV jadwal PHM)",
+        indicator: "SAFETY TALK MONTHLY MEETING :",
+        isHeader: true,
+        definition: "",
+        monthlyTarget: "",
+        annualTarget: "",
+        definition2: "",
+    },
+    {
+        no: "20.1",
+        indicator: "- SUPPORT YARD",
+        parentNo: 20,
         definition: "Minimal 1X / Bulan",
         monthlyTarget: 1,
         annualTarget: 12,
         definition2: "",
-        defaultPlanMonthly: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+        defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    },
+    {
+        no: "20.2",
+        indicator: "- RIG (Minggu ke IV jadwal PHM)",
+        parentNo: 20,
+        definition: "Minimal 1X / Bulan",
+        monthlyTarget: 1,
+        annualTarget: 12,
+        definition2: "",
+        defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     {
         no: 21,
@@ -478,16 +550,17 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: "TBA",
         annualTarget: 3,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+        defaultPlanMonthly: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
     },
     {
         no: 22,
-        indicator: "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK) *)",
-        definition: "1X / Caturwulan",
+        indicator:
+            "KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK/ Online PHM) *)",
+        definition: "1X / 2 bln",
         monthlyTarget: "TBA",
-        annualTarget: 3,
+        annualTarget: 6,
         definition2: "",
-        defaultPlanMonthly: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+        defaultPlanMonthly: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
     },
     {
         no: 23,
@@ -496,7 +569,7 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: "TBA",
         annualTarget: 1,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+        defaultPlanMonthly: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 24,
@@ -514,7 +587,7 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: "TBA",
         annualTarget: 1,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        defaultPlanMonthly: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 26,
@@ -522,7 +595,7 @@ const LEADING_INDICATOR_MASTER = [
         definition: "1x / Bulan",
         monthlyTarget: 1,
         annualTarget: 12,
-        definition2: "",
+        definition2: "Laporan oleh HSE Coord bersama Manager",
         defaultPlanMonthly: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     },
     {
@@ -531,16 +604,16 @@ const LEADING_INDICATOR_MASTER = [
         definition: "1x / semester",
         monthlyTarget: "TBA",
         annualTarget: 2,
-        definition2: "",
+        definition2: "Dilakukan oleh perwakilan Management",
         defaultPlanMonthly: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     },
     {
         no: 28,
-        indicator: "PELAPORAN LINGKUNGAN KE DINAS LH",
+        indicator: "PELAPORAN LINGKUNGAN YARD KE DINAS LH",
         definition: "1x / semester",
         monthlyTarget: "TBA",
         annualTarget: 2,
-        definition2: "",
+        definition2: "Laporan DPUH",
         defaultPlanMonthly: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     },
     {
@@ -550,7 +623,7 @@ const LEADING_INDICATOR_MASTER = [
         monthlyTarget: "TBA",
         annualTarget: "TBA",
         definition2:
-            "Rig: Insentif 5% x upah pokok\nSupport: Insentif 2,5% x upah pokok",
+            "Rig: Insentif 5% X upah pokok, Support: Insentif 3.5% X upah pokok",
         defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
@@ -569,7 +642,8 @@ const LEADING_INDICATOR_MASTER = [
         definition: "1 orang / bulan / Rig",
         monthlyTarget: 1,
         annualTarget: 12,
-        definition2: "",
+        definition2:
+            "The best PEKA / BBS dan The best driver support diberikan 1 orang / area",
         defaultPlanMonthly: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     },
     {
@@ -583,29 +657,51 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 33,
+        indicator: 'PENGHARGAAN "Healing" :',
+        isHeader: true,
+        definition: "",
+        monthlyTarget: "",
+        annualTarget: "",
+        definition2: "",
+    },
+    {
+        no: "33.a",
         indicator:
-            "PENGHARGAAN HES REFRESHING :\na. Domestik (minimal 10 orang, mewakili seluruh rig beroperasi di periode penilaian), sasaran : semua jabatan (operation & Support).\nb. Luar Negri - China / dll (minimal 3 orang mewakili seluruh rig beroperasi di periode penilaian), sasaran : Sr. Supervisor s/d Manager level.",
-        definition: "Per Semester / Per 1 tahun",
+            "Dalam Negeri :\na. Dalam Provinsi atau Luar provinsi: min. 1 orang / rig dan Divisi support sesuai jumlah Departemen dan jumlah Unit).",
+        parentNo: 33,
+        definition: "Per Semester",
         monthlyTarget: "TBA",
-        annualTarget: "2 / 1",
+        annualTarget: 2,
+        definition2:
+            "Pelaksanaan disesuaikan dengan kondisi bisnis / kontrak & situasi perusahaan.",
+        defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    {
+        no: "33.b",
+        indicator:
+            'Luar Negri - China / dll (minimal 3 orang mewakili seluruh b. rig beroperasi di periode penilaian). sasaran : Sr. Supervisor s/d Manager level.',
+        parentNo: 33,
+        definition: "Per 1 tahun",
+        monthlyTarget: "TBA",
+        annualTarget: 1,
         definition2:
             "Pelaksanaan disesuaikan dengan kondisi bisnis / kontrak & situasi perusahaan.",
         defaultPlanMonthly: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     {
         no: 34,
-        indicator: '"ON SITE TRAINING" DI LOKASI *)',
-        definition: "Min 1x / kru + Hyb / bulan",
+        indicator:
+            "Sosialisasi (kebijakan, Prosedur sistem, KPI, Hiradc, SOP, JSA, MSDS, LOR, dll)",
+        definition: "Min 1x / semester",
         monthlyTarget: 6,
         annualTarget: 72,
         definition2: "",
-        defaultPlanMonthly: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+        defaultPlanMonthly: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     },
     {
         no: 35,
-        indicator:
-            "ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)",
-        definition: "1 x / kru + Hyb / 3 bulan (sesuai jadwal)",
+        indicator: '"ON SITE TRAINING" DI LOKASI *)',
+        definition: "Min 1x / Crew / Bulan",
         monthlyTarget: 3,
         annualTarget: 36,
         definition2: "",
@@ -613,12 +709,22 @@ const LEADING_INDICATOR_MASTER = [
     },
     {
         no: 36,
+        indicator:
+            "ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)",
+        definition: "1 x / kru / 3 bulan (sesuai jadwal)",
+        monthlyTarget: 3,
+        annualTarget: 36,
+        definition2: "",
+        defaultPlanMonthly: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+    },
+    {
+        no: 37,
         indicator: "ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)",
         definition: "1 x / Semester",
         monthlyTarget: "TBA",
         annualTarget: 2,
         definition2: "",
-        defaultPlanMonthly: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+        defaultPlanMonthly: [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
     },
 ];
 
@@ -633,9 +739,46 @@ function createValueObject() {
     };
 }
 
-function calculateSummary(values, activeMonthCount = 12) {
+function calculateSummary(values, activeMonthCount = 12, isPercentage = false) {
     const plan = values?.plan || [];
     const actual = values?.actual || [];
+
+    if (isPercentage) {
+        const avgQuarter = (arr, q) => {
+            const start = q * 3;
+            const end = Math.min(start + 3, activeMonthCount);
+            if (start >= activeMonthCount) return 0;
+            const slice = arr.slice(start, end).filter((v) => v !== null && v !== undefined && v !== "");
+            if (slice.length === 0) return 0;
+            const sum = slice.reduce((total, val) => total + number(val), 0);
+            return Math.round(sum / slice.length);
+        };
+
+        const planQ1 = avgQuarter(plan, 0);
+        const actualQ1 = avgQuarter(actual, 0);
+        const planQ2 = avgQuarter(plan, 1);
+        const actualQ2 = avgQuarter(actual, 1);
+        const planQ3 = avgQuarter(plan, 2);
+        const actualQ3 = avgQuarter(actual, 2);
+        const planQ4 = avgQuarter(plan, 3);
+        const actualQ4 = avgQuarter(actual, 3);
+
+        const qSliceP = [planQ1, planQ2, planQ3, planQ4].slice(0, Math.ceil(activeMonthCount / 3)).filter((v) => v > 0);
+        const qSliceA = [actualQ1, actualQ2, actualQ3, actualQ4].slice(0, Math.ceil(activeMonthCount / 3)).filter((v) => v > 0);
+
+        return {
+            planQ1,
+            actualQ1,
+            planQ2,
+            actualQ2,
+            planQ3,
+            actualQ3,
+            planQ4,
+            actualQ4,
+            planYtd: qSliceP.length > 0 ? Math.round(qSliceP.reduce((a, b) => a + b, 0) / qSliceP.length) : 0,
+            actualYtd: qSliceA.length > 0 ? Math.round(qSliceA.reduce((a, b) => a + b, 0) / qSliceA.length) : 0,
+        };
+    }
 
     const planSlice = plan.slice(0, activeMonthCount);
     const actualSlice = actual.slice(0, activeMonthCount);
@@ -700,6 +843,9 @@ function buildLaggingRows(reports, activeMonthCount = 12) {
             }
 
             const row = map.get(key);
+            if (!row || row.isHeader) {
+                return;
+            }
 
             const month =
                 Number(item.month) >= 1 && Number(item.month) <= 12
@@ -770,10 +916,12 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
         map.set(String(master.no), {
             no: master.no,
             indicator: master.indicator,
+            isHeader: master.isHeader || false,
+            parentNo: master.parentNo || null,
             definition: master.definition || "",
             definition2: master.definition2 || "",
-            monthlyTarget: master.monthlyTarget ?? 0,
-            annualTarget: master.annualTarget ?? 0,
+            monthlyTarget: master.monthlyTarget ?? "",
+            annualTarget: master.annualTarget ?? "",
             unit: master.isPercentage ? "%" : "Activity",
             isPercentage: master.isPercentage || false,
             targetNumber: master.targetNumber || 0,
@@ -786,13 +934,48 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
         const indicators = report.leadingIndicators || [];
 
         indicators.forEach((item) => {
-            let key = String(item.indicator_no || "").trim();
-            if (key === "14") key = "14.3";
+            const rawKey = String(item.indicator_no || "").trim();
+            const name = String(item.indicator_name || item.name || "").toLowerCase();
+            let key = rawKey;
 
-            if (!map.has(key)) {
-                const name = String(
-                    item.indicator_name || item.name || "",
-                ).toLowerCase();
+            // Prioritize specific matching for grouped indicators (4, 14, 20, 33)
+            if (name.includes("eye wash") || name.includes("eyewash")) {
+                key = "4.1";
+            } else if (name.includes("apd & p3k") || name.includes("apd and p3k") || (rawKey === "4" && name.includes("apd"))) {
+                key = "4.2";
+            } else if (name.includes("firex") || name.includes("scba") || name.includes("tandu") || (rawKey === "4" && name.includes("fbh"))) {
+                key = "4.3";
+            } else if (name.includes("pra pekerjaan") || (rawKey === "14" && name.includes("baru"))) {
+                key = "14.1";
+            } else if (name.includes("periodik")) {
+                key = "14.2";
+            } else if (name.includes("pra mcu") || (rawKey === "14" && name.includes("konsul"))) {
+                key = "14.3";
+            } else if (name.includes("support yard") || (rawKey === "20" && name.includes("yard"))) {
+                key = "20.1";
+            } else if (name.includes("support rig") || (rawKey === "20" && (name.includes("rig") || name.includes("minggu ke iv")))) {
+                key = "20.2";
+            } else if (name.includes("dalam negeri") || (rawKey === "33" && (name.includes("provinsi") || name.includes("support")))) {
+                key = "33.a";
+            } else if (name.includes("luar negri") || name.includes("luar negeri") || name.includes("china")) {
+                key = "33.b";
+            } else if (name.includes("sosialisasi")) {
+                key = "34";
+            } else if (name.includes("on site")) {
+                key = "35";
+            } else if (name.includes("drill rig") || (name.includes("drill") && !name.includes("yard"))) {
+                key = "36";
+            } else if (name.includes("drill yard")) {
+                key = "37";
+            } else if (rawKey === "4") {
+                key = "4.1";
+            } else if (rawKey === "14") {
+                key = "14.1";
+            } else if (rawKey === "20") {
+                key = "20.1";
+            } else if (rawKey === "33") {
+                key = "33.a";
+            } else if (!map.has(key)) {
                 const matched = LEADING_INDICATOR_MASTER.find((m) =>
                     name.includes(m.indicator.slice(0, 15).toLowerCase()) ||
                     m.indicator.toLowerCase().includes(name.slice(0, 15))
@@ -857,6 +1040,17 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
                 row.annualTarget = item.target_year;
             }
         });
+    });
+
+    Array.from(map.values()).forEach((row) => {
+        if (row.isHeader) return;
+        const hasAnyPlan = row.values.plan.some((v) => v > 0);
+        const master = LEADING_INDICATOR_MASTER.find(
+            (m) => String(m.no) === String(row.no),
+        );
+        if (!hasAnyPlan && master && master.defaultPlanMonthly) {
+            row.values.plan = [...master.defaultPlanMonthly];
+        }
     });
 
     return Array.from(map.values()).map((item) => {
@@ -1267,9 +1461,11 @@ export default function Reports() {
     ======================================================== */
 
     const availableYears = useMemo(() => {
-        return [
+        const list = [
             ...new Set(reports.map((report) => getReportYear(report))),
-        ].sort((a, b) => b - a);
+        ].filter(Boolean);
+        if (!list.includes(2027)) list.push(2027);
+        return list.sort((a, b) => b - a);
     }, [reports]);
 
     const ALL_MASTER_RIGS = [
@@ -1324,7 +1520,7 @@ export default function Reports() {
     const defaultYear =
         availableYears.length > 0
             ? String(availableYears[0])
-            : String(new Date().getFullYear());
+            : "2027";
 
     const [reportType, setReportType] = useState("HSE Performance");
 
@@ -1792,26 +1988,51 @@ export default function Reports() {
         row++;
 
         lagging.forEach((item) => {
+            const isTri = item.no === "1.5";
+            const isMvc = item.no === "1.6";
+            const totalHours = manHours && manHours.length > 0 ? manHours[0] : null;
+            const totalKm = manHours && manHours.length > 4 ? manHours[4] : null;
+
+            const formatLagExcel = (val, qKey, mIdx = null, isPlan = false) => {
+                if (typeof val === "string") return val;
+                if (!isTri && !isMvc) return val;
+                const cases = Number(val) || 0;
+                let hours = 0;
+                let km = 0;
+                if (mIdx !== null) {
+                    hours = Number(totalHours?.values?.[isPlan ? "plan" : "actual"]?.[mIdx]) || 0;
+                    km = Number(totalKm?.values?.[isPlan ? "plan" : "actual"]?.[mIdx]) || 0;
+                } else if (qKey === "YTD") {
+                    hours = Number(totalHours?.[isPlan ? "planYtd" : "actualYtd"]) || 0;
+                    km = Number(totalKm?.[isPlan ? "planYtd" : "actualYtd"]) || 0;
+                } else if (qKey) {
+                    hours = Number(totalHours?.[isPlan ? `plan${qKey}` : `actual${qKey}`]) || 0;
+                    km = Number(totalKm?.[isPlan ? `plan${qKey}` : `actual${qKey}`]) || 0;
+                }
+                const fr = isMvc ? calcMvcFrequencyRate(cases, km) : calcFrequencyRate(cases, hours);
+                return `${cases} (FR: ${fr})`;
+            };
+
             const values = [
                 `${item.no} ${item.indicator}`,
                 item.definition || "",
                 item.target,
                 item.notes || "",
-                item.planQ1,
-                item.actualQ1,
-                item.planQ2,
-                item.actualQ2,
-                item.planQ3,
-                item.actualQ3,
-                item.planQ4,
-                item.actualQ4,
-                item.planYtd,
-                item.actualYtd,
+                formatLagExcel(item.planQ1, "Q1", null, true),
+                formatLagExcel(item.actualQ1, "Q1", null, false),
+                formatLagExcel(item.planQ2, "Q2", null, true),
+                formatLagExcel(item.actualQ2, "Q2", null, false),
+                formatLagExcel(item.planQ3, "Q3", null, true),
+                formatLagExcel(item.actualQ3, "Q3", null, false),
+                formatLagExcel(item.planQ4, "Q4", null, true),
+                formatLagExcel(item.actualQ4, "Q4", null, false),
+                formatLagExcel(item.planYtd, "YTD", null, true),
+                formatLagExcel(item.actualYtd, "YTD", null, false),
             ];
 
             item.values.plan.forEach((value, index) => {
-                values.push(value);
-                values.push(item.values.actual[index]);
+                values.push(formatLagExcel(value, null, index, true));
+                values.push(formatLagExcel(item.values.actual[index], null, index, false));
             });
 
             values.forEach((value, index) => {
@@ -2058,8 +2279,26 @@ export default function Reports() {
         row += 2;
 
         leading.forEach((item) => {
+            if (item.isHeader) {
+                const headerRow = [
+                    `${item.no}. ${item.indicator}`,
+                    "",
+                    "",
+                    "",
+                    "",
+                    ...Array(10 + MONTHS.length * 2).fill(""),
+                ];
+                ws.addRow(headerRow);
+                applyCellStyle(ws.getCell(row, 1), {
+                    bold: true,
+                    fill: "E2E8F0",
+                });
+                row++;
+                return;
+            }
+
             const values = [
-                `${item.no}. ${item.indicator}`,
+                item.parentNo ? `   ${item.no}. ${item.indicator}` : `${item.no}. ${item.indicator}`,
                 item.definition || "",
                 item.monthlyTarget,
                 item.annualTarget,
@@ -2270,9 +2509,7 @@ export default function Reports() {
 
             ws.mergeCells(row, 1, row + 2, 39);
 
-            ws.getCell(row, 1).value =
-                latestReport?.remarks ||
-                "Report dibuat berdasarkan data HSE yang tersimpan pada database.";
+            ws.getCell(row, 1).value = latestReport?.remarks || "";
 
             applyCellStyle(ws.getCell(row, 1), {
                 size: 9,
@@ -2387,7 +2624,7 @@ export default function Reports() {
        REACT TABLE ROW
     ======================================================== */
 
-    const formatMetricCell = (val, item, isPlan = false) => {
+    const formatMetricCell = (val, item, isPlan = false, hours = 0, km = 0) => {
         if (val === undefined || val === null || val === "") return "-";
         if (typeof val === "string") return val;
 
@@ -2401,7 +2638,9 @@ export default function Reports() {
 
         if (isTri || isMvc || item?.isCaseFrCombo) {
             const cases = Number(val) || 0;
-            const frFormatted = "0.00";
+            const frFormatted = isMvc
+                ? calcMvcFrequencyRate(cases, km)
+                : calcFrequencyRate(cases, hours);
 
             return (
                 <div
@@ -2446,11 +2685,20 @@ export default function Reports() {
                                 flex: 1,
                                 textAlign: "center",
                                 borderRight: "1px solid #e2e8f0",
+                                fontWeight: cases > 0 ? "700" : "400",
+                                color: cases > 0 ? "#dc2626" : "inherit",
                             }}
                         >
                             {cases}
                         </span>
-                        <span style={{ flex: 1, textAlign: "center" }}>
+                        <span
+                            style={{
+                                flex: 1,
+                                textAlign: "center",
+                                fontWeight: frFormatted !== "0.00" ? "700" : "400",
+                                color: frFormatted !== "0.00" ? "#dc2626" : "inherit",
+                            }}
+                        >
                             {frFormatted}
                         </span>
                     </div>
@@ -2472,16 +2720,25 @@ export default function Reports() {
 
     const renderPlanActualCells = (item) => {
         const cells = [];
+        const totalManHoursItem = manHours && manHours.length > 0 ? manHours[0] : null;
+        const totalKmItem = manHours && manHours.length > 4 ? manHours[4] : null;
 
         const quarterNames = ["Q1", "Q2", "Q3", "Q4"];
 
         quarterNames.forEach((q) => {
+            const hPlan = Number(totalManHoursItem?.[ `plan${q}` ]) || 0;
+            const hAct = Number(totalManHoursItem?.[ `actual${q}` ]) || 0;
+            const kmPlan = Number(totalKmItem?.[ `plan${q}` ]) || 0;
+            const kmAct = Number(totalKmItem?.[ `actual${q}` ]) || 0;
+
             cells.push(
                 <td key={`${q}-plan`} style={tdCenter}>
                     {formatMetricCell(
                         getQuarterValue(item, q, "Plan"),
                         item,
                         true,
+                        hPlan,
+                        kmPlan,
                     )}
                 </td>,
             );
@@ -2492,33 +2749,46 @@ export default function Reports() {
                         getQuarterValue(item, q, "Actual"),
                         item,
                         false,
+                        hAct,
+                        kmAct,
                     )}
                 </td>,
             );
         });
 
+        // YTD
+        const hYtdPlan = Number(totalManHoursItem?.planYtd) || 0;
+        const hYtdAct = Number(totalManHoursItem?.actualYtd) || 0;
+        const kmYtdPlan = Number(totalKmItem?.planYtd) || 0;
+        const kmYtdAct = Number(totalKmItem?.actualYtd) || 0;
+
         cells.push(
             <td key="ytd-plan" style={tdCenter}>
-                {formatMetricCell(item.planYtd, item, true)}
+                {formatMetricCell(item.planYtd, item, true, hYtdPlan, kmYtdPlan)}
             </td>,
         );
 
         cells.push(
             <td key="ytd-actual" style={tdCenter}>
-                {formatMetricCell(item.actualYtd, item, false)}
+                {formatMetricCell(item.actualYtd, item, false, hYtdAct, kmYtdAct)}
             </td>,
         );
 
         activeMonths.forEach((m) => {
+            const hMPlan = Number(totalManHoursItem?.values?.plan?.[m.index]) || 0;
+            const hMAct = Number(totalManHoursItem?.values?.actual?.[m.index]) || 0;
+            const kmMPlan = Number(totalKmItem?.values?.plan?.[m.index]) || 0;
+            const kmMAct = Number(totalKmItem?.values?.actual?.[m.index]) || 0;
+
             cells.push(
                 <td key={`${m.name}-plan`} style={tdCenter}>
-                    {formatMetricCell(item.values.plan[m.index], item, true)}
+                    {formatMetricCell(item.values.plan[m.index], item, true, hMPlan, kmMPlan)}
                 </td>,
             );
 
             cells.push(
                 <td key={`${m.name}-actual`} style={tdCenter}>
-                    {formatMetricCell(item.values.actual[m.index], item, false)}
+                    {formatMetricCell(item.values.actual[m.index], item, false, hMAct, kmMAct)}
                 </td>,
             );
         });
@@ -3559,12 +3829,48 @@ export default function Reports() {
                                 </thead>
 
                                 <tbody>
-                                    {leading.map((item, index) => (
+                                    {leading.map((item, index) => {
+                                        if (item.isHeader) {
+                                            return (
+                                                <tr key={`header-${item.no}`} style={{ backgroundColor: "#F1F5F9" }}>
+                                                    <td
+                                                        colSpan={5 + (5 + activeMonths.length) * 2}
+                                                        style={{
+                                                            ...tdStyle,
+                                                            fontWeight: "700",
+                                                            backgroundColor: "#E2E8F0",
+                                                            color: "#0F172A",
+                                                            padding: "7px 10px",
+                                                            textAlign: "left",
+                                                        }}
+                                                    >
+                                                        <span
+                                                            style={{
+                                                                display: "inline-block",
+                                                                minWidth: "25px",
+                                                                marginRight: "8px",
+                                                                padding: "2px 6px",
+                                                                backgroundColor: "#FFFF00",
+                                                                border: "1px solid #222",
+                                                                textAlign: "center",
+                                                                fontWeight: "700",
+                                                            }}
+                                                        >
+                                                            {item.no}
+                                                        </span>
+                                                        <strong>{item.indicator}</strong>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
+
+                                        return (
                                         <tr key={item.no}>
                                             <td
                                                 style={{
                                                     ...tdStyle,
-                                                    fontWeight: "700",
+                                                    fontWeight: item.parentNo ? "600" : "700",
+                                                    paddingLeft: item.parentNo ? "25px" : "8px",
                                                     whiteSpace: "pre-line",
                                                 }}
                                             >
@@ -3575,8 +3881,10 @@ export default function Reports() {
                                                         marginRight: "5px",
                                                         padding: "2px 5px",
                                                         backgroundColor:
-                                                            "#FFFF00",
+                                                            item.parentNo ? "#FEF08A" : "#FFFF00",
                                                         border: "1px solid #222",
+                                                        textAlign: "center",
+                                                        fontSize: "10px",
                                                     }}
                                                 >
                                                     {item.no}
@@ -3623,7 +3931,8 @@ export default function Reports() {
 
                                             {renderPlanActualCells(item)}
                                         </tr>
-                                    ))}
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
@@ -3655,8 +3964,7 @@ export default function Reports() {
                                     border: "1px solid #222",
                                 }}
                             >
-                                {latestReport?.remarks ||
-                                    "Report dibuat berdasarkan data HSE yang tersimpan pada database."}
+                                {latestReport?.remarks || ""}
                             </div>
                         </div>
 

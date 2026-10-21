@@ -6,11 +6,6 @@ import { usePage } from "@inertiajs/react";
    HELPER FUNCTIONS & CONSTANTS
 ============================================================ */
 
-const MONTH_NAMES = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-];
-
 const MONTH_SHORT = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -77,53 +72,17 @@ export default function HSEPerformance() {
         return Array.isArray(rawReports) ? rawReports.map(normalizeReport) : [];
     }, [rawReports]);
 
-    // Available filters
-    const availableYears = useMemo(() => {
-        const set = new Set(reports.map(r => getReportYear(r)).filter(Boolean));
-        if (set.size === 0) set.add(new Date().getFullYear());
-        return Array.from(set).sort((a, b) => b - a);
-    }, [reports]);
-
-    const ALL_MASTER_RIGS = [
-        "BMS#01", "BMS#02", "BMS#03", "BMS#03A", "BMS#05", "BMS#06", "BMS#07",
-        "BMS#08", "BMS#09", "BMS#10", "BMS#11", "BMS#15", "BMS#16", "BMS#17",
-        "BMS#18", "BMS#19", "BMS#20", "BMS#21", "BMS#22", "BMS#23"
-    ];
-
-    const availableRigs = useMemo(() => {
-        const set = new Set(ALL_MASTER_RIGS);
-        reports.forEach((r) => { if (r.rig_no) set.add(r.rig_no); });
-        return Array.from(set);
-    }, [reports]);
-
-    const availableProjects = useMemo(() => {
-        const set = new Set(reports.map(r => r.contract_no || r.focus_project).filter(Boolean));
-        return Array.from(set).sort();
-    }, [reports]);
-
-    // Filter States
-    const [year, setYear] = useState(String(availableYears[0] || new Date().getFullYear()));
-    const [month, setMonth] = useState("All");
-    const [rig, setRig] = useState("All Rigs");
-    const [project, setProject] = useState("All");
+    const activeYear = 2027;
 
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedLog, setSelectedLog] = useState(null);
     const rowsPerPage = 6;
 
-    // Filtered reports
-    const filteredReports = useMemo(() => {
-        return reports.filter(r => {
-            if (String(getReportYear(r)) !== String(year)) return false;
-            if (rig !== "All Rigs" && r.rig_no !== rig) return false;
-            if (project !== "All" && (r.contract_no !== project && r.focus_project !== project)) return false;
-            if (month !== "All") {
-                const mIdx = MONTH_NAMES.indexOf(month);
-                if (mIdx !== -1 && getReportMonth(r) !== mIdx) return false;
-            }
-            return true;
-        });
-    }, [reports, year, rig, project, month]);
+    // Active reports for operating year 2027
+    const activeReports = useMemo(() => {
+        const list = reports.filter(r => getReportYear(r) === activeYear);
+        return list.length > 0 ? list : reports;
+    }, [reports, activeYear]);
 
     // =========================================================
     // CALCULATION METRICS ACCORDING TO MASTER EXCEL FORMULAS
@@ -170,7 +129,7 @@ export default function HSEPerformance() {
         // Quarterly lagging
         const quarterlyLagging = { Q1: { incidents: 0, nearMiss: 0 }, Q2: { incidents: 0, nearMiss: 0 }, Q3: { incidents: 0, nearMiss: 0 }, Q4: { incidents: 0, nearMiss: 0 } };
 
-        filteredReports.forEach(r => {
+        activeReports.forEach(r => {
             const mIdx = getReportMonth(r);
             const mh = r.manHours || {};
 
@@ -229,31 +188,6 @@ export default function HSEPerformance() {
 
                 monthlyLagging[mIdx] += act;
             });
-
-            // Leading Indicators
-            r.leadingIndicators?.forEach(lead => {
-                const no = Number(lead.indicator_no || 0);
-                const name = String(lead.indicator_name || lead.name || "").toUpperCase();
-                const p = number(lead.plan_value ?? lead.plan ?? 0);
-                const a = number(lead.actual_value ?? lead.actual ?? 0);
-
-                totalLeadingPlan += p;
-                totalLeadingActual += a;
-
-                if (no === 1 || name.includes("PEKA") || name.includes("OBSERVASI")) {
-                    pekaPlan += p; pekaActual += a;
-                } else if (no === 2 || name.includes("HAZID") || name.includes("IDENTIFIKASI")) {
-                    hazidPlan += p; hazidActual += a;
-                } else if (no === 3 || name.includes("SWA")) {
-                    swaPlan += p; swaActual += a;
-                } else if (no === 4 || name.includes("APD") || name.includes("EQUIPMENT")) {
-                    apdPlan += p; apdActual += a;
-                } else if (no === 16 || no === 15 || name.includes("MWT") || name.includes("MANAGEMENT VISIT")) {
-                    mwtPlan += p; mwtActual += a;
-                } else if (no === 8 || no === 10 || name.includes("AUDIT")) {
-                    auditPlan += p; auditActual += a;
-                }
-            });
         });
 
         const totalManHoursActual = manHoursPremisesActual + manHoursNonPremisesActual;
@@ -262,16 +196,15 @@ export default function HSEPerformance() {
         // Total Recordable Injury (TRI = 1.1 + 1.2 + 1.3 + 1.4)
         const triCases = fatalityCases + seriousLtiCases + rwcCases + mtcCases;
 
+        // Total All Lagging Incidents (1.1 - 1.11)
+        const totalIncidents = fatalityCases + seriousLtiCases + rwcCases + mtcCases + mvcCases + oilSpillCases + fireCases + propertyDamageCases + securityCases + illnessFatalityCases;
+        const zeroIncidentRate = totalIncidents === 0 ? 100 : Math.max(0, 100 - totalIncidents * 15);
+
         // Frequency Rate = (TRI x 200,000) / Total Man Hours
         const fr = totalManHoursActual > 0 ? (triCases * 200000) / totalManHoursActual : 0;
 
         // MVC FR = (MVC x 1,000,000) / Total KM
         const mvcFr = totalKmActual > 0 ? (mvcCases * 1000000) / totalKmActual : 0;
-
-        // Compliance %
-        const complianceRate = totalLeadingPlan > 0 ? Math.min(100, Math.round((totalLeadingActual / totalLeadingPlan) * 100)) : (totalLeadingActual > 0 ? 100 : 0);
-        const targetRate = 95;
-        const varianceRate = complianceRate - targetRate;
 
         // Max manhour for trend normalization
         const maxMh = Math.max(...monthlyManHours, 1);
@@ -292,19 +225,10 @@ export default function HSEPerformance() {
             securityCases,
             illnessFatalityCases,
             reportableCases,
+            totalIncidents,
+            zeroIncidentRate,
             fr,
             mvcFr,
-            complianceRate,
-            targetRate,
-            varianceRate,
-            leadingBars: [
-                { label: "PEKA", value: pekaPlan > 0 ? Math.min(100, Math.round((pekaActual / pekaPlan) * 100)) : (pekaActual > 0 ? 100 : 0) },
-                { label: "HAZID", value: hazidPlan > 0 ? Math.min(100, Math.round((hazidActual / hazidPlan) * 100)) : (hazidActual > 0 ? 100 : 0) },
-                { label: "SWA", value: swaPlan > 0 ? Math.min(100, Math.round((swaActual / swaPlan) * 100)) : (swaActual > 0 ? 100 : 0) },
-                { label: "Inspeksi APD", value: apdPlan > 0 ? Math.min(100, Math.round((apdActual / apdPlan) * 100)) : (apdActual > 0 ? 100 : 0) },
-                { label: "MWT Visit", value: mwtPlan > 0 ? Math.min(100, Math.round((mwtActual / mwtPlan) * 100)) : (mwtActual > 0 ? 100 : 0) },
-                { label: "Audit SMK3L", value: auditPlan > 0 ? Math.min(100, Math.round((auditActual / auditPlan) * 100)) : (auditActual > 0 ? 100 : 0) },
-            ],
             monthlyTrend: monthlyManHours.map((val, idx) => ({
                 month: MONTH_SHORT[idx],
                 value: val,
@@ -312,20 +236,104 @@ export default function HSEPerformance() {
             })),
             quarterlyLagging,
         };
-    }, [filteredReports]);
+    }, [activeReports]);
 
     // =========================================================
-    // ACTIVITY LOGS FROM REPORTS
+    // RIG PERFORMANCE & SAFE MAN HOURS COMPARISON
+    // =========================================================
+    const rigPerformanceData = useMemo(() => {
+        const rigMap = new Map();
+
+        activeReports.forEach((r) => {
+            const rigNo = r.rig_no || "Unassigned Rig";
+            if (!rigMap.has(rigNo)) {
+                rigMap.set(rigNo, {
+                    rigNo,
+                    manHoursPremises: 0,
+                    manHoursNonPremises: 0,
+                    totalManHours: 0,
+                    totalKm: 0,
+                    incidents: 0,
+                    nearMiss: 0,
+                    reportCount: 0,
+                });
+            }
+
+            const item = rigMap.get(rigNo);
+            item.reportCount += 1;
+
+            const mh = r.manHours || {};
+            const mhPrem = number(mh.man_hours_premises_actual ?? mh.manHoursPremisesActual ?? 0);
+            const mhNonPrem = number(mh.man_hours_non_premises_actual ?? mh.manHoursNonPremisesActual ?? 0);
+            const kmPrem = number(mh.km_premises_actual ?? mh.kmPremisesActual ?? 0);
+            const kmNonPrem = number(mh.km_non_premises_actual ?? mh.kmNonPremisesActual ?? 0);
+
+            item.manHoursPremises += mhPrem;
+            item.manHoursNonPremises += mhNonPrem;
+            item.totalManHours += (mhPrem + mhNonPrem);
+            item.totalKm += (kmPrem + kmNonPrem);
+
+            r.laggingIndicators?.forEach((lag) => {
+                const no = String(lag.indicator_no || "").trim();
+                const name = String(lag.indicator_name || lag.name || "").toUpperCase();
+                const act = number(lag.actual_value ?? lag.actual ?? 0);
+
+                if (no === "1.12" || name.includes("NEARMISS") || name.includes("REPORTABLE")) {
+                    item.nearMiss += act;
+                } else if (act > 0) {
+                    item.incidents += act;
+                }
+            });
+        });
+
+        const list = Array.from(rigMap.values());
+        list.sort((a, b) => b.totalManHours - a.totalManHours || a.rigNo.localeCompare(b.rigNo));
+        return list;
+    }, [activeReports]);
+
+    const maxRigHours = useMemo(() => {
+        if (rigPerformanceData.length === 0) return 1;
+        return Math.max(...rigPerformanceData.map(r => r.totalManHours), 1);
+    }, [rigPerformanceData]);
+
+    const rigsWithZeroIncidents = useMemo(() => {
+        return rigPerformanceData.filter(r => r.incidents === 0).length;
+    }, [rigPerformanceData]);
+
+    // =========================================================
+    // LAGGING INDICATORS (1.1 Fatality s/d 1.12 Report)
     // =========================================================
 
-    const activityLogs = useMemo(() => {
+    const laggingTableData = useMemo(() => {
+        return [
+            { no: "1.1", name: "FATALITY", unit: "Case", target: 0, actual: metrics.fatalityCases, fr: metrics.totalManHoursActual > 0 ? ((metrics.fatalityCases * 200000) / metrics.totalManHoursActual).toFixed(2) : "0.00" },
+            { no: "1.2", name: "SERIOUS LOST TIME INJURY (>21 LOST DAY)", unit: "Case", target: 0, actual: metrics.seriousLtiCases, fr: metrics.totalManHoursActual > 0 ? ((metrics.seriousLtiCases * 200000) / metrics.totalManHoursActual).toFixed(2) : "0.00" },
+            { no: "1.3", name: "RESTRICTED WORK CASE (RWC)", unit: "Case", target: 0, actual: metrics.rwcCases, fr: metrics.totalManHoursActual > 0 ? ((metrics.rwcCases * 200000) / metrics.totalManHoursActual).toFixed(2) : "0.00" },
+            { no: "1.4", name: "MEDICAL TREATMENT CASE (MTC)", unit: "Case", target: 0, actual: metrics.mtcCases, fr: metrics.totalManHoursActual > 0 ? ((metrics.mtcCases * 200000) / metrics.totalManHoursActual).toFixed(2) : "0.00" },
+            { no: "1.5", name: "TOTAL RECORDABLE INJURY (TRI)", unit: "Case", target: 0, actual: metrics.triCases, fr: metrics.fr.toFixed(2), isHighlight: true },
+            { no: "1.6", name: "MOTOR VEHICLE CRASH (MVC)", unit: "Case", target: 0, actual: metrics.mvcCases, fr: metrics.mvcFr.toFixed(2) },
+            { no: "1.7", name: "TUMPAHAN / OIL SPILL (> 1 BBL)", unit: "Case", target: 0, actual: metrics.oilSpillCases, fr: "-" },
+            { no: "1.8", name: "FIRE (> 100 JUTA)", unit: "Case", target: 0, actual: metrics.fireCases, fr: "-" },
+            { no: "1.9", name: "PROPERTY DAMAGE", unit: "Case", target: 0, actual: metrics.propertyDamageCases, fr: "-" },
+            { no: "1.10", name: "SECURITY CASE", unit: "Case", target: 0, actual: metrics.securityCases, fr: "-" },
+            { no: "1.11", name: "ILLNESS FATALITY", unit: "Case", target: 0, actual: metrics.illnessFatalityCases, fr: "-" },
+            { no: "1.12", name: "REPORTABLE CASE (NEAR MISS)", unit: "Case", target: 0, actual: metrics.reportableCases, fr: "-" },
+        ].map(item => ({
+            ...item,
+            status: item.actual === 0 ? "COMPLY" : "NOT COMPLY",
+        }));
+    }, [metrics]);
+
+    // =========================================================
+    // SUMMARY INSIDEN DARI DATA LAPORAN (REPORT)
+    // =========================================================
+
+    const incidentLogs = useMemo(() => {
         const list = [];
-
-        filteredReports.forEach(r => {
+        activeReports.forEach(r => {
             const mh = r.manHours || {};
             const repMh = number(mh.man_hours_premises_actual ?? 0) + number(mh.man_hours_non_premises_actual ?? 0);
 
-            // Add lagging cases if any
             r.laggingIndicators?.forEach(lag => {
                 const act = number(lag.actual_value ?? lag.actual ?? 0);
                 if (act > 0) {
@@ -333,68 +341,26 @@ export default function HSEPerformance() {
                     const isHigh = name.toUpperCase().includes("FATALITY") || name.toUpperCase().includes("LTI");
                     list.push({
                         id: `lag-${lag.id || Math.random()}`,
-                        date: r.report_date || r.issued_date || `${year}-01-01`,
+                        date: r.report_date || r.issued_date || `${activeYear}-01-01`,
                         location: `${r.rig_no || "General"} (${r.location_district || "Area"})`,
-                        event: `${name} (${act} Case)`,
-                        category: "Lagging Indicator",
+                        event: `${name} (${act} Kasus)`,
+                        category: "Lagging Incident",
                         severity: isHigh ? "High" : "Medium",
                         manHours: formatNumber(repMh),
                         status: r.status === "approved" ? "Verified" : "Pending Review",
                         contract: r.contract_no || "SPHR00108C",
                         submitter: r.submitter_name || "HSE Officer",
-                        notes: lag.notes || r.program_reference || "Formulir BMSD/03/FO/HSE/02/17",
+                        notes: lag.notes || r.remarks || "Kronologi insiden operasional.",
                     });
                 }
             });
-
-            // Add leading observation summary for this report
-            const leadingCount = r.leadingIndicators?.reduce((sum, item) => sum + number(item.actual_value ?? item.actual ?? 0), 0) || 0;
-            if (leadingCount > 0) {
-                list.push({
-                    id: `lead-sum-${r.id}`,
-                    date: r.report_date || r.issued_date || `${year}-01-01`,
-                    location: `${r.rig_no || "General"} (${r.location_district || "Area"})`,
-                    event: `Leading Safety Program (${leadingCount} Activities)`,
-                    category: "Leading Indicator",
-                    severity: "Low",
-                    manHours: formatNumber(repMh),
-                    status: r.status === "approved" ? "Completed" : "Actioned",
-                    contract: r.contract_no || "SPHR00108C",
-                    submitter: r.submitter_name || "HSE Officer",
-                    notes: `Rig ${r.rig_no} safety activities: PEKA, HAZID, SWA, inspections, & toolbox meetings.`,
-                });
-            }
         });
 
-        // If list is empty, supply default indicator records from filtered reports
-        if (list.length === 0 && filteredReports.length > 0) {
-            filteredReports.forEach(r => {
-                list.push({
-                    id: `rep-${r.id}`,
-                    date: r.report_date || `${year}-01-01`,
-                    location: `${r.rig_no || "General"} (${r.location_district || "Area"})`,
-                    event: `Monthly HSE Performance Record - Period ${r.period || "All"}`,
-                    category: "HSE Monitoring",
-                    severity: "Info",
-                    manHours: formatNumber(number(r.manHours?.man_hours_premises_actual ?? 0) + number(r.manHours?.man_hours_non_premises_actual ?? 0)),
-                    status: r.status === "approved" ? "Verified" : "Under Review",
-                    contract: r.contract_no || "SPHR00108C",
-                    submitter: r.submitter_name || "HSE Officer",
-                    notes: "Safe Operations - Zero Incident Target Achieved",
-                });
-            });
-        }
-
         return list.sort((a, b) => new Date(b.date) - new Date(a.date));
-    }, [filteredReports, year]);
+    }, [activeReports, activeYear]);
 
-    const totalPages = Math.max(1, Math.ceil(activityLogs.length / rowsPerPage));
-    const currentData = activityLogs.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-
-    const handleFilterChange = (setter, value) => {
-        setter(value);
-        setCurrentPage(1);
-    };
+    const totalPages = Math.max(1, Math.ceil(incidentLogs.length / rowsPerPage));
+    const currentData = incidentLogs.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
     const handlePrevious = () => {
         if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -405,7 +371,7 @@ export default function HSEPerformance() {
     };
 
     const handleExport = () => {
-        alert(`Export HSE Performance Summary\nTahun: ${year}\nBulan: ${month}\nRig: ${rig}\nProject: ${project}\nTotal Safe Man Hours: ${formatNumber(metrics.totalManHoursActual)}\nTRI: ${metrics.triCases} (FR: ${metrics.fr.toFixed(4)})\nMVC: ${metrics.mvcCases} (MVC FR: ${metrics.mvcFr.toFixed(4)})`);
+        alert(`Export HSE Performance Summary\nTahun Operasi: ${activeYear}\nTotal Safe Man Hours: ${formatNumber(metrics.totalManHoursActual)}\nTotal Distance (KM): ${formatNumber(metrics.totalKmActual)}\nTRI Cases: ${metrics.triCases} (FR: ${metrics.fr.toFixed(4)})\nMVC Cases: ${metrics.mvcCases} (MVC FR: ${metrics.mvcFr.toFixed(4)})\nTotal Insiden: ${metrics.totalIncidents}\nZero Incident Rate: ${metrics.zeroIncidentRate}%\nTotal Unit Rig Terdata: ${rigPerformanceData.length}`);
     };
 
     // Style constants
@@ -428,30 +394,6 @@ export default function HSEPerformance() {
         padding: "18px",
         boxSizing: "border-box",
         boxShadow: "0 2px 4px rgba(0, 77, 50, 0.04)",
-    };
-
-    const selectStyle = {
-        width: "100%",
-        height: "36px",
-        padding: "0 10px",
-        border: `1px solid ${colors.border}`,
-        borderRadius: "6px",
-        backgroundColor: "#ffffff",
-        color: colors.text,
-        fontSize: "13px",
-        fontWeight: "600",
-        outline: "none",
-        cursor: "pointer",
-    };
-
-    const labelStyle = {
-        display: "block",
-        fontSize: "11px",
-        fontWeight: "700",
-        color: colors.muted,
-        marginBottom: "4px",
-        textTransform: "uppercase",
-        letterSpacing: "0.05em",
     };
 
     const headerButtonStyle = {
@@ -585,7 +527,7 @@ export default function HSEPerformance() {
 
                 {/* PAGE CONTENT */}
                 <div style={{ padding: "28px", boxSizing: "border-box" }}>
-                    {/* TITLE + FILTERS */}
+                    {/* TITLE + LIVE STATUS */}
                     <div
                         style={{
                             display: "flex",
@@ -601,65 +543,61 @@ export default function HSEPerformance() {
                                 HSE Performance & Statistical Monitoring
                             </h1>
                             <p style={{ marginTop: "6px", marginBottom: 0, fontSize: "13.5px", color: colors.muted, fontWeight: "500" }}>
-                                Pemantauan indikator keselamatan kerja, Safe Man Hours, TRI, Frequency Rates, dan kepatuhan leading indicators.
+                                Pemantauan indikator keselamatan kerja (Lagging), Safe Man Hours, TRI, Frequency Rates, dan rekapitulasi insiden operasional per unit kerja.
                             </p>
                         </div>
 
-                        {/* FILTER BOX */}
+                        {/* STATUS BADGE TAHUN 2027 (REPLACES REDUNDANT FILTER BOX) */}
                         <div
                             style={{
                                 backgroundColor: "#ffffff",
                                 border: `1px solid ${colors.border}`,
-                                borderRadius: "8px",
-                                padding: "10px 14px",
-                                display: "grid",
-                                gridTemplateColumns: "repeat(4, minmax(90px, 1fr))",
-                                gap: "10px",
-                                boxSizing: "border-box",
+                                borderRadius: "10px",
+                                padding: "10px 18px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "12px",
                                 boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
                             }}
                         >
-                            {/* YEAR */}
-                            <div>
-                                <label style={labelStyle}>Year</label>
-                                <select value={year} onChange={(e) => handleFilterChange(setYear, e.target.value)} style={selectStyle}>
-                                    {availableYears.map((y) => (
-                                        <option key={y} value={y}>{y}</option>
-                                    ))}
-                                </select>
+                            <div
+                                style={{
+                                    width: "36px",
+                                    height: "36px",
+                                    borderRadius: "8px",
+                                    backgroundColor: colors.lightGreen,
+                                    color: colors.green,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "18px",
+                                    fontWeight: "800",
+                                }}
+                            >
+                                📊
                             </div>
-
-                            {/* MONTH */}
                             <div>
-                                <label style={labelStyle}>Month</label>
-                                <select value={month} onChange={(e) => handleFilterChange(setMonth, e.target.value)} style={selectStyle}>
-                                    <option value="All">All Months</option>
-                                    {MONTH_NAMES.map((m) => (
-                                        <option key={m} value={m}>{m}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* RIG */}
-                            <div>
-                                <label style={labelStyle}>Rig</label>
-                                <select value={rig} onChange={(e) => handleFilterChange(setRig, e.target.value)} style={selectStyle}>
-                                    <option value="All Rigs">All Rigs</option>
-                                    {availableRigs.map((r) => (
-                                        <option key={r} value={r}>{r}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* PROJECT / CONTRACT */}
-                            <div>
-                                <label style={labelStyle}>Contract / Project</label>
-                                <select value={project} onChange={(e) => handleFilterChange(setProject, e.target.value)} style={selectStyle}>
-                                    <option value="All">All Projects</option>
-                                    {availableProjects.map((p) => (
-                                        <option key={p} value={p}>{p}</option>
-                                    ))}
-                                </select>
+                                <div style={{ fontSize: "11px", fontWeight: "700", color: colors.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                                    Tahun Operasional:
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+                                    <span style={{ fontSize: "16px", fontWeight: "900", color: "#0f172a" }}>
+                                        {activeYear}
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: "11px",
+                                            fontWeight: "700",
+                                            padding: "2px 8px",
+                                            borderRadius: "12px",
+                                            backgroundColor: "#dcfce7",
+                                            color: "#166534",
+                                            border: "1px solid #86efac",
+                                        }}
+                                    >
+                                        Live Report Data
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -701,12 +639,12 @@ export default function HSEPerformance() {
                         />
 
                         <KpiCard
-                            title="Leading Compliance"
-                            value={`${metrics.complianceRate}%`}
-                            subtitle={`Target: ${metrics.targetRate}% | Variance: ${metrics.varianceRate >= 0 ? "+" : ""}${metrics.varianceRate}%`}
-                            change={metrics.complianceRate >= metrics.targetRate ? "Target Achieved" : "Needs Attention"}
+                            title="Zero Incident Compliance"
+                            value={`${metrics.zeroIncidentRate}%`}
+                            subtitle={`Total Kasus: ${metrics.totalIncidents} Insiden`}
+                            change={metrics.totalIncidents === 0 ? "COMPLY (100% Aman)" : "INCIDENT RECORDED"}
                             icon="🎯"
-                            isGood={metrics.complianceRate >= metrics.targetRate}
+                            isGood={metrics.totalIncidents === 0}
                         />
                     </div>
 
@@ -738,11 +676,11 @@ export default function HSEPerformance() {
                         <section style={cardStyle}>
                             <div style={sectionHeaderStyle}>
                                 <div>
-                                    <h2 style={sectionTitleStyle}>Monthly Safe Man Hours Trend ({year})</h2>
+                                    <h2 style={sectionTitleStyle}>Monthly Safe Man Hours Trend ({activeYear})</h2>
                                     <span style={{ fontSize: "12px", color: colors.muted }}>Distribusi akumulasi jam kerja selamat per bulan</span>
                                 </div>
                                 <span style={{ fontSize: "12px", fontWeight: "700", color: colors.green }}>
-                                    {month !== "All" ? `Month: ${month}` : "Full Year (12 Months)"}
+                                    Full Year (12 Bulan)
                                 </span>
                             </div>
 
@@ -793,146 +731,53 @@ export default function HSEPerformance() {
                             </div>
                         </section>
 
-                        {/* TARGET VS ACTUAL DONUT */}
+                        {/* LAGGING QUARTERS & FR BENCHMARK */}
                         <section style={cardStyle}>
                             <div style={sectionHeaderStyle}>
-                                <h2 style={sectionTitleStyle}>Target vs Actual Compliance</h2>
-                            </div>
-
-                            <div
-                                style={{
-                                    height: "210px",
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        width: "116px",
-                                        height: "116px",
-                                        borderRadius: "50%",
-                                        background: `conic-gradient(${colors.green} 0deg ${Math.round(metrics.complianceRate * 3.6)}deg, #e2e8f0 ${Math.round(metrics.complianceRate * 3.6)}deg 360deg)`,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            width: "90px",
-                                            height: "90px",
-                                            borderRadius: "50%",
-                                            backgroundColor: "#ffffff",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            flexDirection: "column",
-                                        }}
-                                    >
-                                        <strong style={{ fontSize: "24px", color: colors.green, fontWeight: "800" }}>
-                                            {metrics.complianceRate}%
-                                        </strong>
-                                        <span style={{ fontSize: "10px", color: colors.muted, fontWeight: "600" }}>
-                                            Achievement
-                                        </span>
-                                    </div>
+                                <div>
+                                    <h2 style={sectionTitleStyle}>Lagging Incidents by Quarter (Q1 - Q4)</h2>
+                                    <span style={{ fontSize: "11px", color: colors.muted }}>Distribusi insiden per kuartal</span>
                                 </div>
-
-                                <div
-                                    style={{
-                                        width: "100%",
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        marginTop: "14px",
-                                        padding: "0 10px",
-                                        boxSizing: "border-box",
-                                    }}
-                                >
-                                    <div>
-                                        <small style={{ color: colors.muted, fontSize: "11px", fontWeight: "600" }}>Target KPI</small>
-                                        <div style={{ fontWeight: "800", fontSize: "14px", color: "#0f172a" }}>95.0%</div>
-                                    </div>
-
-                                    <div style={{ textAlign: "right" }}>
-                                        <small style={{ color: colors.muted, fontSize: "11px", fontWeight: "600" }}>Variance</small>
-                                        <div
-                                            style={{
-                                                fontWeight: "800",
-                                                fontSize: "14px",
-                                                color: metrics.varianceRate >= 0 ? colors.green : colors.red,
-                                            }}
-                                        >
-                                            {metrics.varianceRate >= 0 ? `+${metrics.varianceRate}%` : `${metrics.varianceRate}%`}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-
-                    {/* LEADING + LAGGING BREAKDOWNS */}
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr",
-                            gap: "14px",
-                            marginBottom: "16px",
-                        }}
-                    >
-                        {/* LEADING BARS */}
-                        <section style={cardStyle}>
-                            <div style={sectionHeaderStyle}>
-                                <h2 style={sectionTitleStyle}>Leading Indicators Breakdown</h2>
-                                <span style={{ fontSize: "11px", color: colors.muted }}>% Kepatuhan Program</span>
-                            </div>
-                            <IndicatorBars data={metrics.leadingBars.map(b => [b.label, b.value])} />
-                        </section>
-
-                        {/* LAGGING QUARTERS */}
-                        <section style={cardStyle}>
-                            <div style={sectionHeaderStyle}>
-                                <h2 style={sectionTitleStyle}>Lagging Incidents by Quarter (Q1 - Q4)</h2>
-                                <div style={{ fontSize: "11px", color: colors.muted, display: "flex", gap: "10px" }}>
-                                    <span><span style={{ color: colors.red }}>●</span> Incidents / Injuries</span>
-                                    <span><span style={{ color: colors.muted }}>●</span> Near Miss / SWA</span>
+                                <div style={{ fontSize: "11px", color: colors.muted, display: "flex", gap: "8px" }}>
+                                    <span><span style={{ color: colors.red }}>●</span> Incident</span>
+                                    <span><span style={{ color: "#64748b" }}>●</span> Near Miss</span>
                                 </div>
                             </div>
 
                             <div
                                 style={{
-                                    height: "150px",
+                                    height: "120px",
                                     display: "flex",
                                     alignItems: "flex-end",
-                                    gap: "15px",
-                                    padding: "10px 15px",
+                                    gap: "12px",
+                                    padding: "10px 14px",
                                     boxSizing: "border-box",
                                     backgroundColor: "#f8fafc",
+                                    border: "1px solid #e2e8f0",
                                     borderRadius: "8px",
+                                    marginBottom: "12px",
                                 }}
                             >
                                 {["Q1", "Q2", "Q3", "Q4"].map((qKey) => {
                                     const qData = metrics.quarterlyLagging[qKey];
-                                    const incHeight = Math.min(100, (qData.incidents + 1) * 25);
-                                    const nearMissHeight = Math.min(100, qData.nearMiss * 10);
+                                    const incHeight = Math.min(100, (qData.incidents + (qData.incidents > 0 ? 1 : 0)) * 30);
+                                    const nearMissHeight = Math.min(100, qData.nearMiss * 15);
                                     return (
-                                        <div key={qKey} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
-                                            <div style={{ width: "100%", height: "100px", display: "flex", alignItems: "flex-end", justifyContent: "center", gap: "4px" }}>
+                                        <div key={qKey} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                                            <div style={{ width: "100%", height: "80px", display: "flex", alignItems: "flex-end", justifyContent: "center", gap: "4px" }}>
                                                 <div
                                                     style={{
-                                                        width: "16px",
-                                                        height: qData.incidents > 0 ? `${incHeight}%` : "6px",
+                                                        width: "14px",
+                                                        height: qData.incidents > 0 ? `${incHeight}%` : "4px",
                                                         backgroundColor: qData.incidents > 0 ? colors.red : "#cbd5e1",
                                                         borderRadius: "3px 3px 0 0",
                                                     }}
-                                                    title={`${qKey} Incidents: ${qData.incidents}`}
+                                                    title={`${qKey} Insiden: ${qData.incidents}`}
                                                 />
                                                 <div
                                                     style={{
-                                                        width: "16px",
-                                                        height: qData.nearMiss > 0 ? `${nearMissHeight}%` : "6px",
+                                                        width: "14px",
+                                                        height: qData.nearMiss > 0 ? `${nearMissHeight}%` : "4px",
                                                         backgroundColor: "#64748b",
                                                         borderRadius: "3px 3px 0 0",
                                                     }}
@@ -944,10 +789,264 @@ export default function HSEPerformance() {
                                     );
                                 })}
                             </div>
+
+                            {/* FR BENCHMARK BOXES */}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                                <div style={{ padding: "8px 10px", backgroundColor: "#f8fafc", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                                    <div style={{ fontSize: "10px", fontWeight: "700", color: colors.muted }}>TRI FR (Target &le; 0.50)</div>
+                                    <div style={{ fontSize: "14px", fontWeight: "900", color: Number(metrics.fr) <= 0.5 ? colors.green : colors.red }}>
+                                        {metrics.fr.toFixed(2)} <span style={{ fontSize: "10px", fontWeight: "600", color: colors.muted }}>({Number(metrics.fr) <= 0.5 ? "Comply" : "Over"})</span>
+                                    </div>
+                                </div>
+                                <div style={{ padding: "8px 10px", backgroundColor: "#f8fafc", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                                    <div style={{ fontSize: "10px", fontWeight: "700", color: colors.muted }}>MVC FR (Target 0.00)</div>
+                                    <div style={{ fontSize: "14px", fontWeight: "900", color: Number(metrics.mvcFr) === 0 ? colors.green : colors.red }}>
+                                        {metrics.mvcFr.toFixed(2)} <span style={{ fontSize: "10px", fontWeight: "600", color: colors.muted }}>({Number(metrics.mvcFr) === 0 ? "Comply" : "Over"})</span>
+                                    </div>
+                                </div>
+                            </div>
                         </section>
                     </div>
 
-                    {/* DATA TABLE (LIVE HSE ACTIVITY & OBSERVATION LOG) */}
+                    {/* KOMPARASI JAM KERJA SELAMAT PER UNIT RIG */}
+                    <section style={{ ...cardStyle, marginBottom: "16px" }}>
+                        <div style={sectionHeaderStyle}>
+                            <div>
+                                <h2 style={sectionTitleStyle}>Komparasi Jam Kerja Selamat per Unit Rig ({activeYear})</h2>
+                                <span style={{ fontSize: "12px", color: colors.muted }}>
+                                    Perbandingan akumulasi Safe Man Hours, jarak tempuh operasional (KM), dan kepatuhan Zero Incident per unit rig.
+                                </span>
+                            </div>
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                <span style={{ fontSize: "11px", fontWeight: "700", padding: "4px 10px", backgroundColor: "#f1f5f9", color: "#475569", borderRadius: "6px" }}>
+                                    Total Rig Aktif: {rigPerformanceData.length} Unit
+                                </span>
+                                <span style={{ fontSize: "11px", fontWeight: "700", padding: "4px 10px", backgroundColor: "#ecfdf5", color: "#065f46", borderRadius: "6px" }}>
+                                    Zero Incident: {rigsWithZeroIncidents}/{rigPerformanceData.length || 1} Rig ({rigPerformanceData.length > 0 ? Math.round((rigsWithZeroIncidents / rigPerformanceData.length) * 100) : 100}%)
+                                </span>
+                            </div>
+                        </div>
+
+                        {rigPerformanceData.length === 0 ? (
+                            <div
+                                style={{
+                                    padding: "36px 20px",
+                                    textAlign: "center",
+                                    backgroundColor: "#f8fafc",
+                                    borderRadius: "8px",
+                                    border: "1.5px dashed #cbd5e1",
+                                }}
+                            >
+                                <div style={{ fontSize: "36px", marginBottom: "8px" }}>🏗️</div>
+                                <h4 style={{ margin: "0 0 6px", fontSize: "15px", fontWeight: "800", color: "#1e293b" }}>
+                                    Belum Ada Laporan Rig untuk Tahun {activeYear}
+                                </h4>
+                                <p style={{ margin: 0, fontSize: "13px", color: colors.muted, maxWidth: "520px", marginInline: "auto", lineHeight: "1.5" }}>
+                                    Komparasi performa jam kerja selamat, jarak tempuh operasional, dan kepatuhan insiden antar-rig akan otomatis ditampilkan di sini setelah laporan di-input pada menu Input Data.
+                                </p>
+                            </div>
+                        ) : (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                {rigPerformanceData.map((rigItem, idx) => {
+                                    const percentOfMax = Math.max(8, Math.round((rigItem.totalManHours / maxRigHours) * 100));
+                                    const shareOfTotal = metrics.totalManHoursActual > 0
+                                        ? ((rigItem.totalManHours / metrics.totalManHoursActual) * 100).toFixed(1)
+                                        : "0.0";
+                                    const isZeroIncident = rigItem.incidents === 0;
+
+                                    return (
+                                        <div
+                                            key={rigItem.rigNo}
+                                            style={{
+                                                padding: "14px 16px",
+                                                backgroundColor: idx % 2 === 0 ? "#ffffff" : "#fbfcfd",
+                                                borderRadius: "8px",
+                                                border: "1px solid #e2e8f0",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "8px",
+                                                transition: "all 0.2s ease",
+                                            }}
+                                        >
+                                            {/* TOP ROW: RIG NAME & STATS */}
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                                    <div
+                                                        style={{
+                                                            width: "32px",
+                                                            height: "32px",
+                                                            borderRadius: "6px",
+                                                            backgroundColor: colors.lightGreen,
+                                                            color: colors.green,
+                                                            display: "flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            fontWeight: "900",
+                                                            fontSize: "13px",
+                                                        }}
+                                                    >
+                                                        #{idx + 1}
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                            <span style={{ fontSize: "15px", fontWeight: "900", color: "#0f172a" }}>
+                                                                {rigItem.rigNo}
+                                                            </span>
+                                                            <span style={{ fontSize: "11.5px", color: colors.muted, fontWeight: "600" }}>
+                                                                ({rigItem.reportCount} Laporan Bulanan)
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ fontSize: "11px", color: colors.muted, marginTop: "2px" }}>
+                                                            Premises: {formatNumber(rigItem.manHoursPremises)} Jam | Non-Premises: {formatNumber(rigItem.manHoursNonPremises)} Jam
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                                                    <div style={{ textAlign: "right" }}>
+                                                        <div style={{ fontSize: "16px", fontWeight: "900", color: colors.green, letterSpacing: "-0.01em" }}>
+                                                            {formatNumber(rigItem.totalManHours)} <span style={{ fontSize: "11px", fontWeight: "600", color: colors.muted }}>Jam</span>
+                                                        </div>
+                                                        <div style={{ fontSize: "11px", color: colors.muted }}>
+                                                            Kontribusi: <strong style={{ color: colors.green }}>{shareOfTotal}%</strong>
+                                                        </div>
+                                                    </div>
+
+                                                    <span
+                                                        style={{
+                                                            padding: "4px 10px",
+                                                            borderRadius: "6px",
+                                                            fontSize: "11px",
+                                                            fontWeight: "800",
+                                                            backgroundColor: isZeroIncident ? "#dcfce7" : "#fee2e2",
+                                                            color: isZeroIncident ? "#166534" : "#991b1b",
+                                                            border: `1px solid ${isZeroIncident ? "#86efac" : "#fca5a5"}`,
+                                                            whiteSpace: "nowrap",
+                                                        }}
+                                                    >
+                                                        {isZeroIncident ? "✓ Zero Incident (Safe)" : `⚠ ${rigItem.incidents} Insiden`}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* PROGRESS BAR */}
+                                            <div
+                                                style={{
+                                                    width: "100%",
+                                                    height: "10px",
+                                                    backgroundColor: "#e2e8f0",
+                                                    borderRadius: "5px",
+                                                    overflow: "hidden",
+                                                }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        width: `${percentOfMax}%`,
+                                                        height: "100%",
+                                                        background: isZeroIncident
+                                                            ? `linear-gradient(90deg, ${colors.green} 0%, #10b981 100%)`
+                                                            : `linear-gradient(90deg, ${colors.green} 0%, ${colors.red} 100%)`,
+                                                        borderRadius: "5px",
+                                                        transition: "width 0.4s ease",
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* BOTTOM ROW: KM & NEAR MISS */}
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11px", color: colors.muted }}>
+                                                <span>Total Jarak Tempuh: <strong style={{ color: "#334155" }}>{formatNumber(rigItem.totalKm)} KM</strong></span>
+                                                <span>Near Miss Terlaporkan: <strong style={{ color: "#334155" }}>{rigItem.nearMiss} Kasus</strong></span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </section>
+
+                    {/* TABEL 1.1 FATALITY S/D 1.12 REPORT */}
+                    <section style={{ ...cardStyle, marginBottom: "16px" }}>
+                        <div style={sectionHeaderStyle}>
+                            <div>
+                                <h2 style={sectionTitleStyle}>Tabel 1.1 Fatality s/d 1.12 (HSE Lagging Indicators Record)</h2>
+                                <span style={{ fontSize: "12px", color: colors.muted }}>
+                                    Data indikator lagging bersumber langsung dari database laporan HSE (Report).
+                                </span>
+                            </div>
+                            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                <span style={{ fontSize: "11px", fontWeight: "700", padding: "4px 8px", backgroundColor: "#ecfdf5", color: "#065f46", borderRadius: "6px" }}>
+                                    Target Insiden: 0 Case
+                                </span>
+                            </div>
+                        </div>
+
+                        <div style={{ overflowX: "auto", border: "1px solid #e2e8f0", borderRadius: "8px" }}>
+                            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ ...thStyle, width: "60px", textAlign: "center" }}>No</th>
+                                        <th style={thStyle}>Indikator Lagging</th>
+                                        <th style={{ ...thStyle, width: "80px", textAlign: "center" }}>Satuan</th>
+                                        <th style={{ ...thStyle, width: "100px", textAlign: "center" }}>Target (Plan)</th>
+                                        <th style={{ ...thStyle, width: "110px", textAlign: "center" }}>Aktual (Kasus)</th>
+                                        <th style={{ ...thStyle, width: "140px", textAlign: "center" }}>Frequency Rate (FR)</th>
+                                        <th style={{ ...thStyle, width: "120px", textAlign: "center" }}>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {laggingTableData.map((row, idx) => {
+                                        const isTri = row.isHighlight;
+                                        return (
+                                            <tr
+                                                key={row.no}
+                                                style={{
+                                                    backgroundColor: isTri ? "#fefce8" : idx % 2 === 0 ? "#ffffff" : "#fcfdfd",
+                                                    borderBottom: "1px solid #e2e8f0",
+                                                    fontWeight: isTri ? "800" : "500",
+                                                }}
+                                            >
+                                                <td style={{ ...tdStyle, textAlign: "center", fontWeight: "700", color: isTri ? "#854d0e" : colors.text }}>
+                                                    {row.no}
+                                                </td>
+                                                <td style={{ ...tdStyle, color: isTri ? "#854d0e" : colors.text }}>
+                                                    {row.name}
+                                                </td>
+                                                <td style={{ ...tdStyle, textAlign: "center", color: colors.muted }}>
+                                                    {row.unit}
+                                                </td>
+                                                <td style={{ ...tdStyle, textAlign: "center", color: colors.muted }}>
+                                                    {row.target}
+                                                </td>
+                                                <td style={{ ...tdStyle, textAlign: "center", fontWeight: "800", color: row.actual > 0 ? colors.red : colors.green }}>
+                                                    {row.actual}
+                                                </td>
+                                                <td style={{ ...tdStyle, textAlign: "center", fontFamily: "monospace", fontWeight: "700" }}>
+                                                    {row.fr}
+                                                </td>
+                                                <td style={{ ...tdStyle, textAlign: "center" }}>
+                                                    <span
+                                                        style={{
+                                                            padding: "3px 8px",
+                                                            borderRadius: "4px",
+                                                            fontSize: "11px",
+                                                            fontWeight: "800",
+                                                            backgroundColor: row.status === "COMPLY" ? "#dcfce7" : "#fee2e2",
+                                                            color: row.status === "COMPLY" ? "#166534" : "#991b1b",
+                                                            border: `1px solid ${row.status === "COMPLY" ? "#86efac" : "#fca5a5"}`,
+                                                        }}
+                                                    >
+                                                        {row.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    {/* SUMMARY INSIDEN DARI DATA LAPORAN (REPORT) */}
                     <section style={cardStyle}>
                         <div
                             style={{
@@ -960,9 +1059,9 @@ export default function HSEPerformance() {
                             }}
                         >
                             <div>
-                                <h2 style={sectionTitleStyle}>Live Incident & HSE Activity Log</h2>
+                                <h2 style={sectionTitleStyle}>Summary Insiden</h2>
                                 <span style={{ fontSize: "12px", color: colors.muted }}>
-                                    Menampilkan {activityLogs.length} catatan aktivitas operasional & observasi keselamatan.
+                                    Rangkuman kejadian insiden yang dilaporkan pada periode ini.
                                 </span>
                             </div>
 
@@ -971,111 +1070,149 @@ export default function HSEPerformance() {
                             </button>
                         </div>
 
-                        {/* TABLE */}
-                        <div style={{ overflowX: "auto", border: "1px solid #e2e8f0", borderRadius: "8px" }}>
-                            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                                <thead>
-                                    <tr>
-                                        <th style={thStyle}>Date</th>
-                                        <th style={thStyle}>Rig / Location</th>
-                                        <th style={thStyle}>Event / Activity</th>
-                                        <th style={thStyle}>Category</th>
-                                        <th style={thStyle}>Severity</th>
-                                        <th style={thStyle}>Man Hours</th>
-                                        <th style={thStyle}>Status</th>
-                                        <th style={{ ...thStyle, textAlign: "center" }}>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {currentData.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="8" style={{ padding: "24px", textAlign: "center", color: colors.muted, fontSize: "13px" }}>
-                                                Tidak ada data HSE log untuk filter yang dipilih.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        currentData.map((row, index) => (
-                                            <tr
-                                                key={row.id || index}
-                                                style={{
-                                                    borderBottom: "1px solid #f1f5f9",
-                                                    backgroundColor: index % 2 === 0 ? "#ffffff" : "#fcfdfd",
-                                                }}
-                                            >
-                                                <td style={tdStyle}>{row.date}</td>
-                                                <td style={{ ...tdStyle, fontWeight: "700", color: colors.green }}>{row.location}</td>
-                                                <td style={tdStyle}>{row.event}</td>
-                                                <td style={{ ...tdStyle, color: colors.muted }}>{row.category}</td>
-                                                <td style={tdStyle}>
-                                                    <SeverityBadge severity={row.severity} />
-                                                </td>
-                                                <td style={tdStyle}>{row.manHours}</td>
-                                                <td style={tdStyle}>
-                                                    <span
-                                                        style={{
-                                                            padding: "3px 8px",
-                                                            borderRadius: "4px",
-                                                            fontSize: "11px",
-                                                            fontWeight: "700",
-                                                            backgroundColor: row.status.includes("Verified") || row.status.includes("Completed") ? "#dcfce7" : "#fef3c7",
-                                                            color: row.status.includes("Verified") || row.status.includes("Completed") ? "#166534" : "#92400e",
-                                                        }}
-                                                    >
-                                                        {row.status}
-                                                    </span>
-                                                </td>
-                                                <td style={{ ...tdStyle, textAlign: "center" }}>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setSelectedLog(row)}
-                                                        style={tableButtonStyle}
-                                                        title="View Details"
-                                                    >
-                                                        👁
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* PAGINATION */}
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                marginTop: "14px",
-                            }}
-                        >
-                            <span style={{ fontSize: "12px", color: colors.muted, fontWeight: "600" }}>
-                                Showing {activityLogs.length > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0} to {Math.min(currentPage * rowsPerPage, activityLogs.length)} of {activityLogs.length} entries
-                            </span>
-
-                            <div style={{ display: "flex", gap: "6px" }}>
-                                <button
-                                    type="button"
-                                    onClick={handlePrevious}
-                                    disabled={currentPage === 1}
-                                    style={paginationButtonStyle(currentPage === 1)}
+                        {incidentLogs.length === 0 ? (
+                            <div
+                                style={{
+                                    padding: "24px",
+                                    backgroundColor: "#ecfdf5",
+                                    border: "1.5px solid #10b981",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "16px",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: "44px",
+                                        height: "44px",
+                                        borderRadius: "50%",
+                                        backgroundColor: "#10b981",
+                                        color: "#ffffff",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: "22px",
+                                        fontWeight: "900",
+                                        flexShrink: 0,
+                                    }}
                                 >
-                                    &larr; Prev
-                                </button>
-                                <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: "700", color: colors.green }}>
-                                    Page {currentPage} of {totalPages}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={handleNext}
-                                    disabled={currentPage >= totalPages}
-                                    style={paginationButtonStyle(currentPage >= totalPages)}
-                                >
-                                    Next &rarr;
-                                </button>
+                                    ✓
+                                </div>
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "800", color: "#065f46" }}>
+                                        Zero Incident Record (Operasi 100% Aman)
+                                    </h3>
+                                    <p style={{ margin: "4px 0 0", fontSize: "12.5px", color: "#047857" }}>
+                                        Tidak ada insiden kecelakaan kerja tercatat pada laporan operasional tahun {activeYear} (Fatality, LTI, RWC, MTC, MVC, Spill, Fire = 0). Seluruh operasional berjalan dengan kepatuhan penuh terhadap standar keselamatan (Comply).
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                {/* TABLE */}
+                                <div style={{ overflowX: "auto", border: "1px solid #e2e8f0", borderRadius: "8px" }}>
+                                    <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                                        <thead>
+                                            <tr>
+                                                <th style={thStyle}>Date</th>
+                                                <th style={thStyle}>Rig / Location</th>
+                                                <th style={thStyle}>Incident Category</th>
+                                                <th style={thStyle}>Severity</th>
+                                                <th style={thStyle}>Deskripsi / Kronologi Kejadian</th>
+                                                <th style={thStyle}>Submitter</th>
+                                                <th style={thStyle}>Status</th>
+                                                <th style={{ ...thStyle, textAlign: "center" }}>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {currentData.map((row, index) => (
+                                                <tr
+                                                    key={row.id || index}
+                                                    style={{
+                                                        borderBottom: "1px solid #f1f5f9",
+                                                        backgroundColor: index % 2 === 0 ? "#ffffff" : "#fcfdfd",
+                                                    }}
+                                                >
+                                                    <td style={tdStyle}>{row.date}</td>
+                                                    <td style={{ ...tdStyle, fontWeight: "700", color: colors.green }}>{row.location}</td>
+                                                    <td style={{ ...tdStyle, fontWeight: "700", color: colors.red }}>{row.event}</td>
+                                                    <td style={tdStyle}>
+                                                        <SeverityBadge severity={row.severity} />
+                                                    </td>
+                                                    <td style={{ ...tdStyle, maxWidth: "320px", color: "#334155" }}>
+                                                        {row.notes}
+                                                    </td>
+                                                    <td style={tdStyle}>{row.submitter}</td>
+                                                    <td style={tdStyle}>
+                                                        <span
+                                                            style={{
+                                                                padding: "3px 8px",
+                                                                borderRadius: "4px",
+                                                                fontSize: "11px",
+                                                                fontWeight: "700",
+                                                                backgroundColor: row.status.includes("Verified") || row.status.includes("Completed") ? "#dcfce7" : "#fef3c7",
+                                                                color: row.status.includes("Verified") || row.status.includes("Completed") ? "#166534" : "#92400e",
+                                                            }}
+                                                        >
+                                                            {row.status}
+                                                        </span>
+                                                    </td>
+                                                    <td style={{ ...tdStyle, textAlign: "center" }}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedLog(row)}
+                                                            style={tableButtonStyle}
+                                                            title="Lihat Detail Insiden"
+                                                        >
+                                                            👁
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* PAGINATION */}
+                                {incidentLogs.length > rowsPerPage && (
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            marginTop: "14px",
+                                        }}
+                                    >
+                                        <span style={{ fontSize: "12px", color: colors.muted, fontWeight: "600" }}>
+                                            Showing {(currentPage - 1) * rowsPerPage + 1} to {Math.min(currentPage * rowsPerPage, incidentLogs.length)} of {incidentLogs.length} entries
+                                        </span>
+
+                                        <div style={{ display: "flex", gap: "6px" }}>
+                                            <button
+                                                type="button"
+                                                onClick={handlePrevious}
+                                                disabled={currentPage === 1}
+                                                style={paginationButtonStyle(currentPage === 1)}
+                                            >
+                                                &larr; Prev
+                                            </button>
+                                            <span style={{ padding: "6px 12px", fontSize: "12px", fontWeight: "700", color: colors.green }}>
+                                                Page {currentPage} of {totalPages}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={handleNext}
+                                                disabled={currentPage >= totalPages}
+                                                style={paginationButtonStyle(currentPage >= totalPages)}
+                                            >
+                                                Next &rarr;
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </section>
                 </div>
             </main>
@@ -1247,31 +1384,6 @@ function FormulaBadge({ label, formula, value }) {
     );
 }
 
-function IndicatorBars({ data }) {
-    return (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {data.map(([label, value], idx) => (
-                <div key={idx}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: "600", marginBottom: "4px" }}>
-                        <span style={{ color: "#334155" }}>{label}</span>
-                        <span style={{ color: "#004d32", fontWeight: "800" }}>{value}%</span>
-                    </div>
-                    <div style={{ width: "100%", height: "8px", backgroundColor: "#e2e8f0", borderRadius: "4px", overflow: "hidden" }}>
-                        <div
-                            style={{
-                                width: `${Math.min(100, Math.max(0, value))}%`,
-                                height: "100%",
-                                backgroundColor: value >= 90 ? "#004d32" : value >= 60 ? "#d97706" : "#dc2626",
-                                borderRadius: "4px",
-                                transition: "width 0.3s ease",
-                            }}
-                        />
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-}
 
 function SeverityBadge({ severity }) {
     const isHigh = severity === "High";

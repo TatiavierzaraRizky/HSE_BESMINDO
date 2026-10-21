@@ -147,14 +147,11 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | KPI PER RIG
+    | KPI PER RIG (REDIRECTED TO HSE PERFORMANCE RIG COMPARISON)
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/kpi-per-rig', [
-        HseReportController::class,
-        'kpiPerRig',
-    ])->name('admin.kpi-per-rig');
+    Route::redirect('/kpi-per-rig', '/admin/hse-performance')->name('admin.kpi-per-rig');
 
 
     /*

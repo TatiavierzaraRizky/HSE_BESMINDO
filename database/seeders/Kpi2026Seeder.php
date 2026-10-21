@@ -150,46 +150,49 @@ class Kpi2026Seeder extends Seeder
                 ['no' => 12, 'name' => '1.12 REPORTABLE CASE (Nearmiss / FAC / ETA)', 'unit' => 'Case'],
             ];
 
-            $leadingListKeys = [
-                'peka' => ['no' => 1, 'name' => 'OBSERVASI PERILAKU (PEKA) *)', 'unit' => 'Laporan'],
-                'hazid' => ['no' => 2, 'name' => 'IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)', 'unit' => 'Laporan'],
-                'swa' => ['no' => 3, 'name' => 'SWA REPORT', 'unit' => 'Laporan'],
-                'apd' => ['no' => 4, 'name' => 'INSPEKSI SAFETY EQUIPMENT & APD *) (Eye wash, Shower, Fire, P3K, Tandu, FBH, SCBA)', 'unit' => 'Laporan'],
-                'color_code' => ['no' => 5, 'name' => 'EKSTERNAL INSPEKSI LR COLOR CODE', 'unit' => 'Kegiatan'],
-                'drops' => ['no' => 6, 'name' => 'INSPEKSI BENDA JATUH / DROPS **)', 'unit' => 'Kegiatan'],
-                'vv' => ['no' => 7, 'name' => 'INTERNAL INSPEKSI / V&V OLEH TEAM', 'unit' => 'Laporan'],
-                'smk3l' => ['no' => 8, 'name' => 'INSPEKSI / AUDIT SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR', 'unit' => 'Kegiatan'],
-                'spot' => ['no' => 9, 'name' => 'SPOT CHECK KENDARAAN *) **)', 'unit' => 'Kegiatan'],
-                'audit_sys' => ['no' => 10, 'name' => 'AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)', 'unit' => 'Kegiatan'],
-                'ivms' => ['no' => 11, 'name' => 'MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)', 'unit' => '%'],
-                'pti' => ['no' => 12, 'name' => 'Laporan Inspeksi Kendaraan (PTI)', 'definition' => '1 laporan / Hari / unit', 'unit' => 'Laporan'],
-                'mcu_random' => ['no' => 13, 'name' => 'SPESIFIK MCU RANDOM : NAPZA & MIRAS TEST *)', 'definition' => '1x / semester / kontrak', 'unit' => 'Kegiatan'],
-                'mcu_pra_kerja' => ['no' => 14, 'name' => 'Medical Check Up : 1. Pra Pekerjaan (Karyawan Baru)', 'definition' => 'Bilamana ada karyawan baru', 'unit' => 'Kegiatan'],
-                'mcu_periodik' => ['no' => 14, 'name' => 'Medical Check Up : 2. Periodik (Tahunan)', 'definition' => '1x/tahun/karyawan', 'unit' => 'Kegiatan'],
-                'pra_mcu' => ['no' => 14, 'name' => 'Medical Check Up : 3. Pra MCU (histori konsul pada tahun sebelumnya)', 'definition' => 'Sesuai histori MCU', 'unit' => 'Kegiatan'],
-                'top_mwt' => ['no' => 15, 'name' => 'TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)', 'unit' => 'Kunjungan'],
-                'mwt' => ['no' => 16, 'name' => 'MANAGEMENT VISIT / MWT (Level Coord level s/d Manager *)', 'unit' => 'Kunjungan'],
-                'tgm' => ['no' => 17, 'name' => 'RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)', 'unit' => 'Rapat'],
-                'pre_hitch' => ['no' => 18, 'name' => 'PRE HITCH MEETING', 'unit' => 'Rapat'],
-                'phr' => ['no' => 19, 'name' => 'RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.', 'unit' => 'Rapat'],
-                'st_yard' => ['no' => 20, 'name' => 'SAFETY TALK MONTHLY MEETING : 20.1 SUPPORT YARD', 'unit' => 'Rapat'],
-                'st_rig' => ['no' => 20, 'name' => 'SAFETY TALK MONTHLY MEETING : 20.2 SUPPORT RIG', 'unit' => 'Rapat'],
-                'lead_forum' => ['no' => 21, 'name' => 'LEADERSHIP FORUM ***)', 'unit' => 'Forum'],
-                'kampanye' => ['no' => 22, 'name' => 'KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK) *)', 'unit' => 'Kegiatan'],
-                'review_man' => ['no' => 23, 'name' => 'REVIEW, TINJAUAN MANAJEMEN *)', 'unit' => 'Kegiatan'],
-                'hygiene_noise' => ['no' => 24, 'name' => 'HYGIENE MONITORING : NOISE & LUX MONITORING **)', 'unit' => 'Kegiatan'],
-                'hygiene_mess' => ['no' => 25, 'name' => 'HYGIENE MONITORING : Mess, Catering, DAM*)', 'unit' => 'Kegiatan'],
-                'housekeeping' => ['no' => 26, 'name' => 'INSPEKSI "HOUSEKEEPING RIG"', 'unit' => 'Laporan'],
-                'kontes_hk' => ['no' => 27, 'name' => 'PENGHARGAAN: KONTES "HOUSEKEEPING RIG" *)', 'unit' => 'Penghargaan'],
-                'lh' => ['no' => 28, 'name' => 'PELAPORAN LINGKUNGAN KE DINAS LH', 'unit' => 'Laporan'],
-                'rig_month' => ['no' => 29, 'name' => 'PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL **)', 'unit' => 'Penghargaan'],
-                'best_peka' => ['no' => 30, 'name' => 'PENGHARGAAN THE BEST BBS / PEKA', 'unit' => 'Orang'],
-                'best_driver' => ['no' => 31, 'name' => 'PENGHARGAAN THE BEST DRIVER', 'unit' => 'Orang'],
-                'kerja_selamat' => ['no' => 32, 'name' => 'PENGHARGAAN: PENCAPAIAN KERJA SELAMAT TAHUNAN', 'unit' => 'Penghargaan'],
-                'hes_refreshing' => ['no' => 33, 'name' => 'PENGHARGAAN HES REFRESHING', 'unit' => 'Kegiatan'],
-                'onsite' => ['no' => 34, 'name' => '"ON SITE TRAINING" DI LOKASI *)', 'unit' => 'Sesi'],
-                'erp_rig' => ['no' => 35, 'name' => 'ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)', 'unit' => 'Drill'],
-                'erp_yard' => ['no' => 36, 'name' => 'ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)', 'unit' => 'Drill'],
+                        $leadingListKeys = [
+                'peka' => ['no' => 1, 'name' => 'OBSERVASI PERILAKU (PEKA) *)', 'unit' => 'Laporan', 'target_month' => 373, 'target_year' => 4480, 'definition' => 'Min. 2 Laporan / Org / Minggu'],
+                'hazid' => ['no' => 2, 'name' => 'IDENTIFIKASI BAHAYA (HAZID/ 5 MNT RISK ASSESSMENT)', 'unit' => 'Laporan', 'target_month' => 600, 'target_year' => 7200, 'definition' => '10 Laporan / Shift / Hari'],
+                'swa' => ['no' => 3, 'name' => 'SWA REPORT', 'unit' => 'Laporan', 'target_month' => 180, 'target_year' => 2160, 'definition' => '3 Laporan/ Shift / Hari'],
+                'eyewash_shower' => ['no' => 4, 'name' => 'INSPEKSI SAFETY EQUIPMENT & APD : Eye wash & Shower', 'unit' => 'Pemeriksaan', 'target_month' => 30, 'target_year' => 365, 'definition' => 'Harian'],
+                'apd_p3k' => ['no' => 4, 'name' => 'INSPEKSI SAFETY EQUIPMENT & APD : APD & P3K', 'unit' => 'Pemeriksaan', 'target_month' => 4, 'target_year' => 48, 'definition' => '1x / Minggu'],
+                'firex_tandu_scba' => ['no' => 4, 'name' => 'INSPEKSI SAFETY EQUIPMENT & APD : Firex, Tandu, SCBA, FBH', 'unit' => 'Pemeriksaan', 'target_month' => 1, 'target_year' => 12, 'definition' => '1x / Bulan'],
+                'color_code' => ['no' => 5, 'name' => 'EKSTERNAL INSPEKSI LR COLOR CODE', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 2, 'definition' => '1x / semester'],
+                'drops' => ['no' => 6, 'name' => 'INSPEKSI BENDA JATUH / DROPS **)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 48, 'definition' => 'Per 7 hari / 30 hari / 90 hari / 180 hari'],
+                'smk3l' => ['no' => 7, 'name' => 'INSPEKSI / Audit SMK3L: PERALATAN, DATA PERSONAL MILIK SUBKONTRAKTOR', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 1, 'definition' => '1x / Tahun'],
+                'spot' => ['no' => 8, 'name' => 'SPOT CHECK KENDARAAN *) **)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 2, 'definition' => '1x / semester'],
+                'audit_sys' => ['no' => 9, 'name' => 'AUDIT INTERNAL & EKSTERNAL (Sistem manajemen *)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 1, 'definition' => '1x / tahun'],
+                'ivms' => ['no' => 10, 'name' => 'MONITORING KEPATUHAN PENGEMUDI (Mencakup speed / IVMS report / fatigue *)', 'unit' => '%', 'target_month' => 100, 'target_year' => 100, 'definition' => '100% tak ada pelanggaran'],
+                'pti' => ['no' => 11, 'name' => 'Inspeksi Kendaraan (PTI) Harian dalam laporan mingguan', 'unit' => 'Laporan', 'target_month' => 32, 'target_year' => 384, 'definition' => '4 laporan / unit / bulan'],
+                'mcu_random' => ['no' => 13, 'name' => 'SPESIFIK RANDOM : NAPZA & MIRAS TEST *)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 1, 'definition' => '1x / semester / kontrak'],
+                'mcu_pra_kerja' => ['no' => 14, 'name' => 'Medical Check Up : Pra Pekerjaan (Karyawan Baru)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 100, 'definition' => 'Bilamana ada karyawan baru'],
+                'mcu_periodik' => ['no' => 14, 'name' => 'Medical Check Up : Periodik (Tahunan)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 100, 'definition' => '1x/tahun/karyawan'],
+                'pra_mcu' => ['no' => 14, 'name' => 'Medical Check Up : Pra MCU (histori konsul pada tahun sebelumnya)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 0, 'definition' => 'Sesuai histori MCU'],
+                'top_mwt' => ['no' => 15, 'name' => 'TOP MANAGEMENT VISIT / MWT (Level General Manager / Dir. Operasi / Direktur Utama ***)', 'unit' => 'Kunjungan', 'target_month' => 0, 'target_year' => 2, 'definition' => '1x / Semester'],
+                'mwt' => ['no' => 16, 'name' => 'MANAGEMENT VISIT / MWT (Level Coord level s/d Manager *)', 'unit' => 'Kunjungan', 'target_month' => 4, 'target_year' => 48, 'definition' => '4X / Rig / bulan'],
+                'tgm' => ['no' => 17, 'name' => 'RAPAT RUTIN KESELAMATAN (TGM PER SHIFT/PJM)', 'unit' => 'Rapat', 'target_month' => 60, 'target_year' => 720, 'definition' => '1x / shift / hari'],
+                'pre_hitch' => ['no' => 18, 'name' => 'PRE HITCH MEETING', 'unit' => 'Rapat', 'target_month' => 3, 'target_year' => 36, 'definition' => '3x / Bulan'],
+                'phr' => ['no' => 19, 'name' => 'RAPAT/FORUM BERSAMA LEADER BMS DAN PHR.', 'unit' => 'Rapat', 'target_month' => 4, 'target_year' => 48, 'definition' => 'Minimal 4x / bulan'],
+                'st_yard' => ['no' => 20, 'name' => 'SAFETY TALK MONTHLY MEETING : - SUPPORT YARD', 'unit' => 'Rapat', 'target_month' => 1, 'target_year' => 12, 'definition' => 'Minimal 1X / Bulan'],
+                'st_rig' => ['no' => 20, 'name' => 'SAFETY TALK MONTHLY MEETING : - RIG (Minggu ke IV jadwal PHM)', 'unit' => 'Rapat', 'target_month' => 1, 'target_year' => 12, 'definition' => 'Minimal 1X / Bulan'],
+                'lead_forum' => ['no' => 21, 'name' => 'LEADERSHIP FORUM ***)', 'unit' => 'Forum', 'target_month' => 0, 'target_year' => 3, 'definition' => '1X / Caturwulan'],
+                'kampanye' => ['no' => 22, 'name' => 'KAMPANYE KESELAMATAN (PIN/POSTER/STIKER/ SPANDUK/ Online PHM) *)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 6, 'definition' => '1X / 2 bln'],
+                'review_man' => ['no' => 23, 'name' => 'REVIEW, TINJAUAN MANAJEMEN *)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 1, 'definition' => '1X / Tahun'],
+                'hygiene_noise' => ['no' => 24, 'name' => 'HYGIENE MONITORING : NOISE & LUX MONITORING **)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 2, 'definition' => 'Min 1x / semester'],
+                'hygiene_mess' => ['no' => 25, 'name' => 'HYGIENE MONITORING : Mess, Catering, DAM*)', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 1, 'definition' => 'Min 1x / tahun'],
+                'housekeeping' => ['no' => 26, 'name' => 'INSPEKSI "HOUSEKEEPING RIG"', 'unit' => 'Laporan', 'target_month' => 1, 'target_year' => 12, 'definition' => '1x / Bulan'],
+                'kontes_hk' => ['no' => 27, 'name' => 'PENGHARGAAN: KONTES "HOUSEKEEPING RIG" *)', 'unit' => 'Penghargaan', 'target_month' => 0, 'target_year' => 2, 'definition' => '1x / semester'],
+                'lh' => ['no' => 28, 'name' => 'PELAPORAN LINGKUNGAN YARD KE DINAS LH', 'unit' => 'Laporan', 'target_month' => 0, 'target_year' => 2, 'definition' => '1x / semester'],
+                'rig_month' => ['no' => 29, 'name' => 'PENGHARGAAN: RIG OF THE MONTH INTERNAL / EXTERNAL **)', 'unit' => 'Penghargaan', 'target_month' => 0, 'target_year' => 0, 'definition' => 'Rig Yang The Best / Mencapai target nilai yang ditentukan'],
+                'best_peka' => ['no' => 30, 'name' => 'PENGHARGAAN THE BEST BBS / PEKA', 'unit' => 'Orang', 'target_month' => 1, 'target_year' => 12, 'definition' => '1 orang / bulan / Rig'],
+                'best_driver' => ['no' => 31, 'name' => 'PENGHARGAAN THE BEST DRIVER', 'unit' => 'Orang', 'target_month' => 1, 'target_year' => 12, 'definition' => '1 orang / bulan / Rig'],
+                'kerja_selamat' => ['no' => 32, 'name' => 'PENGHARGAAN: PENCAPAIAN KERJA SELAMAT TAHUNAN', 'unit' => 'Penghargaan', 'target_month' => 0, 'target_year' => 1, 'definition' => 'Non recordable case dalam 1 tahun'],
+                'healing_domestik' => ['no' => 33, 'name' => 'PENGHARGAAN "Healing" : Dalam Negeri : a. Dalam Provinsi atau Luar provinsi: min. 1 orang / rig dan Divisi support sesuai jumlah Departemen dan jumlah Unit).', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 2, 'definition' => 'Per Semester'],
+                'healing_luar_negeri' => ['no' => 33, 'name' => 'PENGHARGAAN "Healing" : Luar Negri - China / dll (minimal 3 orang mewakili seluruh b. rig beroperasi di periode penilaian). sasaran : Sr. Supervisor s/d Manager level.', 'unit' => 'Kegiatan', 'target_month' => 0, 'target_year' => 1, 'definition' => 'Per 1 tahun'],
+                'sosialisasi' => ['no' => 34, 'name' => 'Sosialisasi (kebijakan, Prosedur sistem, KPI, Hiradc, SOP, JSA, MSDS, LOR, dll)', 'unit' => 'Kegiatan', 'target_month' => 6, 'target_year' => 72, 'definition' => 'Min 1x / semester'],
+                'onsite' => ['no' => 35, 'name' => '"ON SITE TRAINING" DI LOKASI *)', 'unit' => 'Sesi', 'target_month' => 3, 'target_year' => 36, 'definition' => 'Min 1x / Crew / Bulan'],
+                'erp_rig' => ['no' => 36, 'name' => 'ERP DRILL RIG : H2S&SCBA / FIRE / MEDIVAC/ PENYELAMATAN KERJA DI KETINGGIAN / TUMPAHAN. **)', 'unit' => 'Drill', 'target_month' => 3, 'target_year' => 36, 'definition' => '1 x / kru / 3 bulan (sesuai jadwal)'],
+                'erp_yard' => ['no' => 37, 'name' => 'ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)', 'unit' => 'Drill', 'target_month' => 0, 'target_year' => 2, 'definition' => '1 x / Semester'],
             ];
 
             foreach ($monthlyData as $period => $rigDataMap) {
@@ -253,25 +256,34 @@ class Kpi2026Seeder extends Seeder
 
                     // Insert Leading Indicators
                     $leadValues = $data['leading'];
+                    HseLeadingIndicator::where('report_id', $report->id)->delete();
                     foreach ($leadingListKeys as $key => $info) {
-                        $val = $leadValues[$key] ?? [0, 0];
-                        HseLeadingIndicator::updateOrCreate(
-                            [
-                                'report_id' => $report->id,
-                                'indicator_no' => $info['no'],
-                                'indicator_name' => $info['name'],
-                            ],
-                            [
-                                'unit' => $info['unit'],
-                                'definition' => $info['definition'] ?? null,
-                                'plan' => $val[0],
-                                'actual' => $val[1],
-                                'target_month' => $key === 'pti' ? 20 : $val[0],
-                                'target_year' => $key === 'pti' ? 240 : $val[0] * 12,
-                                'month' => (int) $period,
-                                'year' => $year,
-                            ]
-                        );
+                        $val = $leadValues[$key] ?? null;
+                        if ($val === null && $key === 'eyewash_shower') {
+                            $val = [30, 30];
+                        } elseif ($val === null && $key === 'apd_p3k') {
+                            $val = [4, 4];
+                        } elseif ($val === null && $key === 'firex_tandu_scba') {
+                            $val = [1, 1];
+                        } elseif ($val === null && $key === 'pti') {
+                            $val = [240, 240];
+                        } elseif ($val === null) {
+                            $val = [0, 0];
+                        }
+
+                        HseLeadingIndicator::create([
+                            'report_id' => $report->id,
+                            'indicator_no' => $info['no'],
+                            'indicator_name' => $info['name'],
+                            'unit' => $info['unit'],
+                            'definition' => $info['definition'] ?? null,
+                            'plan' => $val[0],
+                            'actual' => $val[1],
+                            'target_month' => $info['target_month'],
+                            'target_year' => $info['target_year'],
+                            'month' => (int) $period,
+                            'year' => $year,
+                        ]);
                     }
                 }
             }

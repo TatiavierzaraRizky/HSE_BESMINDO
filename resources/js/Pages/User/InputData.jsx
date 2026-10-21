@@ -1,6 +1,7 @@
 import UserSidebar from "../../Components/UserSidebar";
 import { useMemo, useState, useEffect } from "react";
 import { usePage } from "@inertiajs/react";
+import { calcTRI } from "../../Utils/hseCalculations";
 import {
     ClipboardList,
     CheckCircle2,
@@ -28,8 +29,8 @@ const MONTHS = [
     { value: "12", label: "Desember" },
 ];
 
-const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 15 }, (_, i) => String(2024 + i));
+const CURRENT_YEAR = 2027;
+const YEARS = Array.from({ length: 10 }, (_, i) => String(2027 + i));
 
 const LAGGING_INDICATORS = [
     "FATALITY",
@@ -88,7 +89,7 @@ const LEADING_INDICATORS = [
     "ERP DRILL YARD : FIRE / MEDIVAC / TUMPAHAN *)",
 ];
 
-const initialMo = String(new Date().getMonth() + 1).padStart(2, "0");
+const initialMo = "01";
 const initialYr = String(CURRENT_YEAR);
 
 const INITIAL_FORM = {
@@ -257,17 +258,39 @@ export default function UserInputData() {
     };
 
     const handleIndicatorChange = (type, indicator, field, value) => {
-        setForm((previous) => ({
-            ...previous,
-            [type]: {
+        setForm((previous) => {
+            const nextTypeState = {
                 ...previous[type],
                 [indicator]: {
                     ...previous[type][indicator],
                     [field]: value,
                 },
-            },
-        }));
+            };
+
+            // Auto-calculate TRI (Total Recordable Injury = Fatality + Serious LTI + RWC + MTC)
+            if (type === "lagging" && (field === "actual" || field === "plan")) {
+                const getVal = (name) => Number(nextTypeState[name]?.[field]) || 0;
+                const fat = getVal("FATALITY");
+                const lti = getVal("SERIOUS LOST TIME INJURY (>21 LOST DAY)");
+                const rwc = getVal("RESTRICTED WORK CASE");
+                const mtc = getVal("MEDICAL TREATMENT CASE (MTC)");
+                const triSum = calcTRI(fat, lti, rwc, mtc);
+
+                if (nextTypeState["TOTAL RECORDABLE INJURY"]) {
+                    nextTypeState["TOTAL RECORDABLE INJURY"] = {
+                        ...nextTypeState["TOTAL RECORDABLE INJURY"],
+                        [field]: triSum,
+                    };
+                }
+            }
+
+            return {
+                ...previous,
+                [type]: nextTypeState,
+            };
+        });
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -783,6 +806,7 @@ export default function UserInputData() {
                                 />
                             </div>
                         </Section>
+
 
                         {/* 3. LAGGING INDICATORS */}
                         <IndicatorSection
