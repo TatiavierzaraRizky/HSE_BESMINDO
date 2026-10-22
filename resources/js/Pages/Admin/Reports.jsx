@@ -941,9 +941,9 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
             // Prioritize specific matching for grouped indicators (4, 14, 20, 33)
             if (name.includes("eye wash") || name.includes("eyewash")) {
                 key = "4.1";
-            } else if (name.includes("apd & p3k") || name.includes("apd and p3k") || (rawKey === "4" && name.includes("apd"))) {
+            } else if (name.includes("apd & p3k") || name.includes("apd and p3k") || name.includes("p3k")) {
                 key = "4.2";
-            } else if (name.includes("firex") || name.includes("scba") || name.includes("tandu") || (rawKey === "4" && name.includes("fbh"))) {
+            } else if (name.includes("firex") || (rawKey === "4" && (name.includes("scba") || name.includes("fbh") || name.includes("tandu")))) {
                 key = "4.3";
             } else if (name.includes("pra pekerjaan") || (rawKey === "14" && name.includes("baru"))) {
                 key = "14.1";
