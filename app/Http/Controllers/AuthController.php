@@ -87,19 +87,38 @@ class AuthController extends Controller
             'role' => ['nullable', 'string', 'in:admin,user'],
         ]);
 
-        $credentials = [
-            'email' => $validated['email'],
-            'password' => $validated['password'],
+        $rawEmail = strtolower(trim($validated['email']));
+
+        // Shortcut aliases untuk kemudahan login area HSE Coord & PIC
+        $aliases = [
+            'admin' => 'admin@besmindo.com',
+            'user' => 'user@besmindo.com',
+            'rh1' => 'hse.rh1@besmindo.com',
+            'rh-1' => 'hse.rh1@besmindo.com',
+            'hse.rh1' => 'hse.rh1@besmindo.com',
+            'ho' => 'hse.ho@besmindo.com',
+            'hse.ho' => 'hse.ho@besmindo.com',
+            'south' => 'hse.south@besmindo.com',
+            'hse.south' => 'hse.south@besmindo.com',
+            'north' => 'hse.north@besmindo.com',
+            'hse.north' => 'hse.north@besmindo.com',
+            'ahmad' => 'ahmad.afandi@besmindo.com',
+            'afandi' => 'ahmad.afandi@besmindo.com',
+            'edo' => 'edo.syahputra@besmindo.com',
+            'mulya' => 'mulya.fernando@besmindo.com',
+            'joko' => 'joko.nuryanto@besmindo.com',
+            'suryatno' => 'suryatno@besmindo.com',
+            'satrio' => 'satrio@besmindo.com',
+            'teddy' => 'teddy@besmindo.com',
+            'jejen' => 'jejen@besmindo.com',
         ];
 
-        // Jika user memilih login role shortcut tapi email berupa username
-        if (!str_contains($credentials['email'], '@')) {
-            if ($credentials['email'] === 'admin') {
-                $credentials['email'] = 'admin@besmindo.com';
-            } elseif ($credentials['email'] === 'user') {
-                $credentials['email'] = 'user@besmindo.com';
-            }
-        }
+        $targetEmail = $aliases[$rawEmail] ?? (str_contains($rawEmail, '@') ? $rawEmail : $rawEmail . '@besmindo.com');
+
+        $credentials = [
+            'email' => $targetEmail,
+            'password' => $validated['password'],
+        ];
 
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $request->boolean('remember'))) {
             $request->session()->regenerate();

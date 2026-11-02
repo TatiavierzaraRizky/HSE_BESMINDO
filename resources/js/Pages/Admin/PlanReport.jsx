@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import AdminSidebar from "../../Components/AdminSidebar";
 import { Link, usePage } from "@inertiajs/react";
+import { ALL_AREAS, ALL_CONTRACTS, ALL_RIG_NAMES } from "../../Utils/rigContracts";
 
 /*
 |--------------------------------------------------------------------------
@@ -175,11 +176,12 @@ export default function PlanReport() {
         return list.sort((a, b) => b - a);
     }, [reports]);
 
-    const ALL_MASTER_RIGS = [
+    const ALL_MASTER_RIGS = Array.from(new Set([
+        ...ALL_RIG_NAMES,
         "BMS#01", "BMS#02", "BMS#03", "BMS#03A", "BMS#05", "BMS#06", "BMS#07",
         "BMS#08", "BMS#09", "BMS#10", "BMS#11", "BMS#15", "BMS#16", "BMS#17",
         "BMS#18", "BMS#19", "BMS#20", "BMS#21", "BMS#22", "BMS#23"
-    ];
+    ]));
 
     const availableRigs = useMemo(() => {
         const set = new Set(ALL_MASTER_RIGS);
@@ -188,21 +190,19 @@ export default function PlanReport() {
     }, [reports]);
 
     const availableProjects = useMemo(() => {
-        return [
-            ...new Set(
-                reports.map((report) => report.contract_no).filter(Boolean),
-            ),
-        ];
+        const set = new Set(ALL_CONTRACTS);
+        reports.forEach((report) => {
+            if (report.contract_no) set.add(report.contract_no);
+        });
+        return Array.from(set);
     }, [reports]);
 
     const availableLocations = useMemo(() => {
-        return [
-            ...new Set(
-                reports
-                    .map((report) => report.location_district)
-                    .filter(Boolean),
-            ),
-        ];
+        const set = new Set(ALL_AREAS);
+        reports.forEach((report) => {
+            if (report.location_district) set.add(report.location_district);
+        });
+        return Array.from(set);
     }, [reports]);
 
     const defaultYear =

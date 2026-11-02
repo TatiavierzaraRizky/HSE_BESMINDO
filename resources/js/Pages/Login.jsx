@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useForm, Head, Link } from "@inertiajs/react";
 import {
     ShieldCheck,
@@ -10,10 +10,265 @@ import {
     CheckCircle2,
     ArrowRight,
     Sparkles,
+    Layers,
+    UserCheck,
+    Filter,
+    ChevronDown,
+    MapPin,
+    Fuel,
 } from "lucide-react";
 
+// DAFTAR AKUN PRESET RESMI TERHUBUNG DATABASE MYSQL
+export const LOGIN_PRESET_ACCOUNTS = [
+    // 1. Admin
+    {
+        id: "admin",
+        name: "HSE Administrator",
+        email: "admin@besmindo.com",
+        password: "password",
+        role: "admin",
+        area: "Pusat / Admin",
+        areaKey: "ADMIN",
+        badge: "Admin Pusat",
+        coordName: "Administrator Pusat",
+        rigs: "Semua 16 Rig Operasional",
+        contracts: "Seluruh Kontrak (SPHR)",
+        color: "#004d32",
+        bg: "#ecfdf5",
+        borderColor: "#a7f3d0",
+    },
+
+    // 2. Area RH-1
+    {
+        id: "hse.rh1@besmindo.com",
+        name: "HSE Coord RH-1",
+        email: "hse.rh1@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "RH-1",
+        areaKey: "RH-1",
+        badge: "Koordinator Area RH-1",
+        coordName: "Ahmad Afandi / Edo Syahputra",
+        rigs: "BMS # 19, BMS # 16, BMS # 11, BMS # 10 (4 Rig)",
+        contracts: "SPHR00576A, SPHR00797A",
+        color: "#b91c1c",
+        bg: "#fef2f2",
+        borderColor: "#fecaca",
+    },
+    {
+        id: "ahmad.afandi@besmindo.com",
+        name: "Ahmad Afandi",
+        email: "ahmad.afandi@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "RH-1",
+        areaKey: "RH-1",
+        badge: "PIC Area RH-1",
+        coordName: "Ahmad Afandi / Edo Syahputra",
+        rigs: "BMS # 19, BMS # 16, BMS # 11, BMS # 10 (4 Rig)",
+        contracts: "SPHR00576A, SPHR00797A",
+        color: "#b91c1c",
+        bg: "#fef2f2",
+        borderColor: "#fecaca",
+    },
+    {
+        id: "edo.syahputra@besmindo.com",
+        name: "Edo Syahputra",
+        email: "edo.syahputra@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "RH-1",
+        areaKey: "RH-1",
+        badge: "PIC Area RH-1",
+        coordName: "Ahmad Afandi / Edo Syahputra",
+        rigs: "BMS # 19, BMS # 16, BMS # 11, BMS # 10 (4 Rig)",
+        contracts: "SPHR00576A, SPHR00797A",
+        color: "#b91c1c",
+        bg: "#fef2f2",
+        borderColor: "#fecaca",
+    },
+
+    // 3. Area HO
+    {
+        id: "hse.ho@besmindo.com",
+        name: "HSE Coord HO",
+        email: "hse.ho@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "HO",
+        areaKey: "HO",
+        badge: "Koordinator Area HO",
+        coordName: "Mulya Fernando / Joko Nuryanto",
+        rigs: "BMS # 20, BMS # 06, BMS # 21, BMS # 03a (4 Rig)",
+        contracts: "SPHR01003C, SPHR01067C, SPHR01071C, SPHR01097C",
+        color: "#15803d",
+        bg: "#f0fdf4",
+        borderColor: "#bbf7d0",
+    },
+    {
+        id: "mulya.fernando@besmindo.com",
+        name: "Mulya Fernando",
+        email: "mulya.fernando@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "HO",
+        areaKey: "HO",
+        badge: "PIC Area HO",
+        coordName: "Mulya Fernando / Joko Nuryanto",
+        rigs: "BMS # 20, BMS # 06, BMS # 21, BMS # 03a (4 Rig)",
+        contracts: "SPHR01003C, SPHR01067C, SPHR01071C, SPHR01097C",
+        color: "#15803d",
+        bg: "#f0fdf4",
+        borderColor: "#bbf7d0",
+    },
+    {
+        id: "joko.nuryanto@besmindo.com",
+        name: "Joko Nuryanto",
+        email: "joko.nuryanto@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "HO",
+        areaKey: "HO",
+        badge: "PIC Area HO",
+        coordName: "Mulya Fernando / Joko Nuryanto",
+        rigs: "BMS # 20, BMS # 06, BMS # 21, BMS # 03a (4 Rig)",
+        contracts: "SPHR01003C, SPHR01067C, SPHR01071C, SPHR01097C",
+        color: "#15803d",
+        bg: "#f0fdf4",
+        borderColor: "#bbf7d0",
+    },
+
+    // 4. Area South
+    {
+        id: "hse.south@besmindo.com",
+        name: "HSE Coord South",
+        email: "hse.south@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "South",
+        areaKey: "South",
+        badge: "Koordinator Area South",
+        coordName: "Teddy / Jejen",
+        rigs: "BMS # 02, BMS # 03, BMS # 08, BMS # 07 (4 Rig)",
+        contracts: "SPHR01095C, SPHR01220A",
+        color: "#7e22ce",
+        bg: "#faf5ff",
+        borderColor: "#e9d5ff",
+    },
+    {
+        id: "teddy@besmindo.com",
+        name: "Teddy",
+        email: "teddy@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "South",
+        areaKey: "South",
+        badge: "PIC Area South",
+        coordName: "Teddy / Jejen",
+        rigs: "BMS # 02, BMS # 03, BMS # 08, BMS # 07 (4 Rig)",
+        contracts: "SPHR01095C, SPHR01220A",
+        color: "#7e22ce",
+        bg: "#faf5ff",
+        borderColor: "#e9d5ff",
+    },
+    {
+        id: "jejen@besmindo.com",
+        name: "Jejen",
+        email: "jejen@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "South",
+        areaKey: "South",
+        badge: "PIC Area South",
+        coordName: "Teddy / Jejen",
+        rigs: "BMS # 02, BMS # 03, BMS # 08, BMS # 07 (4 Rig)",
+        contracts: "SPHR01095C, SPHR01220A",
+        color: "#7e22ce",
+        bg: "#faf5ff",
+        borderColor: "#e9d5ff",
+    },
+
+    // 5. Area North
+    {
+        id: "hse.north@besmindo.com",
+        name: "HSE Coord North",
+        email: "hse.north@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "North",
+        areaKey: "North",
+        badge: "Koordinator Area North",
+        coordName: "Suryatno / Satrio",
+        rigs: "BMS # 05, BMS # 17, BMS # 18, BMS # 15 (4 Rig)",
+        contracts: "SPHR01002C, SPHR01096C, SPHR01220A",
+        color: "#0369a1",
+        bg: "#f0f9ff",
+        borderColor: "#bae6fd",
+    },
+    {
+        id: "suryatno@besmindo.com",
+        name: "Suryatno",
+        email: "suryatno@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "North",
+        areaKey: "North",
+        badge: "PIC Area North",
+        coordName: "Suryatno / Satrio",
+        rigs: "BMS # 05, BMS # 17, BMS # 18, BMS # 15 (4 Rig)",
+        contracts: "SPHR01002C, SPHR01096C, SPHR01220A",
+        color: "#0369a1",
+        bg: "#f0f9ff",
+        borderColor: "#bae6fd",
+    },
+    {
+        id: "satrio@besmindo.com",
+        name: "Satrio",
+        email: "satrio@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "North",
+        areaKey: "North",
+        badge: "PIC Area North",
+        coordName: "Suryatno / Satrio",
+        rigs: "BMS # 05, BMS # 17, BMS # 18, BMS # 15 (4 Rig)",
+        contracts: "SPHR01002C, SPHR01096C, SPHR01220A",
+        color: "#0369a1",
+        bg: "#f0f9ff",
+        borderColor: "#bae6fd",
+    },
+
+    // 6. Akun Demo Umum
+    {
+        id: "user@besmindo.com",
+        name: "Field PIC (General)",
+        email: "user@besmindo.com",
+        password: "password",
+        role: "user",
+        area: "Demo",
+        areaKey: "DEMO",
+        badge: "Demo Akun User",
+        coordName: "General Operator",
+        rigs: "Semua Rig Tersedia",
+        contracts: "General Contract",
+        color: "#475569",
+        bg: "#f8fafc",
+        borderColor: "#cbd5e1",
+    },
+];
+
+const AREA_FILTER_TABS = [
+    { key: "ALL", label: "Semua", badge: "14 Akun", dotColor: "#64748b" },
+    { key: "ADMIN", label: "Admin", badge: "Pusat", dotColor: "#004d32" },
+    { key: "RH-1", label: "RH-1", badge: "3 Akun", dotColor: "#dc2626" },
+    { key: "HO", label: "HO", badge: "3 Akun", dotColor: "#16a34a" },
+    { key: "South", label: "South", badge: "3 Akun", dotColor: "#9333ea" },
+    { key: "North", label: "North", badge: "3 Akun", dotColor: "#0284c7" },
+];
+
 export default function Login({ status }) {
-    const [selectedRole, setSelectedRole] = useState("admin"); // "admin" | "user"
+    const [activeAreaTab, setActiveAreaTab] = useState("ADMIN");
+    const [selectedAccountId, setSelectedAccountId] = useState("admin");
     const [showPassword, setShowPassword] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -23,22 +278,76 @@ export default function Login({ status }) {
         remember: true,
     });
 
-    const handleRoleSelect = (role) => {
-        setSelectedRole(role);
-        if (role === "admin") {
-            setData({
-                email: "admin@besmindo.com",
-                password: "password",
-                role: "admin",
-                remember: true,
-            });
+    // Cari info akun aktif saat ini
+    const activeAccount = useMemo(() => {
+        return (
+            LOGIN_PRESET_ACCOUNTS.find(
+                (acc) =>
+                    acc.id === selectedAccountId ||
+                    acc.email.toLowerCase() === (data.email || "").toLowerCase()
+            ) || null
+        );
+    }, [selectedAccountId, data.email]);
+
+    // Handle pemilihan akun dari dropdown / list filter
+    const handleAccountSelect = (accountId) => {
+        const found = LOGIN_PRESET_ACCOUNTS.find((acc) => acc.id === accountId);
+        if (!found) return;
+
+        setSelectedAccountId(found.id);
+        if (found.areaKey && found.areaKey !== "DEMO") {
+            setActiveAreaTab(found.areaKey);
+        }
+
+        setData({
+            ...data,
+            email: found.email,
+            password: found.password || "password",
+            role: found.role,
+        });
+    };
+
+    // Handle klik tab filter area (Admin, RH-1, HO, South, North)
+    const handleAreaTabClick = (tabKey) => {
+        setActiveAreaTab(tabKey);
+
+        if (tabKey === "ADMIN") {
+            handleAccountSelect("admin");
+        } else if (tabKey === "RH-1") {
+            handleAccountSelect("hse.rh1@besmindo.com");
+        } else if (tabKey === "HO") {
+            handleAccountSelect("hse.ho@besmindo.com");
+        } else if (tabKey === "South") {
+            handleAccountSelect("hse.south@besmindo.com");
+        } else if (tabKey === "North") {
+            handleAccountSelect("hse.north@besmindo.com");
+        } else if (tabKey === "ALL") {
+            // Biarkan akun aktif saat ini atau default admin jika sebelumnya belum
+            if (!activeAccount) {
+                handleAccountSelect("admin");
+            }
+        }
+    };
+
+    // Handle perubahan manual pada input email
+    const handleEmailChange = (e) => {
+        const val = e.target.value;
+        setData("email", val);
+
+        const match = LOGIN_PRESET_ACCOUNTS.find(
+            (acc) => acc.email.toLowerCase() === val.trim().toLowerCase()
+        );
+        if (match) {
+            setSelectedAccountId(match.id);
+            setActiveAreaTab(match.areaKey || "ALL");
+            setData((prev) => ({
+                ...prev,
+                email: val,
+                role: match.role,
+                password: prev.password || match.password,
+            }));
         } else {
-            setData({
-                email: "user@besmindo.com",
-                password: "password",
-                role: "user",
-                remember: true,
-            });
+            setSelectedAccountId("");
         }
     };
 
@@ -48,6 +357,16 @@ export default function Login({ status }) {
             onFinish: () => reset("password"),
         });
     };
+
+    // Filter daftar akun pada dropdown jika tab spesifik dipilih
+    const filteredAccounts = useMemo(() => {
+        if (activeAreaTab === "ALL") {
+            return LOGIN_PRESET_ACCOUNTS;
+        }
+        return LOGIN_PRESET_ACCOUNTS.filter(
+            (acc) => acc.areaKey === activeAreaTab
+        );
+    }, [activeAreaTab]);
 
     return (
         <>
@@ -146,6 +465,12 @@ export default function Login({ status }) {
                 .clean-login-btn:hover .btn-arrow {
                     transform: translateX(4px);
                 }
+
+                .account-select:focus {
+                    border-color: #004d32 !important;
+                    outline: none;
+                    box-shadow: 0 0 0 3px rgba(0, 77, 50, 0.15) !important;
+                }
             `}</style>
 
             {/* FULLSCREEN WRAPPER WITH VISIBLE OILFIELD BACKGROUND PHOTO */}
@@ -156,7 +481,7 @@ export default function Login({ status }) {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    padding: "28px 16px",
+                    padding: "24px 14px",
                     boxSizing: "border-box",
                     fontFamily:
                         "'Instrument Sans', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
@@ -178,7 +503,7 @@ export default function Login({ status }) {
                     }}
                 />
 
-                {/* SOFT TRANSLUCENT OVERLAY - TIDAK MENGGELAPKAN FOTO SECARA BERLEBIHAN */}
+                {/* SOFT TRANSLUCENT OVERLAY */}
                 <div
                     style={{
                         position: "fixed",
@@ -187,7 +512,7 @@ export default function Login({ status }) {
                         right: 0,
                         bottom: 0,
                         background:
-                            "linear-gradient(135deg, rgba(0, 24, 16, 0.38) 0%, rgba(0, 15, 10, 0.48) 100%)",
+                            "linear-gradient(135deg, rgba(0, 24, 16, 0.40) 0%, rgba(0, 15, 10, 0.50) 100%)",
                         zIndex: 1,
                     }}
                 />
@@ -198,15 +523,15 @@ export default function Login({ status }) {
                         position: "relative",
                         zIndex: 10,
                         width: "100%",
-                        maxWidth: "460px",
+                        maxWidth: "490px",
                         borderRadius: "24px",
-                        backgroundColor: "rgba(255, 255, 255, 0.94)",
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
                         backdropFilter: "blur(24px)",
                         WebkitBackdropFilter: "blur(24px)",
-                        border: "1.5px solid rgba(255, 255, 255, 0.8)",
+                        border: "1.5px solid rgba(255, 255, 255, 0.85)",
                         boxShadow:
                             "0 25px 60px -10px rgba(0, 0, 0, 0.45), 0 0 35px rgba(0, 77, 50, 0.25)",
-                        padding: "36px 32px 30px",
+                        padding: "32px 28px 26px",
                         boxSizing: "border-box",
                         overflow: "hidden",
                     }}
@@ -225,18 +550,17 @@ export default function Login({ status }) {
                     />
 
                     {/* HEADER / ANIMATED LOGO SECTION */}
-                    <div style={{ textAlign: "center", marginBottom: "22px" }}>
-                        {/* ANIMATED FLOATING LOGO (ALA GIF) */}
+                    <div style={{ textAlign: "center", marginBottom: "18px" }}>
+                        {/* ANIMATED FLOATING LOGO */}
                         <div
                             style={{
                                 position: "relative",
                                 display: "inline-block",
-                                maxWidth: "340px",
+                                maxWidth: "320px",
                                 width: "100%",
-                                marginBottom: "14px",
+                                marginBottom: "12px",
                             }}
                         >
-                            {/* CUTE SPARKLE STARS */}
                             <span
                                 style={{
                                     position: "absolute",
@@ -272,7 +596,7 @@ export default function Login({ status }) {
                                     alignItems: "center",
                                     justifyContent: "center",
                                     width: "100%",
-                                    padding: "14px 22px",
+                                    padding: "12px 20px",
                                     borderRadius: "18px",
                                     backgroundColor: "#ffffff",
                                     border: "2px solid #efff00",
@@ -284,7 +608,6 @@ export default function Login({ status }) {
                                     transformOrigin: "center center",
                                 }}
                             >
-                                {/* SHIMMER LIGHT BEAM PASSING ACROSS */}
                                 <div
                                     style={{
                                         position: "absolute",
@@ -305,9 +628,9 @@ export default function Login({ status }) {
                                     alt="PT BESMINDO MATERI SEWATAMA"
                                     style={{
                                         height: "auto",
-                                        maxHeight: "78px",
+                                        maxHeight: "72px",
                                         width: "100%",
-                                        maxWidth: "290px",
+                                        maxWidth: "270px",
                                         objectFit: "contain",
                                         display: "block",
                                         position: "relative",
@@ -332,7 +655,7 @@ export default function Login({ status }) {
                                 fontWeight: "800",
                                 letterSpacing: "0.05em",
                                 textTransform: "uppercase",
-                                marginBottom: "8px",
+                                marginBottom: "6px",
                             }}
                         >
                             <span
@@ -350,107 +673,298 @@ export default function Login({ status }) {
 
                         <h2
                             style={{
-                                margin: "0 0 4px",
-                                fontSize: "20px",
+                                margin: 0,
+                                fontSize: "19px",
                                 fontWeight: "900",
                                 color: "#0f172a",
                                 letterSpacing: "-0.02em",
                             }}
                         >
-                            Selamat Datang Kembali
+                            Selamat Datang 
                         </h2>
-                        <p
-                            style={{
-                                margin: 0,
-                                fontSize: "12.5px",
-                                color: "#64748b",
-                            }}
-                        >
-                            Pilih peran dan masukkan kredensial untuk masuk.
-                        </p>
                     </div>
 
-                    {/* ROLE SELECTOR (CLEAN SEGMENTED PILL) */}
-                    <div style={{ marginBottom: "18px" }}>
+                    {/* ======================================================== */}
+                    {/* SECTION: LIST FILTER LOGIN PER AREA (RH1, HO, SOUTH, NORTH, ADMIN) */}
+                    {/* ======================================================== */}
+                    <div
+                        style={{
+                            backgroundColor: "#f8fafc",
+                            border: "1.5px solid #e2e8f0",
+                            borderRadius: "16px",
+                            padding: "12px 14px",
+                            marginBottom: "16px",
+                        }}
+                    >
+                        {/* AREA TAB PILLS */}
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                marginBottom: "8px",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "5px",
+                                    fontSize: "11.5px",
+                                    fontWeight: "800",
+                                    color: "#0f172a",
+                                }}
+                            >
+                                <Filter size={13} color="#004d32" />
+                                <span>Filter Area HSE Coord:</span>
+                            </div>
+                        </div>
+
+                        {/* 5 AREA TABS */}
                         <div
                             style={{
                                 display: "grid",
-                                gridTemplateColumns: "1fr 1fr",
-                                gap: "6px",
-                                backgroundColor: "#f1f5f9",
-                                padding: "4px",
-                                borderRadius: "14px",
-                                border: "1px solid #e2e8f0",
+                                gridTemplateColumns: "repeat(6, 1fr)",
+                                gap: "4px",
+                                marginBottom: "10px",
                             }}
                         >
-                            {/* TAB 1: HSE ADMIN */}
-                            <button
-                                type="button"
-                                onClick={() => handleRoleSelect("admin")}
-                                style={{
-                                    padding: "9px 12px",
-                                    borderRadius: "10px",
-                                    border: "none",
-                                    backgroundColor:
-                                        selectedRole === "admin"
-                                            ? "#004d32"
-                                            : "transparent",
-                                    color:
-                                        selectedRole === "admin"
-                                            ? "#efff00"
-                                            : "#475569",
-                                    cursor: "pointer",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    gap: "6px",
-                                    fontWeight: "800",
-                                    fontSize: "12.5px",
-                                    boxShadow:
-                                        selectedRole === "admin"
-                                            ? "0 2px 8px rgba(0, 77, 50, 0.25)"
-                                            : "none",
-                                    transition: "all 0.2s ease",
-                                }}
-                            >
-                                <ShieldCheck size={15} strokeWidth={2.4} />
-                                <span>HSE Admin</span>
-                            </button>
-
-                            {/* TAB 2: FIELD USER */}
-                            <button
-                                type="button"
-                                onClick={() => handleRoleSelect("user")}
-                                style={{
-                                    padding: "9px 12px",
-                                    borderRadius: "10px",
-                                    border: "none",
-                                    backgroundColor:
-                                        selectedRole === "user"
-                                            ? "#004d32"
-                                            : "transparent",
-                                    color:
-                                        selectedRole === "user"
-                                            ? "#efff00"
-                                            : "#475569",
-                                    cursor: "pointer",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    gap: "6px",
-                                    fontWeight: "800",
-                                    fontSize: "12.5px",
-                                    boxShadow:
-                                        selectedRole === "user"
-                                            ? "0 2px 8px rgba(0, 77, 50, 0.25)"
-                                            : "none",
-                                    transition: "all 0.2s ease",
-                                }}
-                            >
-                                <ClipboardList size={15} strokeWidth={2.4} />
-                                <span>Field User</span>
-                            </button>
+                            {AREA_FILTER_TABS.map((tab) => {
+                                const isActive = activeAreaTab === tab.key;
+                                return (
+                                    <button
+                                        key={tab.key}
+                                        type="button"
+                                        onClick={() => handleAreaTabClick(tab.key)}
+                                        style={{
+                                            padding: "6px 4px",
+                                            borderRadius: "9px",
+                                            border: isActive
+                                                ? "1.5px solid #004d32"
+                                                : "1px solid #cbd5e1",
+                                            backgroundColor: isActive
+                                                ? "#004d32"
+                                                : "#ffffff",
+                                            color: isActive ? "#efff00" : "#334155",
+                                            fontSize: "11px",
+                                            fontWeight: "800",
+                                            cursor: "pointer",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            gap: "2px",
+                                            transition: "all 0.18s ease",
+                                            boxShadow: isActive
+                                                ? "0 2px 6px rgba(0, 77, 50, 0.25)"
+                                                : "none",
+                                        }}
+                                        title={`Filter Area ${tab.label}`}
+                                    >
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "4px",
+                                            }}
+                                        >
+                                            <span
+                                                style={{
+                                                    width: "6px",
+                                                    height: "6px",
+                                                    borderRadius: "50%",
+                                                    backgroundColor: isActive
+                                                        ? "#efff00"
+                                                        : tab.dotColor,
+                                                }}
+                                            />
+                                            <span>{tab.label}</span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
+
+                        {/* QUICK ACCOUNT SELECTOR (DROPDOWN) */}
+                        <div>
+                            <label
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "5px",
+                                    fontSize: "11px",
+                                    fontWeight: "700",
+                                    color: "#475569",
+                                    marginBottom: "4px",
+                                }}
+                            >
+                                <Layers size={12} color="#004d32" />
+                                <span>Pilih Akun HSE Coord / PIC:</span>
+                            </label>
+                            <div style={{ position: "relative" }}>
+                                <select
+                                    className="account-select"
+                                    value={selectedAccountId || activeAccount?.id || ""}
+                                    onChange={(e) => handleAccountSelect(e.target.value)}
+                                    style={{
+                                        width: "100%",
+                                        height: "38px",
+                                        padding: "0 30px 0 10px",
+                                        borderRadius: "9px",
+                                        border: "1.5px solid #cbd5e1",
+                                        backgroundColor: "#ffffff",
+                                        color: "#0f172a",
+                                        fontSize: "12px",
+                                        fontWeight: "700",
+                                        cursor: "pointer",
+                                        appearance: "none",
+                                        WebkitAppearance: "none",
+                                    }}
+                                >
+                                    {activeAreaTab === "ALL" ? (
+                                        <>
+                                            <optgroup label="👑 Administrator (Pusat)">
+                                                <option value="admin">
+                                                    HSE Administrator (admin@besmindo.com)
+                                                </option>
+                                            </optgroup>
+                                            <optgroup label="🔴 Area RH-1 (Ahmad Afandi / Edo Syahputra)">
+                                                <option value="hse.rh1@besmindo.com">
+                                                    HSE Coord RH-1 (hse.rh1@besmindo.com)
+                                                </option>
+                                                <option value="ahmad.afandi@besmindo.com">
+                                                    Ahmad Afandi — PIC RH-1 (ahmad.afandi@besmindo.com)
+                                                </option>
+                                                <option value="edo.syahputra@besmindo.com">
+                                                    Edo Syahputra — PIC RH-1 (edo.syahputra@besmindo.com)
+                                                </option>
+                                            </optgroup>
+                                            <optgroup label="🟢 Area HO (Mulya Fernando / Joko Nuryanto)">
+                                                <option value="hse.ho@besmindo.com">
+                                                    HSE Coord HO (hse.ho@besmindo.com)
+                                                </option>
+                                                <option value="mulya.fernando@besmindo.com">
+                                                    Mulya Fernando — PIC HO (mulya.fernando@besmindo.com)
+                                                </option>
+                                                <option value="joko.nuryanto@besmindo.com">
+                                                    Joko Nuryanto — PIC HO (joko.nuryanto@besmindo.com)
+                                                </option>
+                                            </optgroup>
+                                            <optgroup label="🟣 Area South (Teddy / Jejen)">
+                                                <option value="hse.south@besmindo.com">
+                                                    HSE Coord South (hse.south@besmindo.com)
+                                                </option>
+                                                <option value="teddy@besmindo.com">
+                                                    Teddy — PIC South (teddy@besmindo.com)
+                                                </option>
+                                                <option value="jejen@besmindo.com">
+                                                    Jejen — PIC South (jejen@besmindo.com)
+                                                </option>
+                                            </optgroup>
+                                            <optgroup label="🔵 Area North (Suryatno / Satrio)">
+                                                <option value="hse.north@besmindo.com">
+                                                    HSE Coord North (hse.north@besmindo.com)
+                                                </option>
+                                                <option value="suryatno@besmindo.com">
+                                                    Suryatno — PIC North (suryatno@besmindo.com)
+                                                </option>
+                                                <option value="satrio@besmindo.com">
+                                                    Satrio — PIC North (satrio@besmindo.com)
+                                                </option>
+                                            </optgroup>
+                                            <optgroup label="⚙️ Demo Lainnya">
+                                                <option value="user@besmindo.com">
+                                                    Field PIC (General Demo)
+                                                </option>
+                                            </optgroup>
+                                        </>
+                                    ) : (
+                                        filteredAccounts.map((acc) => (
+                                            <option key={acc.id} value={acc.id}>
+                                                {acc.name} — ({acc.email})
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
+                                <ChevronDown
+                                    size={15}
+                                    color="#64748b"
+                                    style={{
+                                        position: "absolute",
+                                        right: "10px",
+                                        top: "12px",
+                                        pointerEvents: "none",
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* PREVIEW KARTU INFO AKUN TERPILIH */}
+                        {activeAccount && (
+                            <div
+                                style={{
+                                    marginTop: "10px",
+                                    padding: "8px 10px",
+                                    borderRadius: "10px",
+                                    backgroundColor: activeAccount.bg || "#f8fafc",
+                                    border: `1px solid ${activeAccount.borderColor || "#e2e8f0"}`,
+                                    fontSize: "11px",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        marginBottom: "4px",
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontWeight: "800",
+                                            color: activeAccount.color || "#0f172a",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "5px",
+                                        }}
+                                    >
+                                        <UserCheck size={13} />
+                                        <span>{activeAccount.name}</span>
+                                    </div>
+                                    <span
+                                        style={{
+                                            fontSize: "9.5px",
+                                            fontWeight: "800",
+                                            padding: "2px 6px",
+                                            borderRadius: "6px",
+                                            backgroundColor: activeAccount.color || "#004d32",
+                                            color: "#ffffff",
+                                        }}
+                                    >
+                                        {activeAccount.badge}
+                                    </span>
+                                </div>
+
+                                <div
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "1fr",
+                                        gap: "2px",
+                                        color: "#475569",
+                                        lineHeight: 1.35,
+                                    }}
+                                >
+                                    <div>
+                                        <strong style={{ color: "#1e293b" }}>PIC Coord:</strong>{" "}
+                                        {activeAccount.coordName}
+                                    </div>
+                                    <div>
+                                        <strong style={{ color: "#1e293b" }}>Rig Terkait:</strong>{" "}
+                                        {activeAccount.rigs}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* STATUS ALERT */}
@@ -460,8 +974,8 @@ export default function Login({ status }) {
                                 backgroundColor: "#ecfdf5",
                                 border: "1px solid #34d399",
                                 borderRadius: "10px",
-                                padding: "9px 12px",
-                                marginBottom: "14px",
+                                padding: "8px 12px",
+                                marginBottom: "12px",
                                 color: "#065f46",
                                 fontSize: "12px",
                                 fontWeight: "700",
@@ -482,8 +996,8 @@ export default function Login({ status }) {
                                 backgroundColor: "#fee2e2",
                                 border: "1px solid #f87171",
                                 borderRadius: "10px",
-                                padding: "9px 12px",
-                                marginBottom: "14px",
+                                padding: "8px 12px",
+                                marginBottom: "12px",
                                 color: "#991b1b",
                                 fontSize: "12px",
                                 fontWeight: "700",
@@ -496,17 +1010,28 @@ export default function Login({ status }) {
                     {/* MAIN FORM */}
                     <form onSubmit={handleSubmit}>
                         {/* EMAIL INPUT */}
-                        <div style={{ marginBottom: "14px" }}>
+                        <div style={{ marginBottom: "12px" }}>
                             <label
                                 style={{
-                                    display: "block",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
                                     fontSize: "12px",
                                     fontWeight: "700",
                                     color: "#334155",
-                                    marginBottom: "5px",
+                                    marginBottom: "4px",
                                 }}
                             >
-                                Alamat Email / Username
+                                <span>Alamat Email / Username</span>
+                                <span
+                                    style={{
+                                        fontSize: "11px",
+                                        fontWeight: "600",
+                                        color: "#64748b",
+                                    }}
+                                >
+                                    Bisa diedit manual
+                                </span>
                             </label>
                             <div
                                 className="clean-input-box"
@@ -537,9 +1062,7 @@ export default function Login({ status }) {
                                     type="text"
                                     required
                                     value={data.email}
-                                    onChange={(e) =>
-                                        setData("email", e.target.value)
-                                    }
+                                    onChange={handleEmailChange}
                                     placeholder="nama@besmindo.com"
                                     style={{
                                         width: "100%",
@@ -551,20 +1074,20 @@ export default function Login({ status }) {
                                         color: "#0f172a",
                                         backgroundColor: "transparent",
                                         boxSizing: "border-box",
-                                        fontWeight: "500",
+                                        fontWeight: "600",
                                     }}
                                 />
                             </div>
                         </div>
 
                         {/* PASSWORD INPUT */}
-                        <div style={{ marginBottom: "16px" }}>
+                        <div style={{ marginBottom: "14px" }}>
                             <div
                                 style={{
                                     display: "flex",
                                     justifyContent: "space-between",
                                     alignItems: "center",
-                                    marginBottom: "5px",
+                                    marginBottom: "4px",
                                 }}
                             >
                                 <label
@@ -631,7 +1154,7 @@ export default function Login({ status }) {
                                         color: "#0f172a",
                                         backgroundColor: "transparent",
                                         boxSizing: "border-box",
-                                        fontWeight: "500",
+                                        fontWeight: "600",
                                     }}
                                 />
                                 <button
@@ -671,7 +1194,7 @@ export default function Login({ status }) {
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "space-between",
-                                marginBottom: "20px",
+                                marginBottom: "18px",
                                 fontSize: "12px",
                             }}
                         >
@@ -704,16 +1227,24 @@ export default function Login({ status }) {
                             <span
                                 style={{
                                     fontSize: "11px",
-                                    color: "#004d32",
-                                    backgroundColor: "rgba(0, 77, 50, 0.08)",
+                                    color: data.role === "admin" ? "#004d32" : "#991b1b",
+                                    backgroundColor:
+                                        data.role === "admin"
+                                            ? "rgba(0, 77, 50, 0.08)"
+                                            : "#fef2f2",
+                                    border: `1px solid ${
+                                        data.role === "admin"
+                                            ? "rgba(0, 77, 50, 0.15)"
+                                            : "#fecaca"
+                                    }`,
                                     padding: "2px 7px",
                                     borderRadius: "5px",
                                     fontWeight: "800",
                                 }}
                             >
-                                {selectedRole === "admin"
-                                    ? "👑 Admin Dashboard"
-                                    : "👷 Input Lapangan"}
+                                {data.role === "admin"
+                                    ? "👑 Dashboard Admin"
+                                    : `👷 ${activeAccount?.area ? `HSE Coord ${activeAccount.area}` : "Input Lapangan"}`}
                             </span>
                         </div>
 
@@ -744,7 +1275,6 @@ export default function Login({ status }) {
                                 transition: "all 0.25s ease",
                             }}
                         >
-                            {/* HOVER SHEEN EFFECT */}
                             <div
                                 className="btn-sheen"
                                 style={{
@@ -761,9 +1291,9 @@ export default function Login({ status }) {
                             <span>
                                 {processing
                                     ? "Memverifikasi..."
-                                    : selectedRole === "admin"
+                                    : data.role === "admin"
                                     ? "Masuk ke Dashboard Admin"
-                                    : "Masuk ke Form Input User"}
+                                    : `Masuk sebagai ${activeAccount?.name || "HSE Coord"}`}
                             </span>
                             <ArrowRight
                                 size={16}
@@ -777,33 +1307,12 @@ export default function Login({ status }) {
                     {/* FOOTER SECTION */}
                     <div
                         style={{
-                            marginTop: "20px",
-                            paddingTop: "16px",
+                            marginTop: "16px",
+                            paddingTop: "14px",
                             borderTop: "1px solid #f1f5f9",
                             textAlign: "center",
                         }}
                     >
-                        <p
-                            style={{
-                                margin: "0 0 10px",
-                                fontSize: "12.5px",
-                                color: "#64748b",
-                            }}
-                        >
-                            Belum memiliki akun?{" "}
-                            <Link
-                                href="/register"
-                                style={{
-                                    color: "#004d32",
-                                    fontWeight: "800",
-                                    textDecoration: "none",
-                                    marginLeft: "3px",
-                                }}
-                            >
-                                Daftar Akun Baru
-                            </Link>
-                        </p>
-
                         <div
                             style={{
                                 display: "inline-flex",

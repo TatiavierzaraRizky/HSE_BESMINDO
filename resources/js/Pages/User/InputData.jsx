@@ -1,7 +1,23 @@
 import UserSidebar from "../../Components/UserSidebar";
-import { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { usePage } from "@inertiajs/react";
 import { calcTRI } from "../../Utils/hseCalculations";
+import {
+    ALL_AREAS,
+    ALL_HSE_COORDS,
+    ALL_CONTRACTS,
+    ALL_RIG_NAMES,
+    INDIVIDUAL_PICS,
+    ALL_INDIVIDUAL_PICS,
+    AREA_CONFIG,
+    RIG_CONTRACT_MASTER,
+    getHseCoordByArea,
+    getAreaByHseCoord,
+    getPicsByArea,
+    getDefaultPicByArea,
+    getRigGroupsByArea,
+    findRigInfo,
+} from "../../Utils/rigContracts";
 import {
     ClipboardList,
     CheckCircle2,
@@ -12,6 +28,11 @@ import {
     Calendar,
     FileSpreadsheet,
     User,
+    ShieldCheck,
+    MapPin,
+    Layers,
+    Upload,
+    FileText,
 } from "lucide-react";
 
 const MONTHS = [
@@ -94,13 +115,13 @@ const initialYr = String(CURRENT_YEAR);
 
 const INITIAL_FORM = {
     date: `${initialYr}-${initialMo}-01`,
-    contractNo: "",
-    rigNo: "",
-    locationDistrict: "",
+    contractNo: "SPHR01095C",
+    rigNo: "BMS # 02, BMS # 03, BMS # 08",
+    locationDistrict: "South",
     period: initialMo,
     year: initialYr,
-    submitterName: "",
-    submitterEmail: "",
+    submitterName: "Teddy",
+    submitterEmail: "teddy@besmindo.com",
 
     // =========================
     // MAN HOURS
@@ -215,21 +236,93 @@ export default function UserInputData() {
 
     useEffect(() => {
         if (currentUser) {
-            setForm((prev) => ({
-                ...prev,
-                submitterName: prev.submitterName || currentUser.name || "",
-                submitterEmail: prev.submitterEmail || currentUser.email || "",
-            }));
+            setForm((prev) => {
+                const userName = currentUser.name || "";
+                const userEmail = currentUser.email || "";
+                const userArea = currentUser.area || getAreaByHseCoord(userName) || getAreaByHseCoord(userEmail);
+
+                // Auto-sync area, kontrak, dan rig sesuai akun PIC yang login
+                const areaRigs = userArea
+                    ? RIG_CONTRACT_MASTER.filter((m) => m.area.toLowerCase() === userArea.toLowerCase())
+                    : [];
+                const firstContract = areaRigs[0]?.contractNo || prev.contractNo;
+                const matchingRigs = areaRigs.filter((m) => m.contractNo === firstContract);
+                const defaultRigStr = matchingRigs.length > 0
+                    ? matchingRigs.map((m) => m.rig).join(", ")
+                    : prev.rigNo;
+
+                return {
+                    ...prev,
+                    submitterName: userName || prev.submitterName,
+                    submitterEmail: userEmail || prev.submitterEmail,
+                    locationDistrict: userArea || prev.locationDistrict,
+                    contractNo: firstContract || prev.contractNo,
+                    rigNo: defaultRigStr,
+                };
+            });
         }
     }, [currentUser]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [evidenceFile, setEvidenceFile] = useState(null);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 20 * 1024 * 1024) {
+                alert("Ukuran file bukti maksimal 20 MB.");
+                e.target.value = "";
+                return;
+            }
+            setEvidenceFile(file);
+        }
+    };
+
+    const handleRemoveFile = () => {
+        setEvidenceFile(null);
+        const fileInput = document.getElementById("evidence-file-input");
+        if (fileInput) fileInput.value = "";
+    };
+
+    // Mode input manual jika sewaktu-waktu data kontrak, area, PIC, atau rig berubah
+    const [isManualContract, setIsManualContract] = useState(false);
+    const [isManualArea, setIsManualArea] = useState(false);
+    const [isManualPic, setIsManualPic] = useState(false);
+    const [isManualRig, setIsManualRig] = useState(false);
+
+    const handleResetRigToPic = () => {
+        setIsManualRig(false);
+        const matchingRigs = RIG_CONTRACT_MASTER.filter(
+            (m) => m.contractNo.toLowerCase() === form.contractNo.toLowerCase()
+        );
+        if (matchingRigs.length > 0) {
+            setForm((prev) => ({
+                ...prev,
+                rigNo: matchingRigs.map((m) => m.rig).join(", "),
+            }));
+        }
+    };
 
     const selectedMonthLabel = useMemo(() => {
         const month = MONTHS.find((item) => item.value === form.period);
         return month ? month.label : "Bulan belum dipilih";
     }, [form.period]);
+
+    const handleAutoFill = ({ rigs, contractNo, area, hseCoord, pic }) => {
+        setForm((prev) => {
+            const selectedPic = pic || (area ? getDefaultPicByArea(area) : "") || hseCoord || prev.submitterName;
+            const picObj = INDIVIDUAL_PICS.find((p) => p.name.toLowerCase() === selectedPic.toLowerCase());
+            return {
+                ...prev,
+                rigNo: rigs.join(", "),
+                contractNo: contractNo || prev.contractNo,
+                locationDistrict: area || prev.locationDistrict,
+                submitterName: selectedPic,
+                submitterEmail: picObj?.emailHint || prev.submitterEmail,
+            };
+        });
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -251,6 +344,71 @@ export default function UserInputData() {
                     updated.year = parts[0];
                     updated.period = parts[1];
                 }
+            } else if (name === "contractNo") {
+                // Auto-fill rig, area, dan PIC berdasarkan no kontrak jika ada di master
+                const matchingRigs = RIG_CONTRACT_MASTER.filter(
+                    (m) => m.contractNo.toLowerCase() === value.toLowerCase()
+                );
+                if (matchingRigs.length > 0) {
+                    if (!isManualRig) {
+                        updated.rigNo = matchingRigs.map((m) => m.rig).join(", ");
+                    }
+                    const targetArea = matchingRigs[0].area;
+                    updated.locationDistrict = targetArea;
+
+                    // Pilih PIC individual default dari area tersebut jika belum sesuai
+                    const areaPics = getPicsByArea(targetArea);
+                    if (!areaPics.includes(updated.submitterName)) {
+                        updated.submitterName = areaPics[0] || "";
+                        const picInfo = INDIVIDUAL_PICS.find((p) => p.name === areaPics[0]);
+                        if (picInfo) updated.submitterEmail = picInfo.emailHint;
+                    }
+                }
+            } else if (name === "locationDistrict") {
+                // Area berubah -> sesuaikan pilihan PIC individual ke area tersebut
+                const areaPics = getPicsByArea(value);
+                if (areaPics.length > 0 && !areaPics.includes(updated.submitterName)) {
+                    updated.submitterName = areaPics[0];
+                    const picInfo = INDIVIDUAL_PICS.find((p) => p.name === areaPics[0]);
+                    if (picInfo) updated.submitterEmail = picInfo.emailHint;
+                }
+                const areaRigs = RIG_CONTRACT_MASTER.filter(
+                    (m) => m.area.toLowerCase() === value.toLowerCase()
+                );
+                if (areaRigs.length > 0) {
+                    const firstContract = areaRigs[0].contractNo;
+                    updated.contractNo = firstContract;
+                    if (!isManualRig) {
+                        const contractRigs = areaRigs.filter((m) => m.contractNo === firstContract);
+                        updated.rigNo = contractRigs.map((m) => m.rig).join(", ");
+                    }
+                }
+            } else if (name === "submitterName") {
+                // PIC (HSE Coord) berubah -> sesuaikan Area, Kontrak, Rig, dan Email secara otomatis
+                const targetArea = getAreaByHseCoord(value);
+                if (targetArea) {
+                    updated.locationDistrict = targetArea;
+                    const areaRigs = RIG_CONTRACT_MASTER.filter(
+                        (m) => m.area.toLowerCase() === targetArea.toLowerCase()
+                    );
+                    if (areaRigs.length > 0) {
+                        const firstContract = areaRigs[0].contractNo;
+                        updated.contractNo = firstContract;
+                        if (!isManualRig) {
+                            const contractRigs = areaRigs.filter((m) => m.contractNo === firstContract);
+                            updated.rigNo = contractRigs.map((m) => m.rig).join(", ");
+                        }
+                    }
+                }
+                const picInfo = INDIVIDUAL_PICS.find(
+                    (p) => p.name.toLowerCase() === value.toLowerCase()
+                );
+                if (picInfo) {
+                    updated.submitterEmail = picInfo.emailHint;
+                }
+            } else if (name === "rigNo") {
+                // Pengguna mengetik atau mengubah rig secara manual
+                setIsManualRig(true);
             }
 
             return updated;
@@ -291,9 +449,68 @@ export default function UserInputData() {
         });
     };
 
+    const [deleteTarget, setDeleteTarget] = useState(null);
+
+    const handleAddCustomIndicator = (type) => {
+        const id = `custom_${type}_${Date.now()}`;
+        const currentValues = form[type] || {};
+        const customCount = Object.values(currentValues).filter((v) => v.isCustom).length + 1;
+        const defaultName = `Indikator Tambahan #${customCount}`;
+
+        setForm((prev) => ({
+            ...prev,
+            [type]: {
+                ...prev[type],
+                [id]: {
+                    actual: 0,
+                    plan: 0,
+                    customName: defaultName,
+                    definition: "",
+                    isCustom: true,
+                },
+            },
+        }));
+    };
+
+    const handleRequestRemoveIndicator = (type, key, name) => {
+        setDeleteTarget({
+            type,
+            key,
+            name: name || key,
+        });
+    };
+
+    const handleConfirmRemoveIndicator = () => {
+        if (!deleteTarget) return;
+        const { type, key } = deleteTarget;
+        setForm((prev) => {
+            const nextTypeState = { ...prev[type] };
+            delete nextTypeState[key];
+            return {
+                ...prev,
+                [type]: nextTypeState,
+            };
+        });
+        setDeleteTarget(null);
+    };
+
+    const handleCancelRemoveIndicator = () => {
+        setDeleteTarget(null);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // VALIDASI WAJIB FILE BUKTI PENGINPUTAN
+        if (!evidenceFile) {
+            alert("File dokumen bukti penginputan (Evidence File) WAJIB dilampirkan sebelum mengirim laporan!");
+            const uploadSection = document.getElementById("evidence-file-container");
+            if (uploadSection) {
+                uploadSection.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            return;
+        }
+
         setIsSubmitting(true);
         setSubmitSuccess(false);
 
@@ -347,6 +564,12 @@ export default function UserInputData() {
                 remarks: form.remarks,
             };
 
+            const formData = new FormData();
+            formData.append("data", JSON.stringify(payload));
+            if (evidenceFile) {
+                formData.append("evidence_file", evidenceFile);
+            }
+
             const csrfToken = document
                 .querySelector('meta[name="csrf-token"]')
                 ?.getAttribute("content");
@@ -354,13 +577,12 @@ export default function UserInputData() {
             const response = await fetch("/hse-report", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Accept: "application/json",
                     "X-CSRF-TOKEN": csrfToken || "",
                     "X-Requested-With": "XMLHttpRequest",
                 },
                 credentials: "same-origin",
-                body: JSON.stringify(payload),
+                body: formData,
             });
 
             const result = await response.json().catch(() => null);
@@ -379,6 +601,9 @@ export default function UserInputData() {
             }
 
             setSubmitSuccess(true);
+            setEvidenceFile(null);
+            const fileEl = document.getElementById("evidence-file-input");
+            if (fileEl) fileEl.value = "";
             alert(`Data HSE periode ${selectedMonthLabel} berhasil dikirim! Status saat ini: PENDING (Menunggu Persetujuan / Approval dari Admin via Email atau Menu Approval).`);
             window.scrollTo({ top: 0, behavior: "smooth" });
         } catch (error) {
@@ -396,6 +621,9 @@ export default function UserInputData() {
                 lagging: createIndicatorValues(LAGGING_INDICATORS),
                 leading: createIndicatorValues(LEADING_INDICATORS),
             });
+            setEvidenceFile(null);
+            const fileEl = document.getElementById("evidence-file-input");
+            if (fileEl) fileEl.value = "";
             setSubmitSuccess(false);
         }
     };
@@ -410,6 +638,91 @@ export default function UserInputData() {
                 color: "#1e293b",
             }}
         >
+            <style>{`
+                .section-ident-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    gap: 16px 20px;
+                }
+                @media (max-width: 900px) {
+                    .section-ident-grid {
+                        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                    }
+                }
+                @media (max-width: 600px) {
+                    .section-ident-grid {
+                        grid-template-columns: 1fr !important;
+                    }
+                }
+                .ident-field-col {
+                    display: flex;
+                    flex-direction: column;
+                    min-width: 0;
+                }
+                .ident-label-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    height: 22px;
+                    margin-bottom: 6px;
+                    gap: 6px;
+                }
+                .ident-label {
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: #1e293b;
+                    white-space: nowrap;
+                    display: inline-flex;
+                    align-items: center;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .ident-req {
+                    color: #dc2626;
+                    margin-left: 3px;
+                    font-weight: 800;
+                }
+                .ident-btn-toggle {
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #004d32;
+                    background-color: #f1f5f9;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 4px;
+                    padding: 1px 7px;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    flex-shrink: 0;
+                    line-height: 1.3;
+                    transition: all 0.15s ease;
+                }
+                .ident-btn-toggle:hover {
+                    background-color: #e2e8f0;
+                }
+                .ident-control {
+                    width: 100%;
+                    height: 40px;
+                    box-sizing: border-box;
+                    border: 1.5px solid #cbd5e1;
+                    border-radius: 8px;
+                    padding: 0 10px;
+                    outline: none;
+                    background-color: #ffffff;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #0f172a;
+                    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+                }
+                .ident-control:focus {
+                    border-color: #004d32 !important;
+                    box-shadow: 0 0 0 3px rgba(0, 77, 50, 0.12) !important;
+                }
+                .ident-control-manual {
+                    border-color: #d97706 !important;
+                    background-color: #fffbeb !important;
+                }
+            `}</style>
+
             <UserSidebar />
 
             <main
@@ -589,13 +902,15 @@ export default function UserInputData() {
                             </div>
                             <div>
                                 <div style={{ fontSize: "11px", color: "#a7f3d0", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                                    Petugas Penginput (PIC Terautentikasi):
+                                    PIC Lapangan (HSE Coord {form.locationDistrict ? `Area ${form.locationDistrict}` : ""}):
                                 </div>
                                 <div style={{ fontSize: "13.5px", fontWeight: "800", color: "#ffffff", marginTop: "1px" }}>
-                                    {form.submitterName || currentUser?.name || "User Lapangan"}{" "}
-                                    <span style={{ color: "#efff00", fontWeight: "600", fontSize: "12px" }}>
-                                        ({form.submitterEmail || currentUser?.email || "user@besmindo.com"})
-                                    </span>
+                                    {form.submitterName || "Pilih HSE Coord"}{" "}
+                                    {form.contractNo && (
+                                        <span style={{ color: "#efff00", fontWeight: "700", fontSize: "12px" }}>
+                                            • Kontrak: {form.contractNo}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -628,91 +943,267 @@ export default function UserInputData() {
                     {/* FORM CONTAINER */}
                     <form onSubmit={handleSubmit}>
                         {/* 1. IDENTIFICATION */}
-                        <Section title="1. Data Identifikasi Rig & Periode">
-                            <div
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                                    gap: "16px",
-                                }}
-                            >
-                                <InputField
-                                    label="Tanggal Laporan"
-                                    name="date"
-                                    type="date"
-                                    required
-                                    value={form.date}
-                                    onChange={handleChange}
-                                />
+                        <Section title="1. Data Identifikasi Rig, Area & PIC (HSE Coord)">
+                            <div className="section-ident-grid">
+                                {/* ROW 1, COL 1: TANGGAL & PERIODE LAPORAN (GABUNGAN KALENDER LANGSUNG) */}
+                                <div className="ident-field-col">
+                                    <div className="ident-label-header">
+                                        <label className="ident-label">
+                                            Tanggal & Periode Laporan <span className="ident-req">*</span>
+                                        </label>
+                                        <span
+                                            style={{
+                                                fontSize: "11px",
+                                                fontWeight: "800",
+                                                color: "#004d32",
+                                                backgroundColor: "#ecfdf5",
+                                                border: "1px solid #a7f3d0",
+                                                borderRadius: "4px",
+                                                padding: "1px 6px",
+                                                whiteSpace: "nowrap",
+                                            }}
+                                        >
+                                            📅 {selectedMonthLabel} {form.year}
+                                        </span>
+                                    </div>
+                                    <input
+                                        type="date"
+                                        name="date"
+                                        required
+                                        value={form.date}
+                                        onChange={handleChange}
+                                        onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                                        className="ident-control"
+                                        style={{ cursor: "pointer", fontWeight: "700" }}
+                                        title="Klik untuk memilih tanggal & periode di kalender"
+                                    />
+                                    <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: "600", marginTop: "3px" }}>
+                                        Pilih di kalender (Bulan & Tahun otomatis terisi)
+                                    </span>
+                                </div>
 
-                                <InputField
-                                    label="Nomor Kontrak"
-                                    name="contractNo"
-                                    placeholder="Contoh: SPHR01097C"
-                                    value={form.contractNo}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                {/* ROW 1, COL 2: NOMOR KONTRAK */}
+                                <div className="ident-field-col">
+                                    <div className="ident-label-header">
+                                        <label className="ident-label">
+                                            Nomor Kontrak <span className="ident-req">*</span>
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsManualContract(!isManualContract)}
+                                            className="ident-btn-toggle"
+                                        >
+                                            {isManualContract ? "📋 List" : "✏️ Manual"}
+                                        </button>
+                                    </div>
+                                    {isManualContract ? (
+                                        <input
+                                            type="text"
+                                            name="contractNo"
+                                            value={form.contractNo}
+                                            onChange={handleChange}
+                                            placeholder="Nomor kontrak..."
+                                            className="ident-control"
+                                            required
+                                        />
+                                    ) : (
+                                        <select
+                                            name="contractNo"
+                                            value={form.contractNo}
+                                            onChange={(e) => {
+                                                if (e.target.value === "__custom__") {
+                                                    setIsManualContract(true);
+                                                } else {
+                                                    handleChange(e);
+                                                }
+                                            }}
+                                            className="ident-control"
+                                            required
+                                        >
+                                            <option value="">-- Pilih Nomor Kontrak --</option>
+                                            {ALL_CONTRACTS.map((c) => {
+                                                const rigs = RIG_CONTRACT_MASTER.filter((m) => m.contractNo === c);
+                                                const area = rigs[0]?.area || "";
+                                                const rigNames = rigs.map((r) => r.rig).join(", ");
+                                                return (
+                                                    <option key={c} value={c}>
+                                                        {c} — Area {area} ({rigNames})
+                                                    </option>
+                                                );
+                                            })}
+                                            <option value="__custom__">✏️ Ketik Kontrak Lainnya...</option>
+                                        </select>
+                                    )}
+                                </div>
 
-                                <InputField
-                                    label="Lokasi / Distrik Wilayah"
-                                    name="locationDistrict"
-                                    placeholder="Contoh: AREA WK ROKAN - RIAU"
-                                    value={form.locationDistrict}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                {/* ROW 1, COL 3: PETUGAS PIC (HSE COORD) */}
+                                <div className="ident-field-col">
+                                    <div className="ident-label-header">
+                                        <label className="ident-label">
+                                            Petugas PIC (HSE Coord) <span className="ident-req">*</span>
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsManualPic(!isManualPic)}
+                                            className="ident-btn-toggle"
+                                        >
+                                            {isManualPic ? "📋 List" : "✏️ Manual"}
+                                        </button>
+                                    </div>
+                                    {isManualPic ? (
+                                        <input
+                                            type="text"
+                                            name="submitterName"
+                                            value={form.submitterName}
+                                            onChange={handleChange}
+                                            placeholder="Nama petugas PIC..."
+                                            className="ident-control"
+                                            required
+                                        />
+                                    ) : (
+                                        <select
+                                            name="submitterName"
+                                            value={form.submitterName}
+                                            onChange={(e) => {
+                                                if (e.target.value === "__custom__") {
+                                                    setIsManualPic(true);
+                                                } else {
+                                                    handleChange(e);
+                                                }
+                                            }}
+                                            className="ident-control"
+                                            required
+                                        >
+                                            <option value="">-- Pilih Petugas PIC (HSE Coord) --</option>
+                                            {form.locationDistrict && (
+                                                <optgroup label={`PIC Area ${form.locationDistrict} (Sesuai Area Terpilih)`}>
+                                                    {getPicsByArea(form.locationDistrict).map((pic) => (
+                                                        <option key={pic} value={pic}>
+                                                            👤 {pic} (Area {form.locationDistrict})
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            )}
+                                            <optgroup label="Semua Petugas PIC Lapangan">
+                                                {INDIVIDUAL_PICS.map((p) => (
+                                                    <option key={p.name} value={p.name}>
+                                                        👤 {p.name} — Area {p.area}
+                                                    </option>
+                                                ))}
+                                            </optgroup>
+                                            <option value="__custom__">✏️ Ketik Nama PIC Lainnya...</option>
+                                        </select>
+                                    )}
+                                </div>
 
-                                <MultiRigSelect
-                                    value={form.rigNo}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                {/* ROW 2, COL 1: LOKASI / AREA DISTRIK */}
+                                <div className="ident-field-col">
+                                    <div className="ident-label-header">
+                                        <label className="ident-label">
+                                            Lokasi / Area Distrik <span className="ident-req">*</span>
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsManualArea(!isManualArea)}
+                                            className="ident-btn-toggle"
+                                        >
+                                            {isManualArea ? "📋 List" : "✏️ Manual"}
+                                        </button>
+                                    </div>
+                                    {isManualArea ? (
+                                        <input
+                                            type="text"
+                                            name="locationDistrict"
+                                            value={form.locationDistrict}
+                                            onChange={handleChange}
+                                            placeholder="Area kerja..."
+                                            className="ident-control"
+                                            required
+                                        />
+                                    ) : (
+                                        <select
+                                            name="locationDistrict"
+                                            value={form.locationDistrict}
+                                            onChange={(e) => {
+                                                if (e.target.value === "__custom__") {
+                                                    setIsManualArea(true);
+                                                } else {
+                                                    handleChange(e);
+                                                }
+                                            }}
+                                            className="ident-control"
+                                            required
+                                        >
+                                            <option value="">-- Pilih Area Kerja --</option>
+                                            {ALL_AREAS.map((a) => (
+                                                <option key={a} value={a}>
+                                                    Area {a} (PIC: {getPicsByArea(a).join(" / ")})
+                                                </option>
+                                            ))}
+                                            <option value="__custom__">✏️ Ketik Area Lainnya...</option>
+                                        </select>
+                                    )}
+                                </div>
 
-                                <SelectField
-                                    label="Periode Bulan"
-                                    name="period"
-                                    value={form.period}
-                                    onChange={handleChange}
-                                    options={MONTHS.map((month) => month.value)}
-                                    optionLabels={MONTHS.reduce((result, month) => {
-                                        result[month.value] = month.label;
-                                        return result;
-                                    }, {})}
-                                    required
-                                />
+                                {/* ROW 2, COL 2: NOMOR RIG */}
+                                <div className="ident-field-col">
+                                    <div className="ident-label-header">
+                                        <label className="ident-label">
+                                            Nomor Rig <span className="ident-req">*</span>
+                                        </label>
+                                        {isManualRig ? (
+                                            <button
+                                                type="button"
+                                                onClick={handleResetRigToPic}
+                                                className="ident-btn-toggle"
+                                                style={{ color: "#b45309", backgroundColor: "#fef3c7", borderColor: "#fde68a" }}
+                                            >
+                                                🔒 Reset
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsManualRig(true)}
+                                                className="ident-btn-toggle"
+                                            >
+                                                ✏️ Ubah
+                                            </button>
+                                        )}
+                                    </div>
+                                    <input
+                                        type="text"
+                                        name="rigNo"
+                                        value={form.rigNo}
+                                        onChange={handleChange}
+                                        placeholder="Nomor rig..."
+                                        className={`ident-control ${isManualRig ? "ident-control-manual" : ""}`}
+                                        required
+                                    />
+                                    <span style={{ fontSize: "10.5px", color: isManualRig ? "#b45309" : "#059669", fontWeight: "600", marginTop: "3px" }}>
+                                        {isManualRig ? "Mode ubah manual aktif" : "⚡ Otomatis mengikuti PIC & Area"}
+                                    </span>
+                                </div>
 
-                                <SelectField
-                                    label="Tahun Kinerja"
-                                    name="year"
-                                    value={form.year}
-                                    onChange={handleChange}
-                                    options={YEARS}
-                                    optionLabels={YEARS.reduce((result, yr) => {
-                                        result[yr] = `Tahun ${yr}`;
-                                        return result;
-                                    }, {})}
-                                    required
-                                />
-
-                                <InputField
-                                    label="Nama Petugas Penginput (PIC)"
-                                    name="submitterName"
-                                    placeholder="Contoh: Budi Santoso"
-                                    value={form.submitterName}
-                                    onChange={handleChange}
-                                    required
-                                />
-
-                                <InputField
-                                    label="Email Petugas Penginput (PIC)"
-                                    name="submitterEmail"
-                                    type="email"
-                                    placeholder="Contoh: budi@besmindo.com"
-                                    value={form.submitterEmail}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                {/* ROW 2, COL 3: EMAIL PETUGAS PENGINPUT (PIC) */}
+                                <div className="ident-field-col">
+                                    <div className="ident-label-header">
+                                        <label className="ident-label">
+                                            Email Petugas Penginput <span className="ident-req">*</span>
+                                        </label>
+                                    </div>
+                                    <input
+                                        type="email"
+                                        name="submitterEmail"
+                                        placeholder="nama@besmindo.com"
+                                        value={form.submitterEmail}
+                                        onChange={handleChange}
+                                        required
+                                        className="ident-control"
+                                    />
+                                    <span style={{ fontSize: "10.5px", color: "#64748b", fontWeight: "600", marginTop: "3px" }}>
+                                        Email notifikasi & verifikasi laporan
+                                    </span>
+                                </div>
                             </div>
                         </Section>
 
@@ -815,6 +1306,8 @@ export default function UserInputData() {
                             indicators={LAGGING_INDICATORS}
                             values={form.lagging}
                             onChange={handleIndicatorChange}
+                            onAddCustom={handleAddCustomIndicator}
+                            onRemoveCustom={handleRequestRemoveIndicator}
                         />
 
                         {/* 4. LEADING INDICATORS */}
@@ -824,10 +1317,12 @@ export default function UserInputData() {
                             indicators={LEADING_INDICATORS}
                             values={form.leading}
                             onChange={handleIndicatorChange}
+                            onAddCustom={handleAddCustomIndicator}
+                            onRemoveCustom={handleRequestRemoveIndicator}
                         />
 
-                        {/* 5. DOCUMENTATION / REMARKS */}
-                        <Section title="5. Catatan / Executive Remarks">
+                        {/* 5. DOCUMENTATION / REMARKS & BUKTI PENGINPUTAN */}
+                        <Section title="5. Catatan & Bukti Dokumen Penginputan">
                             <label
                                 style={{
                                     display: "block",
@@ -858,6 +1353,135 @@ export default function UserInputData() {
                                     color: "#1e293b",
                                 }}
                             />
+
+                            {/* UPLOAD FORM / CHOOSE FILE SEBAGAI BUKTI PENGINPUTAN */}
+                            <div
+                                style={{
+                                    marginTop: "20px",
+                                    paddingTop: "18px",
+                                    borderTop: "1px dashed #cbd5e1",
+                                }}
+                            >
+                                <label
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "6px",
+                                        fontSize: "13px",
+                                        fontWeight: "800",
+                                        marginBottom: "6px",
+                                        color: "#004d32",
+                                    }}
+                                >
+                                    <Upload size={16} color="#004d32" />
+                                    <span>Upload File Bukti Penginputan (Evidence File)</span>
+                                    <span style={{ color: "#dc2626", fontWeight: "900", fontSize: "12px" }}>* (WAJIB DILAMPIRKAN)</span>
+                                </label>
+                                <p
+                                    style={{
+                                        margin: "0 0 12px",
+                                        fontSize: "12px",
+                                        color: "#64748b",
+                                        lineHeight: "1.45",
+                                    }}
+                                >
+                                    Wajib melampirkan file dokumen pendukung sah sebagai bukti (scan logsheet fisik, formulir bertandatangan, file Excel rekap, atau foto bukti lapangan). Format: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Maksimal 20 MB).
+                                </p>
+
+                                <div
+                                    id="evidence-file-container"
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "12px",
+                                        flexWrap: "wrap",
+                                        padding: "14px 16px",
+                                        backgroundColor: evidenceFile ? "#f0fdf4" : "#fef2f2",
+                                        borderRadius: "10px",
+                                        border: evidenceFile ? "1.5px solid #10b981" : "1.5px dashed #f87171",
+                                        transition: "all 0.2s ease",
+                                    }}
+                                >
+                                    <input
+                                        type="file"
+                                        id="evidence-file-input"
+                                        required
+                                        onChange={handleFileChange}
+                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                                        style={{ display: "none" }}
+                                    />
+
+                                    <label
+                                        htmlFor="evidence-file-input"
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: "8px",
+                                            padding: "9px 20px",
+                                            backgroundColor: evidenceFile ? "#004d32" : "#b91c1c",
+                                            color: evidenceFile ? "#efff00" : "#ffffff",
+                                            border: evidenceFile ? "1.5px solid #efff00" : "1.5px solid #ef4444",
+                                            borderRadius: "8px",
+                                            fontSize: "13px",
+                                            fontWeight: "800",
+                                            cursor: "pointer",
+                                            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.12)",
+                                            transition: "all 0.15s ease",
+                                        }}
+                                    >
+                                        <Upload size={16} strokeWidth={2.4} />
+                                        <span>{evidenceFile ? "Ganti File (Choose File)" : "📁 Choose File (Pilih File Bukti *)"}</span>
+                                    </label>
+
+                                    {evidenceFile ? (
+                                        <div
+                                            style={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "10px",
+                                                padding: "7px 14px",
+                                                backgroundColor: "#ecfdf5",
+                                                border: "1px solid #a7f3d0",
+                                                borderRadius: "8px",
+                                                fontSize: "12.5px",
+                                                color: "#065f46",
+                                                fontWeight: "700",
+                                            }}
+                                        >
+                                            <FileText size={17} color="#059669" />
+                                            <span>
+                                                {evidenceFile.name} ({(evidenceFile.size / 1024 / 1024).toFixed(2)} MB)
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveFile}
+                                                title="Hapus file terpilih"
+                                                style={{
+                                                    background: "#fee2e2",
+                                                    border: "1px solid #fca5a5",
+                                                    borderRadius: "50%",
+                                                    color: "#dc2626",
+                                                    cursor: "pointer",
+                                                    width: "20px",
+                                                    height: "20px",
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    fontWeight: "800",
+                                                    fontSize: "11px",
+                                                    marginLeft: "4px",
+                                                }}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <span style={{ fontSize: "12.5px", color: "#b91c1c", fontWeight: "700" }}>
+                                            ⚠️ Belum ada file bukti yang dipilih. Wajib lampirkan 1 file sebelum submit!
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
                         </Section>
 
                         {/* ACTIONS BAR */}
@@ -922,6 +1546,12 @@ export default function UserInputData() {
                     </form>
                 </div>
             </main>
+
+            <ConfirmDeleteModal
+                deleteTarget={deleteTarget}
+                onConfirm={handleConfirmRemoveIndicator}
+                onCancel={handleCancelRemoveIndicator}
+            />
         </div>
     );
 }
@@ -930,26 +1560,175 @@ export default function UserInputData() {
    SUB-COMPONENTS
 ============================================================ */
 
-function IndicatorRow({ indicator, index, type, value, onChange }) {
+function ConfirmDeleteModal({ deleteTarget, onConfirm, onCancel }) {
+    if (!deleteTarget) return null;
+
+    return (
+        <div
+            style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(15, 23, 42, 0.65)",
+                backdropFilter: "blur(3px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 9999,
+                padding: "20px",
+                boxSizing: "border-box",
+            }}
+            onClick={onCancel}
+        >
+            <div
+                style={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: "16px",
+                    maxWidth: "460px",
+                    width: "100%",
+                    padding: "26px",
+                    boxShadow: "0 20px 45px rgba(0, 0, 0, 0.25)",
+                    border: "1px solid #e2e8f0",
+                    position: "relative",
+                    boxSizing: "border-box",
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "14px" }}>
+                    <div
+                        style={{
+                            width: "46px",
+                            height: "46px",
+                            borderRadius: "12px",
+                            backgroundColor: "#fee2e2",
+                            border: "1px solid #fca5a5",
+                            color: "#dc2626",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                        }}
+                    >
+                        <ShieldAlert size={26} strokeWidth={2.3} />
+                    </div>
+
+                    <div style={{ flex: 1 }}>
+                        <h3
+                            style={{
+                                margin: "0 0 6px",
+                                fontSize: "16.5px",
+                                fontWeight: "800",
+                                color: "#0f172a",
+                            }}
+                        >
+                            Hapus Indikator Ini?
+                        </h3>
+                        <p
+                            style={{
+                                margin: "0 0 12px",
+                                fontSize: "13px",
+                                color: "#64748b",
+                                lineHeight: "1.5",
+                            }}
+                        >
+                            Peringatan: Baris indikator berikut akan dihapus dan tidak disertakan pada laporan periode ini.
+                        </p>
+                        <div
+                            style={{
+                                padding: "10px 14px",
+                                backgroundColor: "#f8fafc",
+                                borderRadius: "8px",
+                                border: "1.5px solid #e2e8f0",
+                                fontSize: "12.5px",
+                                fontWeight: "700",
+                                color: "#004d32",
+                                wordBreak: "break-word",
+                                marginBottom: "20px",
+                            }}
+                        >
+                            📌 {deleteTarget.name}
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        alignItems: "center",
+                        gap: "10px",
+                    }}
+                >
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        style={{
+                            height: "38px",
+                            padding: "0 18px",
+                            backgroundColor: "#ffffff",
+                            border: "1px solid #cbd5e1",
+                            borderRadius: "8px",
+                            fontSize: "13px",
+                            fontWeight: "700",
+                            color: "#475569",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                        }}
+                    >
+                        Batal
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        style={{
+                            height: "38px",
+                            padding: "0 20px",
+                            backgroundColor: "#dc2626",
+                            border: "1px solid #b91c1c",
+                            borderRadius: "8px",
+                            fontSize: "13px",
+                            fontWeight: "800",
+                            color: "#ffffff",
+                            cursor: "pointer",
+                            boxShadow: "0 2px 8px rgba(220, 38, 38, 0.25)",
+                            transition: "all 0.15s ease",
+                        }}
+                    >
+                        Ya, Hapus Indikator
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function IndicatorRow({ indicator, index, type, value, onChange, onRemove }) {
     const [editingName, setEditingName] = useState(false);
     const [editingDef, setEditingDef] = useState(false);
+    const isCustom = Boolean(value.isCustom);
     const customName = value.customName !== undefined ? value.customName : indicator;
-    const isNameEdited = customName !== indicator && customName.trim() !== "";
+    const isNameEdited = !isCustom && customName !== indicator && customName.trim() !== "";
 
     const definition = value.definition !== undefined ? value.definition : "";
 
     return (
         <tr
             style={{
-                backgroundColor: index % 2 === 0 ? "#ffffff" : "#fcfdfd",
-                borderBottom: "1px solid #f1f5f9",
+                backgroundColor: isCustom
+                    ? "#f0fdf4"
+                    : index % 2 === 0
+                    ? "#ffffff"
+                    : "#fcfdfd",
+                borderBottom: isCustom ? "1.5px solid #86efac" : "1px solid #f1f5f9",
             }}
         >
             <td
                 style={{
                     ...tableCellStyle,
                     fontWeight: "700",
-                    color: "#004d32",
+                    color: isCustom ? "#166534" : "#004d32",
                     width: "45px",
                 }}
             >
@@ -965,7 +1744,29 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                     minWidth: "260px",
                 }}
             >
-                {editingName ? (
+                {isCustom ? (
+                    <input
+                        type="text"
+                        value={customName}
+                        onChange={(event) =>
+                            onChange(type, indicator, "customName", event.target.value)
+                        }
+                        placeholder="Ketik nama indikator..."
+                        style={{
+                            width: "100%",
+                            height: "34px",
+                            boxSizing: "border-box",
+                            border: "1.5px solid #004d32",
+                            borderRadius: "6px",
+                            padding: "0 10px",
+                            outline: "none",
+                            fontSize: "12.5px",
+                            fontWeight: "700",
+                            color: "#0f172a",
+                            backgroundColor: "#ffffff",
+                        }}
+                    />
+                ) : editingName ? (
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <input
                             type="text"
@@ -1070,7 +1871,28 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                     minWidth: "260px",
                 }}
             >
-                {editingDef ? (
+                {isCustom ? (
+                    <input
+                        type="text"
+                        value={definition}
+                        onChange={(event) =>
+                            onChange(type, indicator, "definition", event.target.value)
+                        }
+                        placeholder="Ketik definisi, standar, atau formula khusus..."
+                        style={{
+                            width: "100%",
+                            height: "34px",
+                            boxSizing: "border-box",
+                            border: "1px solid #cbd5e1",
+                            borderRadius: "6px",
+                            padding: "0 10px",
+                            outline: "none",
+                            fontSize: "12px",
+                            color: "#1e293b",
+                            backgroundColor: "#ffffff",
+                        }}
+                    />
+                ) : editingDef ? (
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <input
                             type="text"
@@ -1150,8 +1972,8 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
             </td>
 
             {/* TARGET / PLAN */}
-            <td style={{ ...tableCellStyle, width: "160px" }}>
-                {type === "lagging" && (index === 4 || index === 5) ? (
+            <td style={{ ...tableCellStyle, width: "140px" }}>
+                {type === "lagging" && (indicator === "TOTAL RECORDABLE INJURY" || indicator === "MOTOR VEHICLE CRASH (MVC)") ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: "2px", width: "100%" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "2px", fontSize: "10px", fontWeight: "800", color: "#475569", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px" }}>
                             <span style={{ flex: 1, textAlign: "center" }}>CASE</span>
@@ -1199,7 +2021,7 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                                 )
                             }
                         />
-                        {type === "leading" && (index === 11 || Number(value.plan) === 100) && (
+                        {type === "leading" && (indicator === "Laporan Inspeksi Kendaraan (PTI)" || Number(value.plan) === 100) && (
                             <span style={{ fontSize: "11px", fontWeight: "800", color: "#004d32" }}>%</span>
                         )}
                     </div>
@@ -1207,8 +2029,8 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
             </td>
 
             {/* REALISASI / ACTUAL */}
-            <td style={{ ...tableCellStyle, width: "160px" }}>
-                {type === "lagging" && (index === 4 || index === 5) ? (
+            <td style={{ ...tableCellStyle, width: "140px" }}>
+                {type === "lagging" && (indicator === "TOTAL RECORDABLE INJURY" || indicator === "MOTOR VEHICLE CRASH (MVC)") ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: "2px", width: "100%" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "2px", fontSize: "10px", fontWeight: "800", color: "#475569", borderBottom: "1px solid #cbd5e1", paddingBottom: "2px" }}>
                             <span style={{ flex: 1, textAlign: "center" }}>CASE</span>
@@ -1256,19 +2078,80 @@ function IndicatorRow({ indicator, index, type, value, onChange }) {
                                 )
                             }
                         />
-                        {type === "leading" && (index === 11 || Number(value.actual) === 100) && (
+                        {type === "leading" && (indicator === "Laporan Inspeksi Kendaraan (PTI)" || Number(value.actual) === 100) && (
                             <span style={{ fontSize: "11px", fontWeight: "800", color: "#004d32" }}>%</span>
                         )}
                     </div>
                 )}
             </td>
+
+            {/* AKSI / HAPUS */}
+            <td style={{ ...tableCellStyle, width: "70px", textAlign: "center" }}>
+                <button
+                    type="button"
+                    onClick={() => onRemove(type, indicator, customName)}
+                    title="Hapus baris indikator ini"
+                    style={{
+                        padding: "5px 10px",
+                        backgroundColor: "#fee2e2",
+                        color: "#dc2626",
+                        border: "1px solid #fca5a5",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontSize: "11px",
+                        fontWeight: "800",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "3px",
+                        transition: "all 0.15s ease",
+                    }}
+                >
+                    🗑️ Hapus
+                </button>
+            </td>
         </tr>
     );
 }
 
-function IndicatorSection({ title, type, indicators, values, onChange }) {
+function IndicatorSection({
+    title,
+    type,
+    indicators,
+    values,
+    onChange,
+    onAddCustom,
+    onRemoveCustom,
+}) {
+    const allIndicators = Object.keys(values || {});
+
     return (
-        <Section title={title}>
+        <Section
+            title={title}
+            headerAction={
+                <button
+                    type="button"
+                    onClick={() => onAddCustom(type)}
+                    style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "6px 14px",
+                        backgroundColor: "#ecfdf5",
+                        color: "#004d32",
+                        border: "1.5px solid #059669",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                        fontWeight: "800",
+                        cursor: "pointer",
+                        boxShadow: "0 1px 3px rgba(0, 77, 50, 0.08)",
+                        transition: "all 0.15s ease",
+                    }}
+                >
+                    <span style={{ fontSize: "16px", fontWeight: "900", lineHeight: 1 }}>+</span>
+                    <span>Add Table</span>
+                </button>
+            }
+        >
             <div
                 style={{
                     overflowX: "auto",
@@ -1280,7 +2163,7 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                     style={{
                         width: "100%",
                         borderCollapse: "collapse",
-                        minWidth: "900px",
+                        minWidth: "960px",
                     }}
                 >
                     <thead>
@@ -1310,13 +2193,14 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                             >
                                 Definisi / Formula / Keterangan
                             </th>
-                            <th style={{ ...tableHeaderStyle, width: "120px" }}>Target / Plan</th>
-                            <th style={{ ...tableHeaderStyle, width: "120px" }}>Realisasi / Actual</th>
+                            <th style={{ ...tableHeaderStyle, width: "140px" }}>Target / Plan</th>
+                            <th style={{ ...tableHeaderStyle, width: "140px" }}>Realisasi / Actual</th>
+                            <th style={{ ...tableHeaderStyle, width: "65px", textAlign: "center" }}>Aksi</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {indicators.map((indicator, index) => {
+                        {allIndicators.map((indicator, index) => {
                             const value = values[indicator] || {
                                 plan: 0,
                                 actual: 0,
@@ -1332,6 +2216,7 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                                     type={type}
                                     value={value}
                                     onChange={onChange}
+                                    onRemove={onRemoveCustom}
                                 />
                             );
                         })}
@@ -1339,22 +2224,60 @@ function IndicatorSection({ title, type, indicators, values, onChange }) {
                 </table>
             </div>
 
-            <p
+            <div
                 style={{
-                    margin: "12px 0 0",
-                    fontSize: "12px",
-                    color: "#64748b",
+                    marginTop: "14px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "12px",
+                    padding: "10px 14px",
+                    backgroundColor: "#f8fafc",
+                    borderRadius: "8px",
+                    border: "1px dashed #cbd5e1",
                 }}
             >
-                Isi nilai <strong>Plan</strong> sesuai target yang ditentukan, lalu isi <strong>Actual</strong> sesuai realisasi pada bulan berjalan.
-            </p>
+                <p
+                    style={{
+                        margin: 0,
+                        fontSize: "12px",
+                        color: "#64748b",
+                    }}
+                >
+                    Isi nilai <strong>Plan</strong> sesuai target yang ditentukan, lalu isi <strong>Actual</strong> sesuai realisasi pada bulan berjalan. Butuh baris indikator tambahan? Klik tombol <strong>+ Add Table</strong>.
+                </p>
+
+                <button
+                    type="button"
+                    onClick={() => onAddCustom(type)}
+                    style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "7px 15px",
+                        backgroundColor: "#004d32",
+                        color: "#efff00",
+                        border: "1px solid #efff00",
+                        borderRadius: "8px",
+                        fontSize: "12.5px",
+                        fontWeight: "800",
+                        cursor: "pointer",
+                        boxShadow: "0 2px 8px rgba(0, 77, 50, 0.18)",
+                        transition: "all 0.15s ease",
+                    }}
+                >
+                    <span style={{ fontSize: "16px", fontWeight: "900", lineHeight: 1 }}>+</span>
+                    <span>Add Table</span>
+                </button>
+            </div>
         </Section>
     );
 }
 
 
 
-function Section({ title, children }) {
+function Section({ title, headerAction, children }) {
     return (
         <section
             style={{
@@ -1380,18 +2303,30 @@ function Section({ title, children }) {
                 }}
             />
 
-            <h2
+            <div
                 style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "10px",
                     margin: "0 0 18px",
                     paddingBottom: "12px",
                     borderBottom: "1px solid #f1f5f9",
-                    fontSize: "15.5px",
-                    fontWeight: "800",
-                    color: "#004d32",
                 }}
             >
-                {title}
-            </h2>
+                <h2
+                    style={{
+                        margin: 0,
+                        fontSize: "15.5px",
+                        fontWeight: "800",
+                        color: "#004d32",
+                    }}
+                >
+                    {title}
+                </h2>
+                {headerAction}
+            </div>
 
             {children}
         </section>
@@ -1576,88 +2511,6 @@ function SelectField({
                     </option>
                 ))}
             </select>
-        </div>
-    );
-}
-
-const ALL_BMS_RIGS = [
-    "BMS#01", "BMS#02", "BMS#03", "BMS#03A", "BMS#05",
-    "BMS#06", "BMS#07", "BMS#08", "BMS#09", "BMS#10",
-    "BMS#11", "BMS#15", "BMS#16", "BMS#17", "BMS#18",
-    "BMS#19", "BMS#20", "BMS#21", "BMS#22", "BMS#23"
-];
-
-function MultiRigSelect({ value = "", onChange, required = false }) {
-    const selectedList = React.useMemo(() => {
-        if (!value) return [];
-        if (Array.isArray(value)) return value;
-        return value.split(",").map((s) => s.trim()).filter(Boolean);
-    }, [value]);
-
-    const toggleRig = (rig) => {
-        let updated;
-        if (selectedList.includes(rig)) {
-            updated = selectedList.filter((r) => r !== rig);
-        } else {
-            updated = [...selectedList, rig];
-        }
-        onChange({ target: { name: "rigNo", value: updated.join(", ") } });
-    };
-
-    const selectAll = () => {
-        onChange({ target: { name: "rigNo", value: ALL_BMS_RIGS.join(", ") } });
-    };
-
-    const clearAll = () => {
-        onChange({ target: { name: "rigNo", value: "" } });
-    };
-
-    return (
-        <div style={{ gridColumn: "span 2" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                <label style={{ fontSize: "12.5px", fontWeight: "700", color: "#004d32" }}>
-                    Nomor Rig (Bisa Pilih Banyak Rig per No Kontrak) {required && <span style={{ color: "#dc2626" }}>*</span>}
-                </label>
-                <div style={{ display: "flex", gap: "6px" }}>
-                    <button type="button" onClick={selectAll} style={{ fontSize: "11px", fontWeight: "800", color: "#004d32", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>+ Pilih Semua</button>
-                    <span style={{ fontSize: "11px", color: "#94a3b8" }}>|</span>
-                    <button type="button" onClick={clearAll} style={{ fontSize: "11px", fontWeight: "800", color: "#dc2626", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Reset</button>
-                </div>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", backgroundColor: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "10px", minHeight: "44px" }}>
-                {ALL_BMS_RIGS.map((rig) => {
-                    const isSelected = selectedList.includes(rig);
-                    return (
-                        <button
-                            type="button"
-                            key={rig}
-                            onClick={() => toggleRig(rig)}
-                            style={{
-                                padding: "4px 10px",
-                                borderRadius: "6px",
-                                fontSize: "12px",
-                                fontWeight: "800",
-                                cursor: "pointer",
-                                border: isSelected ? "1px solid #004d32" : "1px solid #cbd5e1",
-                                backgroundColor: isSelected ? "#004d32" : "#f8fafc",
-                                color: isSelected ? "#efff00" : "#475569",
-                                transition: "all 0.15s ease",
-                            }}
-                        >
-                            {isSelected ? `✓ ${rig}` : `+ ${rig}`}
-                        </button>
-                    );
-                })}
-            </div>
-            {selectedList.length > 0 ? (
-                <div style={{ marginTop: "6px", fontSize: "12px", color: "#004d32", fontWeight: "700" }}>
-                    📌 Terpilih ({selectedList.length} Rig): {selectedList.join(", ")}
-                </div>
-            ) : (
-                <div style={{ marginTop: "4px", fontSize: "11.5px", color: "#dc2626", fontWeight: "600" }}>
-                    * Silakan pilih minimal 1 Rig untuk nomor kontrak ini.
-                </div>
-            )}
         </div>
     );
 }

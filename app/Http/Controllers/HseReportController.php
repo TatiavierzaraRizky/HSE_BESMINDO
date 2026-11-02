@@ -243,6 +243,13 @@ class HseReportController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->has('data')) {
+            $decoded = json_decode($request->input('data'), true);
+            if (is_array($decoded)) {
+                $request->merge($decoded);
+            }
+        }
+
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
             'contractNo' => ['required', 'string', 'max:100'],
@@ -294,6 +301,12 @@ class HseReportController extends Controller
             'leading.*.notes' => ['nullable', 'string'],
 
             'remarks' => ['nullable', 'string'],
+            'evidence_file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx', 'max:20480'],
+        ], [
+            'evidence_file.required' => 'File dokumen bukti penginputan (Evidence File) wajib dilampirkan sebelum menyimpan/mengirim laporan.',
+            'evidence_file.file' => 'Bukti penginputan harus berupa file dokumen/gambar yang valid.',
+            'evidence_file.mimes' => 'Format file bukti harus berupa PDF, JPG, PNG, Word (DOC/DOCX), atau Excel (XLS/XLSX).',
+            'evidence_file.max' => 'Ukuran file bukti maksimal 20 MB.',
         ]);
 
         if ($validator->fails()) {
@@ -313,6 +326,14 @@ class HseReportController extends Controller
                 $approvalToken = \Illuminate\Support\Str::random(40);
                 $submitterRole = $validated['submitterRole'] ?? ($request->is('admin/*') ? 'admin' : 'user');
 
+                $evidencePath = null;
+                $evidenceName = null;
+                if ($request->hasFile('evidence_file')) {
+                    $file = $request->file('evidence_file');
+                    $evidenceName = $file->getClientOriginalName();
+                    $evidencePath = $file->store('evidence_files', 'public');
+                }
+
                 $report = HseReport::create([
                     'report_date' => $validated['date'],
                     'contract_no' => $validated['contractNo'],
@@ -327,7 +348,9 @@ class HseReportController extends Controller
                     'program_reference' => $validated['programReference'] ?? null,
                     'status' => 'pending',
                     'approval_token' => $approvalToken,
-                    'remarks' => $validated['remarks'],
+                    'remarks' => $validated['remarks'] ?? null,
+                    'evidence_file' => $evidencePath,
+                    'evidence_file_name' => $evidenceName,
                     'submitter_role' => $submitterRole,
                     'submitter_name' => $validated['submitterName'] ?? (auth()->user()?->name ?? 'User Lapangan'),
                     'submitter_email' => $validated['submitterEmail'] ?? (auth()->user()?->email ?? null),

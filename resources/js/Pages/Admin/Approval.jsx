@@ -1024,6 +1024,55 @@ export default function Approval({ reports: initialReports = [] }) {
                                             </div>
                                         </div>
 
+                                        {/* LAMPIRAN DOKUMEN BUKTI */}
+                                        {selectedReport.evidence_file_url && (
+                                            <div>
+                                                <h4 style={{ margin: "0 0 6px", fontSize: "13px", color: "#004d32", fontWeight: "800", textTransform: "uppercase" }}>
+                                                    Lampiran Dokumen Bukti (Upload Form):
+                                                </h4>
+                                                <div
+                                                    style={{
+                                                        padding: "12px 14px",
+                                                        backgroundColor: "#ecfdf5",
+                                                        borderRadius: "8px",
+                                                        border: "1.5px solid #a7f3d0",
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "space-between",
+                                                        flexWrap: "wrap",
+                                                        gap: "10px",
+                                                    }}
+                                                >
+                                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                        <FileText size={18} color="#004d32" />
+                                                        <span style={{ fontSize: "12.5px", fontWeight: "700", color: "#065f46" }}>
+                                                            {selectedReport.evidence_file_name || "File Bukti Lapangan"}
+                                                        </span>
+                                                    </div>
+                                                    <a
+                                                        href={selectedReport.evidence_file_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            padding: "6px 14px",
+                                                            backgroundColor: "#004d32",
+                                                            color: "#efff00",
+                                                            borderRadius: "6px",
+                                                            fontSize: "12px",
+                                                            fontWeight: "800",
+                                                            textDecoration: "none",
+                                                            border: "1px solid #efff00",
+                                                            display: "inline-flex",
+                                                            alignItems: "center",
+                                                            gap: "5px",
+                                                        }}
+                                                    >
+                                                        <span>⬇️ Buka / Unduh File Bukti</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {selectedReport.rejection_reason && (
                                             <div>
                                                 <h4 style={{ margin: "0 0 6px", fontSize: "13px", color: "#991b1b", fontWeight: "800", textTransform: "uppercase" }}>

@@ -25,6 +25,8 @@ class HseReport extends Model
         'status',
         'approval_token',
         'remarks',
+        'evidence_file',
+        'evidence_file_name',
         'submitter_role',
         'submitter_name',
         'submitter_email',
@@ -80,6 +82,15 @@ class HseReport extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    protected $appends = [
+        'evidence_file_url',
+    ];
+
+    public function getEvidenceFileUrlAttribute(): ?string
+    {
+        return $this->evidence_file ? asset('storage/' . $this->evidence_file) : null;
     }
 
     /**
