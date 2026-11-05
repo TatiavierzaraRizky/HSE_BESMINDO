@@ -38,7 +38,7 @@ return new class extends Migration
             $table->unique([
                 'hse_indicator_id',
                 'year',
-                'month'
+                'month',
             ]);
         });
     }

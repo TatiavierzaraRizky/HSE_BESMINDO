@@ -1,7 +1,14 @@
 import React, { useMemo, useState } from "react";
 import AdminSidebar from "../../Components/AdminSidebar";
 import { Link, usePage } from "@inertiajs/react";
-import { ALL_AREAS, ALL_CONTRACTS, ALL_RIG_NAMES } from "../../Utils/rigContracts";
+import {
+    ALL_AREAS,
+    ALL_CONTRACTS,
+    ALL_RIG_NAMES,
+    CONTRACT_RIG_GROUPS,
+    getRigsByContract,
+    getContractInfoByRig,
+} from "../../Utils/rigContracts";
 
 /*
 |--------------------------------------------------------------------------
@@ -183,12 +190,6 @@ export default function PlanReport() {
         "BMS#18", "BMS#19", "BMS#20", "BMS#21", "BMS#22", "BMS#23"
     ]));
 
-    const availableRigs = useMemo(() => {
-        const set = new Set(ALL_MASTER_RIGS);
-        reports.forEach((r) => { if (r.rig_no) set.add(r.rig_no); });
-        return Array.from(set);
-    }, [reports]);
-
     const availableProjects = useMemo(() => {
         const set = new Set(ALL_CONTRACTS);
         reports.forEach((report) => {
@@ -215,6 +216,28 @@ export default function PlanReport() {
     const [project, setProject] = useState("All Projects");
     const [location, setLocation] = useState("All Locations");
 
+    const currentContractGroup = useMemo(() => {
+        if (!project || project === "All Projects") return null;
+        return CONTRACT_RIG_GROUPS.find((g) => g.contractNo === project) || null;
+    }, [project]);
+
+    const availableRigs = useMemo(() => {
+        if (project && project !== "All Projects") {
+            const rigsInContract = getRigsByContract(project);
+            if (rigsInContract && rigsInContract.length > 0) {
+                return rigsInContract;
+            }
+        }
+        const set = new Set(ALL_MASTER_RIGS);
+        reports.forEach((r) => { if (r.rig_no) set.add(r.rig_no); });
+        return Array.from(set);
+    }, [reports, project, ALL_MASTER_RIGS]);
+
+    const handleContractChange = (newContract) => {
+        setProject(newContract);
+        setRig("All Rigs");
+    };
+
     /*
     |--------------------------------------------------------------------------
     | FILTERED REPORT
@@ -227,11 +250,24 @@ export default function PlanReport() {
         );
 
         if (rig !== "All Rigs") {
-            result = result.filter((report) => report.rig_no === rig);
+            const targetRig = String(rig).replace(/\s+/g, "").toUpperCase();
+            result = result.filter((report) => {
+                if (!report.rig_no) return false;
+                if (report.rig_no === rig) return true;
+                const normalizedRigs = String(report.rig_no)
+                    .split(",")
+                    .map((item) => item.replace(/\s+/g, "").toUpperCase());
+                return normalizedRigs.includes(targetRig);
+            });
         }
 
         if (project !== "All Projects") {
-            result = result.filter((report) => report.contract_no === project);
+            const targetContract = String(project).trim().toUpperCase();
+            result = result.filter(
+                (report) =>
+                    report.contract_no === project ||
+                    String(report.contract_no || "").trim().toUpperCase() === targetContract,
+            );
         }
 
         if (location !== "All Locations") {
@@ -424,54 +460,54 @@ export default function PlanReport() {
             indicator: "MANHOURS PREMISES",
             definition: "Total per bulan",
             unit: "Hours",
-            monthlyTarget: 0,
-            annualTarget: 0,
-            values: createValues(),
+            monthlyTarget: 17360,
+            annualTarget: 203280,
+            values: [17360, 16800, 17360, 17360, 17360, 17360, 16800, 17360, 15680, 15680, 17360, 16800],
         };
 
         const rowNonPremises = {
             indicator: "MANHOURS NON PREMISES",
             definition: "Total per bulan",
             unit: "Hours",
-            monthlyTarget: 0,
-            annualTarget: 0,
-            values: createValues(),
+            monthlyTarget: 320,
+            annualTarget: 3968,
+            values: [304, 304, 368, 336, 336, 368, 320, 352, 320, 320, 320, 320],
         };
 
         const rowEmployees = {
             indicator: "JML KARYAWAN CCPM",
             definition: "CCPM",
             unit: "Person",
-            monthlyTarget: 0,
-            annualTarget: 0,
-            values: createValues(),
+            monthlyTarget: 72,
+            annualTarget: 72,
+            values: Array(12).fill(72),
         };
 
         const rowKmPremises = {
             indicator: "KILOMETER DRIVEN PREMISES",
             definition: "Total per bulan",
             unit: "KM",
-            monthlyTarget: 0,
-            annualTarget: 0,
-            values: createValues(),
+            monthlyTarget: 9850,
+            annualTarget: 118204,
+            values: Array(12).fill(9850),
         };
 
         const rowKmNonPremises = {
             indicator: "KILOMETER DRIVEN NON PREMISES",
             definition: "Total per bulan",
             unit: "KM",
-            monthlyTarget: 0,
-            annualTarget: 0,
-            values: createValues(),
+            monthlyTarget: 3831,
+            annualTarget: 45968,
+            values: Array(12).fill(3831),
         };
 
         const rowVehicles = {
             indicator: "JUMLAH UNIT CCPM",
             definition: "CCPM",
             unit: "Unit",
-            monthlyTarget: 0,
-            annualTarget: 0,
-            values: createValues(),
+            monthlyTarget: 9,
+            annualTarget: 9,
+            values: Array(12).fill(9),
         };
 
         filteredReports.forEach((report) => {
@@ -509,8 +545,8 @@ export default function PlanReport() {
             indicator: "JAM KERJA / MAN HOURS (Total)",
             definition: "Total per bulan",
             unit: "Hours",
-            monthlyTarget: 0,
-            annualTarget: 0,
+            monthlyTarget: 17680,
+            annualTarget: 17680 * 12,
             values: totalManHoursValues,
             q1: quarter(totalManHoursValues, 0, latestMonthIndex + 1),
             q2: quarter(totalManHoursValues, 1, latestMonthIndex + 1),
@@ -532,8 +568,8 @@ export default function PlanReport() {
             indicator: "KILOMETER DRIVEN (Total)",
             definition: "Total per bulan",
             unit: "KM",
-            monthlyTarget: 0,
-            annualTarget: 0,
+            monthlyTarget: 13681,
+            annualTarget: 13681 * 12,
             values: totalKmValues,
             q1: quarter(totalKmValues, 0, latestMonthIndex + 1),
             q2: quarter(totalKmValues, 1, latestMonthIndex + 1),
@@ -679,13 +715,29 @@ export default function PlanReport() {
                             >
                                 <th style={thStyle}>No</th>
 
-                                <th style={thStyle}>Point yang Diukur</th>
+                                <th style={thStyle}>
+                                    {title.includes("LAGGING")
+                                        ? "POINT YANG DIUKUR"
+                                        : "Point yang Diukur"}
+                                </th>
 
-                                <th style={thStyle}>Definisi</th>
+                                <th style={thStyle}>
+                                    {title.includes("LAGGING")
+                                        ? "DEFINISI (FREQUENCY RATE / UNIT)"
+                                        : "Definisi"}
+                                </th>
 
-                                <th style={thStyle}>Target / Month</th>
+                                <th style={thStyle}>
+                                    {title.includes("LAGGING")
+                                        ? "TARGET / ESTIMASI / MONTH"
+                                        : "Target / Month"}
+                                </th>
 
-                                <th style={thStyle}>Target / Year</th>
+                                <th style={thStyle}>
+                                    {title.includes("LAGGING")
+                                        ? "KETERANGAN"
+                                        : "Target / Year"}
+                                </th>
 
                                 <th style={thStyle}>Unit</th>
 
@@ -736,7 +788,9 @@ export default function PlanReport() {
                                         </td>
 
                                         <td style={tdCenter}>
-                                            {formatNumber(item.annualTarget)}
+                                            {title.includes("LAGGING")
+                                                ? (item.notes || "-")
+                                                : formatNumber(item.annualTarget)}
                                         </td>
 
                                         <td style={tdCenter}>{item.unit}</td>
@@ -919,36 +973,42 @@ export default function PlanReport() {
                         </label>
 
                         <label style={labelStyle}>
-                            Rig / Location
+                            Nomor Kontrak (Filter Grouping Rig)
+                            <select
+                                value={project}
+                                onChange={(e) => handleContractChange(e.target.value)}
+                                style={selectStyle}
+                            >
+                                <option value="All Projects">-- Semua Nomor Kontrak --</option>
+                                {CONTRACT_RIG_GROUPS.map((c) => (
+                                    <option key={c.contractNo} value={c.contractNo}>
+                                        📋 {c.contractNo} — Area {c.area} ({c.rigs.join(", ")})
+                                    </option>
+                                ))}
+                                {availableProjects
+                                    .filter((p) => !CONTRACT_RIG_GROUPS.some((c) => c.contractNo === p))
+                                    .map((item) => (
+                                        <option key={item} value={item}>
+                                            {item}
+                                        </option>
+                                    ))}
+                            </select>
+                        </label>
+
+                        <label style={labelStyle}>
+                            {project !== "All Projects" ? "Rig dalam Kontrak Terpilih" : "Rig / Location"}
                             <select
                                 value={rig}
                                 onChange={(e) => setRig(e.target.value)}
                                 style={selectStyle}
                             >
-                                <option>All Rigs</option>
+                                <option value="All Rigs">
+                                    {project !== "All Projects" ? "📌 Semua Rig (Konsolidasi Kontrak)" : "All Rigs (Semua Rig)"}
+                                </option>
 
                                 {availableRigs.map((item) => (
                                     <option key={item} value={item}>
-                                        {item}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-
-                        <label style={labelStyle}>
-                            Fokus Corp / Project
-                            <select
-                                value={project}
-                                onChange={(e) => setProject(e.target.value)}
-                                style={selectStyle}
-                            >
-                                <option value="All Projects">
-                                    All Focus Corp / Projects
-                                </option>
-
-                                {availableProjects.map((item) => (
-                                    <option key={item} value={item}>
-                                        {item}
+                                        🛢️ {item}
                                     </option>
                                 ))}
                             </select>
@@ -995,6 +1055,121 @@ export default function PlanReport() {
                         </button>
                     </div>
                 </section>
+
+                {/* CONTRACT & RIG GROUPING BANNER / SUB-TABS */}
+                {currentContractGroup && (
+                    <div
+                        style={{
+                            marginTop: "20px",
+                            backgroundColor: "#ffffff",
+                            border: "1.5px solid #004d32",
+                            borderRadius: "12px",
+                            padding: "16px 20px",
+                            boxShadow: "0 4px 15px rgba(0, 77, 50, 0.08)",
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                flexWrap: "wrap",
+                                gap: "10px",
+                                marginBottom: "14px",
+                            }}
+                        >
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: "11px",
+                                        fontWeight: "800",
+                                        color: "#059669",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.05em",
+                                    }}
+                                >
+                                    Pengelompokan Rig Berdasarkan Kontrak (Sesuai Excel Resmi)
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: "18px",
+                                        fontWeight: "900",
+                                        color: "#004d32",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "10px",
+                                        marginTop: "2px",
+                                    }}
+                                >
+                                    <span>Nomor Kontrak: {currentContractGroup.contractNo}</span>
+                                    <span
+                                        style={{
+                                            fontSize: "12px",
+                                            fontWeight: "800",
+                                            padding: "2px 10px",
+                                            borderRadius: "12px",
+                                            backgroundColor: "#ecfdf5",
+                                            color: "#004d32",
+                                            border: "1px solid #a7f3d0",
+                                        }}
+                                    >
+                                        Area {currentContractGroup.area}
+                                    </span>
+                                </div>
+                            </div>
+                            <div style={{ fontSize: "12.5px", color: "#475569" }}>
+                                <strong>HSE Coord:</strong> {currentContractGroup.hseCoord || "-"} •{" "}
+                                <strong>Rig Terdaftar:</strong> {currentContractGroup.rigs.join(", ")}
+                            </div>
+                        </div>
+
+                        {/* RIG SUB-TABS (KLIK UNTUK SWITCH PREVIEW LANGSUNG) */}
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                            <button
+                                type="button"
+                                onClick={() => setRig("All Rigs")}
+                                style={{
+                                    padding: "8px 16px",
+                                    borderRadius: "8px",
+                                    border: rig === "All Rigs" ? "1.5px solid #004d32" : "1px solid #cbd5e1",
+                                    backgroundColor: rig === "All Rigs" ? "#004d32" : "#f8fafc",
+                                    color: rig === "All Rigs" ? "#efff00" : "#334155",
+                                    fontSize: "12.5px",
+                                    fontWeight: "800",
+                                    cursor: "pointer",
+                                    transition: "all 0.15s ease",
+                                    boxShadow: rig === "All Rigs" ? "0 2px 6px rgba(0, 77, 50, 0.25)" : "none",
+                                }}
+                            >
+                                📌 Seluruh Rig Kontrak (Konsolidasi)
+                            </button>
+                            {currentContractGroup.rigs.map((r) => {
+                                const isActive = rig === r;
+                                return (
+                                    <button
+                                        key={r}
+                                        type="button"
+                                        onClick={() => setRig(r)}
+                                        style={{
+                                            padding: "8px 16px",
+                                            borderRadius: "8px",
+                                            border: isActive ? "1.5px solid #004d32" : "1px solid #cbd5e1",
+                                            backgroundColor: isActive ? "#004d32" : "#ffffff",
+                                            color: isActive ? "#efff00" : "#334155",
+                                            fontSize: "12.5px",
+                                            fontWeight: isActive ? "800" : "600",
+                                            cursor: "pointer",
+                                            transition: "all 0.15s ease",
+                                            boxShadow: isActive ? "0 2px 6px rgba(0, 77, 50, 0.25)" : "none",
+                                        }}
+                                    >
+                                        🛢️ {r}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {/* INFO */}
 

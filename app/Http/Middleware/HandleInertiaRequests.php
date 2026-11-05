@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\AuthTokenService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,16 +36,21 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'role' => $request->user()->role,
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'area' => $user->area,
+                    'assigned_rigs' => $user->getAssignedRigs(),
                 ] : null,
             ],
+            'authToken' => $user ? AuthTokenService::generateToken($user) : null,
         ];
     }
 }

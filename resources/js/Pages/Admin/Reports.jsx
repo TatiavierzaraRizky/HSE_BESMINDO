@@ -4,11 +4,20 @@ import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { usePage } from "@inertiajs/react";
 import { calcFrequencyRate, calcMvcFrequencyRate } from "../../Utils/hseCalculations";
-import { ALL_AREAS, ALL_CONTRACTS, ALL_RIG_NAMES } from "../../Utils/rigContracts";
+import {
+    ALL_AREAS,
+    ALL_CONTRACTS,
+    ALL_RIG_NAMES,
+    CONTRACT_RIG_GROUPS,
+    getRigsByContract,
+    getContractInfoByRig,
+} from "../../Utils/rigContracts";
 
 /* ============================================================
    BASIC HELPER
 ============================================================ */
+
+const REPORT_QUARTERS = ["Q4", "Q1", "Q2", "Q3"];
 
 const MONTHS = [
     "Jan",
@@ -144,7 +153,11 @@ function getQuarterValue(item, quarterName, mode = "Actual") {
         Q4: mode === "Plan" ? item.planQ4 : item.actualQ4,
     };
 
-    return number(map[quarterName]);
+    const val = map[quarterName];
+    if (val === undefined || val === null || val === "") return "-";
+    if (typeof val === "string") return val;
+
+    return number(val);
 }
 
 function normalizeReport(report) {
@@ -180,32 +193,51 @@ const LAGGING_INDICATOR_MASTER = [
     {
         no: "1.1",
         name: "FATALITY",
-        definition: "",
+        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
+        notes: "",
+        targetMonth: "0",
+        targetFr: "-",
+        isCaseFrCombo: true,
     },
     {
         no: "1.2",
         name: "SERIOUS LOST TIME INJURY (>21 LOST DAY)",
-        definition: "",
+        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
+        notes: "",
+        targetMonth: "0",
+        targetFr: "-",
+        isCaseFrCombo: true,
     },
     {
         no: "1.3",
         name: "RESTRICTED WORK CASE (RWC)",
-        definition: "",
+        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
+        notes: "",
+        targetMonth: "0",
+        targetFr: "-",
+        isCaseFrCombo: true,
     },
     {
         no: "1.4",
         name: "MEDICAL TREATMENT CASE (MTC)",
-        definition: "",
+        definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
+        notes: "",
+        targetMonth: "0",
+        targetFr: "-",
+        isCaseFrCombo: true,
     },
     {
         no: "1.5",
         name: "TOTAL RECORDABLE INJURY",
         definition: "Frequency rate = (kasus cedera x 200.000) / Jam Kerja",
         unit: "Case",
+        notes: "Recordable",
+        targetMonth: "0",
+        targetFr: "0.00",
         isCaseFrCombo: true,
     },
     {
@@ -214,43 +246,70 @@ const LAGGING_INDICATOR_MASTER = [
         definition:
             "MVC FR = (kasus x 1.000.000) / kilometer Perjalanan Kendaraan",
         unit: "Case",
+        notes: "Recordable",
+        targetMonth: "0",
+        targetFr: "0.00",
         isCaseFrCombo: true,
     },
     {
         no: "1.7",
         name: "TUMPAHAN / OIL SPILL",
-        definition: "Record case >1 barrel",
+        definition: "Record case > 1 barrel",
         unit: "Case",
+        notes: "",
+        targetMonth: "0",
+        targetFr: "NA",
+        isCaseFrCombo: true,
     },
     {
         no: "1.8",
         name: "FIRE",
         definition: "Record case > Rp. 100 Jt",
         unit: "Case",
+        notes: "",
+        targetMonth: "0",
+        targetFr: "NA",
+        isCaseFrCombo: true,
     },
     {
         no: "1.9",
         name: "PROPERTY DAMAGE",
         definition: "Record case > Rp. 100 Jt",
         unit: "Case",
+        notes: "",
+        targetMonth: "0",
+        targetFr: "NA",
+        isCaseFrCombo: true,
     },
     {
         no: "1.10",
         name: "SECURITY CASE",
         definition: "Record case",
         unit: "Case",
+        notes: "",
+        targetMonth: "0",
+        targetFr: "NA",
+        isCaseFrCombo: true,
     },
     {
         no: "1.11",
         name: "ILLNESS/FATALITY",
         definition: "Record case",
         unit: "Case",
+        notes: "",
+        targetMonth: "0",
+        targetFr: "NA",
+        isCaseFrCombo: true,
     },
     {
         no: "1.12",
         name: "REPORTABLE CASE : OPS. INCIDENT / ETA / FAC / NEARMISS",
         definition: "Reportable case",
         unit: "Case",
+        notes: "Reportable case",
+        targetMonth: "0",
+        targetFr: "NA",
+        isCaseFrCombo: true,
     },
 ];
 
@@ -814,14 +873,25 @@ function buildLaggingRows(reports, activeMonthCount = 12) {
     const map = new Map();
 
     LAGGING_INDICATOR_MASTER.forEach((master) => {
+        const values = createValueObject();
+        for (let m = 0; m < 12; m++) {
+            values.plan[m] = Number(master.targetMonth) || 0;
+            values.actual[m] = Number(master.targetMonth) || 0; // fallback default
+        }
+
         map.set(master.no, {
             no: master.no,
             indicator: master.name,
             definition: master.definition,
             unit: master.unit,
-            target: 0,
-            values: createValueObject(),
-            notes: "",
+            target: master.targetMonth || 0,
+            targetMonth: master.targetMonth || "0",
+            targetFr: master.targetFr || (master.isCaseFrCombo ? "0.00" : null),
+            isCaseFrCombo: master.isCaseFrCombo,
+            values,
+            hasManualActual: Array(12).fill(false),
+            frequencyRate: Array(12).fill(null),
+            notes: master.notes || "",
         });
     });
 
@@ -865,9 +935,18 @@ function buildLaggingRows(reports, activeMonthCount = 12) {
                 row.notes = item.notes;
             }
 
-            row.values.plan[month] += number(item.plan);
+            if (item.frequency_rate !== null && item.frequency_rate !== undefined) {
+                row.frequencyRate[month] = Number(item.frequency_rate);
+            }
 
-            row.values.actual[month] += number(item.actual);
+            if (item.plan !== undefined && item.plan !== null && item.plan !== "") {
+                row.values.plan[month] = number(item.plan);
+            }
+
+            if (item.actual !== undefined && item.actual !== null && item.actual !== "") {
+                row.values.actual[month] = number(item.actual);
+                row.hasManualActual[month] = true;
+            }
         });
     });
 
@@ -895,13 +974,34 @@ function buildLaggingRows(reports, activeMonthCount = 12) {
                 row1_5.values.actual[m],
                 sumActual,
             );
+            if (row1_1.hasManualActual[m] || row1_2.hasManualActual[m] || row1_3.hasManualActual[m] || row1_4.hasManualActual[m]) {
+                row1_5.hasManualActual[m] = true;
+            }
         }
     }
 
-    return Array.from(map.values()).map((item) => ({
-        ...item,
-        ...calculateSummary(item.values, activeMonthCount),
-    }));
+    const qIndices = {
+        Q4: [8, 9, 10],
+        Q1: [11, 0, 1],
+        Q2: [2, 3, 4],
+        Q3: [5, 6, 7],
+    };
+
+    return Array.from(map.values()).map((item) => {
+        const hasManualQuarterActual = {
+            Q4: qIndices.Q4.some((idx) => item.hasManualActual[idx]),
+            Q1: qIndices.Q1.some((idx) => item.hasManualActual[idx]),
+            Q2: qIndices.Q2.some((idx) => item.hasManualActual[idx]),
+            Q3: qIndices.Q3.some((idx) => item.hasManualActual[idx]),
+            YTD: item.hasManualActual.some(Boolean),
+        };
+
+        return {
+            ...item,
+            hasManualQuarterActual,
+            ...calculateSummary(item.values, activeMonthCount),
+        };
+    });
 }
 
 /* ============================================================
@@ -913,6 +1013,11 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
 
     LEADING_INDICATOR_MASTER.forEach((master) => {
         const values = createValueObject();
+        const defPlan = master.defaultPlanMonthly || Array(12).fill(Number(master.monthlyTarget) || 0);
+        for (let m = 0; m < 12; m++) {
+            values.plan[m] = defPlan[m] ?? (Number(master.monthlyTarget) || 0);
+            values.actual[m] = values.plan[m]; // default fallback
+        }
 
         map.set(String(master.no), {
             no: master.no,
@@ -927,6 +1032,7 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
             isPercentage: master.isPercentage || false,
             targetNumber: master.targetNumber || 0,
             values,
+            hasManualActual: Array(12).fill(false),
             notes: "",
         });
     });
@@ -997,8 +1103,13 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
                     ? Number(item.month) - 1
                     : getMonthFromReport(report);
 
-            row.values.plan[month] += number(item.plan);
-            row.values.actual[month] += number(item.actual);
+            if (item.plan !== undefined && item.plan !== null && item.plan !== "" && Number(item.plan) > 0) {
+                row.values.plan[month] = number(item.plan);
+            }
+            if (item.actual !== undefined && item.actual !== null && item.actual !== "") {
+                row.values.actual[month] = number(item.actual);
+                row.hasManualActual[month] = true;
+            }
 
             if (item.definition) {
                 row.definition = item.definition;
@@ -1052,38 +1163,53 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
         if (!hasAnyPlan && master && master.defaultPlanMonthly) {
             row.values.plan = [...master.defaultPlanMonthly];
         }
+        for (let m = 0; m < 12; m++) {
+            if (!row.hasManualActual[m]) {
+                row.values.actual[m] = row.values.plan[m];
+            }
+        }
     });
 
+    const qIndices = {
+        Q4: [8, 9, 10],
+        Q1: [11, 0, 1],
+        Q2: [2, 3, 4],
+        Q3: [5, 6, 7],
+    };
+
     return Array.from(map.values()).map((item) => {
+        const hasManualQuarterActual = {
+            Q4: qIndices.Q4.some((idx) => item.hasManualActual[idx]),
+            Q1: qIndices.Q1.some((idx) => item.hasManualActual[idx]),
+            Q2: qIndices.Q2.some((idx) => item.hasManualActual[idx]),
+            Q3: qIndices.Q3.some((idx) => item.hasManualActual[idx]),
+            YTD: item.hasManualActual.some(Boolean),
+        };
+
         if (item.isPercentage) {
-            const calcQuarterActual = (start, end) => {
-                const limit = Math.min(end, activeMonthCount);
-                if (start >= activeMonthCount) return "-";
-                const slice = item.values.actual.slice(start, limit);
-                const filled = slice.filter((v) => v > 0);
-                if (filled.length === 0) return `${item.targetNumber}.00%`;
-                const avg = filled.reduce((a, b) => a + b, 0) / filled.length;
+            const calcQuarterActual = (monthIndices) => {
+                const manual = monthIndices.filter((idx) => idx < activeMonthCount && item.hasManualActual[idx]);
+                if (manual.length === 0) return `${item.targetNumber}.00%`;
+                const avg = manual.reduce((a, idx) => a + item.values.actual[idx], 0) / manual.length;
                 return `${avg.toFixed(2)}%`;
             };
 
-            const allFilled = item.values.actual
-                .slice(0, activeMonthCount)
-                .filter((v) => v > 0);
-            const actualYtd =
-                allFilled.length === 0
-                    ? `${item.targetNumber}.00%`
-                    : `${(allFilled.reduce((a, b) => a + b, 0) / allFilled.length).toFixed(2)}%`;
+            const manualYtd = Array.from({ length: activeMonthCount }, (_, i) => i).filter((idx) => item.hasManualActual[idx]);
+            const actualYtd = manualYtd.length === 0
+                ? `${item.targetNumber}.00%`
+                : `${(manualYtd.reduce((a, idx) => a + item.values.actual[idx], 0) / manualYtd.length).toFixed(2)}%`;
 
             return {
                 ...item,
-                planQ1: `${item.targetNumber}.00%`,
-                actualQ1: calcQuarterActual(0, 3),
-                planQ2: `${item.targetNumber}.00%`,
-                actualQ2: calcQuarterActual(3, 6),
-                planQ3: `${item.targetNumber}.00%`,
-                actualQ3: calcQuarterActual(6, 9),
+                hasManualQuarterActual,
                 planQ4: `${item.targetNumber}.00%`,
-                actualQ4: calcQuarterActual(9, 12),
+                actualQ4: calcQuarterActual([8, 9, 10]),
+                planQ1: `${item.targetNumber}.00%`,
+                actualQ1: calcQuarterActual([11, 0, 1]),
+                planQ2: `${item.targetNumber}.00%`,
+                actualQ2: calcQuarterActual([2, 3, 4]),
+                planQ3: `${item.targetNumber}.00%`,
+                actualQ3: calcQuarterActual([5, 6, 7]),
                 planYtd: `${item.targetNumber}.00%`,
                 actualYtd,
             };
@@ -1091,23 +1217,45 @@ function buildLeadingRows(reports, activeMonthCount = 12) {
 
         return {
             ...item,
+            hasManualQuarterActual,
             ...calculateSummary(item.values, activeMonthCount),
         };
     });
 }
 
 /* ============================================================
-   MAN HOURS
+   MAN HOURS & KILOMETER PERFORMANCE
 ============================================================ */
 
-function buildManHourRows(reports, activeMonthCount = 12) {
+function buildManHourRows(reports, activeMonthCount = 12, masterKpiTargets = []) {
+    // Dynamic monthly plans matching official Excel (Month indices: Jan=0, Feb=1, Mar=2, Apr=3, May=4, Jun=5, Jul=6, Aug=7, Sep=8, Oct=9, Nov=10, Dec=11)
+    const defaultPremisesMonthly = [17360, 16800, 17360, 17360, 17360, 17360, 16800, 17360, 15680, 15680, 17360, 16800];
+    const defaultNonPremisesMonthly = [304, 304, 368, 336, 336, 368, 320, 352, 320, 320, 320, 320];
+
+    const dbPremises = masterKpiTargets?.find(t => t.category === "man_hours" && String(t.indicator_name).toUpperCase().includes("MANHOURS PREMISES") && !String(t.indicator_name).toUpperCase().includes("NON"));
+    const premisesMonthly = (dbPremises && Array.isArray(dbPremises.monthly_plans) && dbPremises.monthly_plans.length === 12)
+        ? dbPremises.monthly_plans
+        : defaultPremisesMonthly;
+
+    const dbNonPremises = masterKpiTargets?.find(t => t.category === "man_hours" && String(t.indicator_name).toUpperCase().includes("NON PREMISES"));
+    const nonPremisesMonthly = (dbNonPremises && Array.isArray(dbNonPremises.monthly_plans) && dbNonPremises.monthly_plans.length === 12)
+        ? dbNonPremises.monthly_plans
+        : defaultNonPremisesMonthly;
+
     const configs = [
         {
             no: "2.1",
             name: "MANHOURS PREMISES",
             definition: "Total per bulan",
             unit: "Hours",
-            notes: "Ops : Dihitung Jml orang / km",
+            target: 17360,
+            monthlyPlans: premisesMonthly,
+            planQ4: 48720,
+            planQ1: 50960,
+            planQ2: 52080,
+            planQ3: 51520,
+            planYtd: 203280,
+            notes: "",
             plan: (item) => number(item?.premises_plan),
             actual: (item) => number(item?.premises_actual),
         },
@@ -1116,6 +1264,13 @@ function buildManHourRows(reports, activeMonthCount = 12) {
             name: "MANHOURS NON PREMISES",
             definition: "Total per bulan",
             unit: "Hours",
+            target: 320,
+            monthlyPlans: nonPremisesMonthly,
+            planQ4: 960,
+            planQ1: 928,
+            planQ2: 1040,
+            planQ3: 1040,
+            planYtd: 3968,
             notes: "",
             plan: (item) => number(item?.non_premises_plan),
             actual: (item) => number(item?.non_premises_actual),
@@ -1125,7 +1280,15 @@ function buildManHourRows(reports, activeMonthCount = 12) {
             name: "JML KARYAWAN CCPM",
             definition: "CCPM",
             unit: "Person",
-            notes: "Ops : Support:",
+            target: 72,
+            monthlyPlans: Array(12).fill(72),
+            planQ4: 72,
+            planQ1: 72,
+            planQ2: 72,
+            planQ3: 72,
+            planYtd: 72,
+            isCountMetric: true,
+            notes: "",
             plan: (item) => number(item?.total_employees),
             actual: (item) => number(item?.total_employees),
         },
@@ -1134,7 +1297,14 @@ function buildManHourRows(reports, activeMonthCount = 12) {
             name: "KILOMETER DRIVEN PREMISES",
             definition: "Total per bulan",
             unit: "KM",
-            notes: "Jml Ops : sesuai kontrak (Roco 2unit, Bus 2unit, Vacuum 1unit, tandem 1unit, LV 5unit, dll)",
+            target: 9850,
+            monthlyPlans: Array(12).fill(9850),
+            planQ4: 29551,
+            planQ1: 29551,
+            planQ2: 29551,
+            planQ3: 29551,
+            planYtd: 118204,
+            notes: "",
             plan: (item) => number(item?.kilometer_premises_plan),
             actual: (item) => number(item?.kilometer_premises_actual),
         },
@@ -1143,6 +1313,13 @@ function buildManHourRows(reports, activeMonthCount = 12) {
             name: "KILOMETER DRIVEN NON PREMISES",
             definition: "Total per bulan",
             unit: "KM",
+            target: 3831,
+            monthlyPlans: Array(12).fill(3831),
+            planQ4: 11492,
+            planQ1: 11492,
+            planQ2: 11492,
+            planQ3: 11492,
+            planYtd: 45968,
             notes: "",
             plan: (item) => number(item?.kilometer_non_premises_plan),
             actual: (item) => number(item?.kilometer_non_premises_actual),
@@ -1152,14 +1329,27 @@ function buildManHourRows(reports, activeMonthCount = 12) {
             name: "JUMLAH UNIT CCPM",
             definition: "CCPM",
             unit: "Unit",
-            notes: "Ops : Support:",
-            plan: (item) => number(item?.total_vehicles),
+            target: 9,
+            monthlyPlans: Array(12).fill(9),
+            planQ4: 9,
+            planQ1: 9,
+            planQ2: 9,
+            planQ3: 9,
+            planYtd: 9,
+            isCountMetric: true,
+            notes: "Unit Ops : sesuai kontrak (Foco 2 unit, Crane 1 unit, Bus 1 unit, Vacuum 1 unit, tandem 1 unit, LV 2 unit, Dozer 1 Unit, Lowbed 1 unit)",
+            plan: () => 9,
             actual: (item) => number(item?.total_vehicles),
         },
     ];
 
     const rows = configs.map((config) => {
         const values = createValueObject();
+        const hasManualActual = Array(12).fill(false);
+
+        for (let m = 0; m < 12; m++) {
+            values.plan[m] = config.monthlyPlans?.[m] ?? config.target;
+        }
 
         reports.forEach((report) => {
             const month = getMonthFromReport(report);
@@ -1175,71 +1365,306 @@ function buildManHourRows(reports, activeMonthCount = 12) {
 
             if (!manHours) return;
 
-            values.plan[month] += config.plan(manHours);
-            values.actual[month] += config.actual(manHours);
+            const p = config.plan(manHours);
+            if (p > 0 && !config.monthlyPlans) {
+                values.plan[month] = p;
+            }
+            const a = config.actual(manHours);
+            if (a !== null && a !== undefined && a !== "" && Number(a) > 0) {
+                values.actual[month] = Number(a);
+                hasManualActual[month] = true;
+            }
         });
+
+        // Fallback default: if user hasn't input manual actual, copy plan to actual!
+        for (let m = 0; m < 12; m++) {
+            if (!hasManualActual[m]) {
+                values.actual[m] = values.plan[m];
+            }
+        }
+
+        const qIndices = {
+            Q4: [8, 9, 10],
+            Q1: [11, 0, 1],
+            Q2: [2, 3, 4],
+            Q3: [5, 6, 7],
+        };
+
+        const hasManualQuarterActual = {
+            Q4: qIndices.Q4.some((idx) => hasManualActual[idx]),
+            Q1: qIndices.Q1.some((idx) => hasManualActual[idx]),
+            Q2: qIndices.Q2.some((idx) => hasManualActual[idx]),
+            Q3: qIndices.Q3.some((idx) => hasManualActual[idx]),
+            YTD: hasManualActual.some(Boolean),
+        };
+
+        const sumMonths = (indices) => {
+            return indices
+                .filter((idx) => idx < activeMonthCount)
+                .reduce((sum, idx) => sum + number(values.actual[idx]), 0);
+        };
+
+        const countLast = (indices, defVal) => {
+            const valid = indices.filter((idx) => idx < activeMonthCount);
+            for (let i = valid.length - 1; i >= 0; i--) {
+                const val = values.actual[valid[i]];
+                if (val > 0) return val;
+            }
+            return defVal;
+        };
+
+        let actualQ4, actualQ1, actualQ2, actualQ3, actualYtd;
+
+        if (config.isCountMetric) {
+            actualQ4 = hasManualQuarterActual.Q4 ? countLast([8, 9, 10], config.target) : config.planQ4;
+            actualQ1 = hasManualQuarterActual.Q1 ? countLast([11, 0, 1], config.target) : config.planQ1;
+            actualQ2 = hasManualQuarterActual.Q2 ? countLast([2, 3, 4], config.target) : config.planQ2;
+            actualQ3 = hasManualQuarterActual.Q3 ? countLast([5, 6, 7], config.target) : config.planQ3;
+            actualYtd = hasManualQuarterActual.YTD ? countLast(Array.from({ length: 12 }, (_, i) => i), config.target) : config.planYtd;
+        } else {
+            actualQ4 = hasManualQuarterActual.Q4 ? sumMonths([8, 9, 10]) : config.planQ4;
+            actualQ1 = hasManualQuarterActual.Q1 ? sumMonths([11, 0, 1]) : config.planQ1;
+            actualQ2 = hasManualQuarterActual.Q2 ? sumMonths([2, 3, 4]) : config.planQ2;
+            actualQ3 = hasManualQuarterActual.Q3 ? sumMonths([5, 6, 7]) : config.planQ3;
+            actualYtd = hasManualQuarterActual.YTD ? (actualQ4 + actualQ1 + actualQ2 + actualQ3) : config.planYtd;
+        }
 
         return {
             no: config.no,
             indicator: config.name,
             definition: config.definition,
             unit: config.unit,
-            target: 0,
+            target: config.target,
             values,
+            hasManualActual,
+            hasManualQuarterActual,
             notes: config.notes,
-            ...calculateSummary(values, activeMonthCount),
+            planQ4: config.planQ4,
+            actualQ4,
+            planQ1: config.planQ1,
+            actualQ1,
+            planQ2: config.planQ2,
+            actualQ2,
+            planQ3: config.planQ3,
+            actualQ3,
+            planYtd: config.planYtd,
+            actualYtd,
         };
     });
 
     // TOTAL JAM KERJA / MAN HOURS (Total) = 2.1 + 2.2
     const totalManHoursValues = createValueObject();
+    const totalManHoursHasManual = Array(12).fill(false);
     for (let i = 0; i < 12; i++) {
+        totalManHoursHasManual[i] = rows[0].hasManualActual[i] || rows[1].hasManualActual[i];
         totalManHoursValues.plan[i] =
             rows[0].values.plan[i] + rows[1].values.plan[i];
         totalManHoursValues.actual[i] =
             rows[0].values.actual[i] + rows[1].values.actual[i];
     }
+    const totalManHoursQuarterHasManual = {
+        Q4: rows[0].hasManualQuarterActual.Q4 || rows[1].hasManualQuarterActual.Q4,
+        Q1: rows[0].hasManualQuarterActual.Q1 || rows[1].hasManualQuarterActual.Q1,
+        Q2: rows[0].hasManualQuarterActual.Q2 || rows[1].hasManualQuarterActual.Q2,
+        Q3: rows[0].hasManualQuarterActual.Q3 || rows[1].hasManualQuarterActual.Q3,
+        YTD: rows[0].hasManualQuarterActual.YTD || rows[1].hasManualQuarterActual.YTD,
+    };
     const totalManHoursRow = {
         no: "",
         isTotalHeader: true,
         indicator: "JAM KERJA / MAN HOURS (Total)",
         definition: "Total per bulan",
         unit: "Hours",
-        target: rows[0].target + rows[1].target,
+        target: 17680,
         values: totalManHoursValues,
-        notes: "Ops : Dihitung Jml orang / km",
-        ...calculateSummary(totalManHoursValues, activeMonthCount),
+        hasManualActual: totalManHoursHasManual,
+        hasManualQuarterActual: totalManHoursQuarterHasManual,
+        notes: "Ops : Dihitung Jml orang / kru",
+        planQ4: 49680,
+        actualQ4: totalManHoursQuarterHasManual.Q4 ? (rows[0].actualQ4 + rows[1].actualQ4) : 49680,
+        planQ1: 51888,
+        actualQ1: totalManHoursQuarterHasManual.Q1 ? (rows[0].actualQ1 + rows[1].actualQ1) : 51888,
+        planQ2: 53120,
+        actualQ2: totalManHoursQuarterHasManual.Q2 ? (rows[0].actualQ2 + rows[1].actualQ2) : 53120,
+        planQ3: 52560,
+        actualQ3: totalManHoursQuarterHasManual.Q3 ? (rows[0].actualQ3 + rows[1].actualQ3) : 52560,
+        planYtd: 207248,
+        actualYtd: totalManHoursQuarterHasManual.YTD ? (rows[0].actualYtd + rows[1].actualYtd) : 207248,
+    };
+
+    // Sub-row under 2.3: Ops : Support :
+    const subEmployeesRow = {
+        no: "",
+        parentNo: "2.3",
+        isSubItem: true,
+        isOpsSupportSubRow: true,
+        indicator: "Ops : Support :",
+        definition: "",
+        unit: "Person",
+        targetOps: 70,
+        targetSupport: 2,
+        target: "70 | 2",
+        notes: "",
+        valuesOps: {
+            plan: Array(12).fill(70),
+            actual: Array(12).fill(70),
+        },
+        valuesSupport: {
+            plan: Array(12).fill(2),
+            actual: Array(12).fill(2),
+        },
+        planOpsQ4: 70, actualOpsQ4: 70, planSupportQ4: 2, actualSupportQ4: 2,
+        planOpsQ1: 70, actualOpsQ1: 70, planSupportQ1: 2, actualSupportQ1: 2,
+        planOpsQ2: 70, actualOpsQ2: 70, planSupportQ2: 2, actualSupportQ2: 2,
+        planOpsQ3: 70, actualOpsQ3: 70, planSupportQ3: 2, actualSupportQ3: 2,
+        planOpsYtd: 70, actualOpsYtd: 70, planSupportYtd: 2, actualSupportYtd: 2,
     };
 
     // TOTAL KILOMETER DRIVEN (Total) = 2.4 + 2.5
     const totalKilometerValues = createValueObject();
+    const totalKmHasManual = Array(12).fill(false);
     for (let i = 0; i < 12; i++) {
+        totalKmHasManual[i] = rows[3].hasManualActual[i] || rows[4].hasManualActual[i];
         totalKilometerValues.plan[i] =
             rows[3].values.plan[i] + rows[4].values.plan[i];
         totalKilometerValues.actual[i] =
             rows[3].values.actual[i] + rows[4].values.actual[i];
     }
+    const totalKmQuarterHasManual = {
+        Q4: rows[3].hasManualQuarterActual.Q4 || rows[4].hasManualQuarterActual.Q4,
+        Q1: rows[3].hasManualQuarterActual.Q1 || rows[4].hasManualQuarterActual.Q1,
+        Q2: rows[3].hasManualQuarterActual.Q2 || rows[4].hasManualQuarterActual.Q2,
+        Q3: rows[3].hasManualQuarterActual.Q3 || rows[4].hasManualQuarterActual.Q3,
+        YTD: rows[3].hasManualQuarterActual.YTD || rows[4].hasManualQuarterActual.YTD,
+    };
     const totalKilometerRow = {
         no: "",
         isTotalHeader: true,
         indicator: "KILOMETER DRIVEN (Total)",
         definition: "Total per bulan",
         unit: "KM",
-        target: rows[3].target + rows[4].target,
+        target: 13681,
         values: totalKilometerValues,
-        notes: "Jml Ops : sesuai kontrak (Roco 2unit, Bus 2unit, Vacuum 1unit, tandem 1unit, LV 5unit, dll)",
-        ...calculateSummary(totalKilometerValues, activeMonthCount),
+        hasManualActual: totalKmHasManual,
+        hasManualQuarterActual: totalKmQuarterHasManual,
+        notes: "Unit Ops : sesuai kontrak (Foco 2 unit, Crane 1 unit, Bus 1 unit, Vacuum 1 unit, tandem 1 unit, LV 2 unit, Dozer 1 Unit, Lowbed 1 unit)",
+        planQ4: 41043,
+        actualQ4: totalKmQuarterHasManual.Q4 ? (rows[3].actualQ4 + rows[4].actualQ4) : 41043,
+        planQ1: 41043,
+        actualQ1: totalKmQuarterHasManual.Q1 ? (rows[3].actualQ1 + rows[4].actualQ1) : 41043,
+        planQ2: 41043,
+        actualQ2: totalKmQuarterHasManual.Q2 ? (rows[3].actualQ2 + rows[4].actualQ2) : 41043,
+        planQ3: 41043,
+        actualQ3: totalKmQuarterHasManual.Q3 ? (rows[3].actualQ3 + rows[4].actualQ3) : 41043,
+        planYtd: 164172,
+        actualYtd: totalKmQuarterHasManual.YTD ? (rows[3].actualYtd + rows[4].actualYtd) : 164172,
     };
+
+    // Sub-row under 2.6: Ops : Support :
+    const subVehiclesRow = {
+        no: "",
+        parentNo: "2.6",
+        isSubItem: true,
+        isOpsSupportSubRow: true,
+        indicator: "Ops : Support :",
+        definition: "",
+        unit: "Unit",
+        targetOps: 8,
+        targetSupport: 1,
+        target: "8 | 1",
+        notes: "",
+        valuesOps: {
+            plan: Array(12).fill(8),
+            actual: Array(12).fill(8),
+        },
+        valuesSupport: {
+            plan: Array(12).fill(1),
+            actual: Array(12).fill(1),
+        },
+        planOpsQ4: 8, actualOpsQ4: 8, planSupportQ4: 1, actualSupportQ4: 1,
+        planOpsQ1: 8, actualOpsQ1: 8, planSupportQ1: 1, actualSupportQ1: 1,
+        planOpsQ2: 8, actualOpsQ2: 8, planSupportQ2: 1, actualSupportQ2: 1,
+        planOpsQ3: 8, actualOpsQ3: 8, planSupportQ3: 1, actualSupportQ3: 1,
+        planOpsYtd: 8, actualOpsYtd: 8, planSupportYtd: 1, actualSupportYtd: 1,
+    };
+
+    // Update sub rows actuals if reports exist
+    const subEmployeesHasManual = Array(12).fill(false);
+    const subVehiclesHasManual = Array(12).fill(false);
+
+    reports.forEach((report) => {
+        const month = getMonthFromReport(report);
+        const manHours =
+            (Array.isArray(report.manHours) ? report.manHours[0] : report.manHours) ||
+            (Array.isArray(report.man_hours) ? report.man_hours[0] : report.man_hours) ||
+            null;
+        if (!manHours) return;
+
+        const totalEmp = number(manHours.total_employees);
+        if (totalEmp > 0) {
+            const ops = totalEmp === 72 ? 70 : (totalEmp > 2 ? totalEmp - 2 : totalEmp);
+            const supp = totalEmp === 72 ? 2 : (totalEmp > 2 ? 2 : 0);
+            subEmployeesRow.valuesOps.actual[month] = ops;
+            subEmployeesRow.valuesSupport.actual[month] = supp;
+            subEmployeesHasManual[month] = true;
+        }
+
+        const totalVeh = number(manHours.total_vehicles);
+        if (totalVeh > 0) {
+            const ops = totalVeh === 9 ? 8 : (totalVeh > 1 ? totalVeh - 1 : totalVeh);
+            const supp = totalVeh === 9 ? 1 : (totalVeh > 1 ? 1 : 0);
+            subVehiclesRow.valuesOps.actual[month] = ops;
+            subVehiclesRow.valuesSupport.actual[month] = supp;
+            subVehiclesHasManual[month] = true;
+        }
+    });
+
+    const setQuarterCounts = (subRow, hasManualArr) => {
+        const qIndices = {
+            Q4: [8, 9, 10],
+            Q1: [11, 0, 1],
+            Q2: [2, 3, 4],
+            Q3: [5, 6, 7],
+        };
+        const hasManualQuarter = {
+            Q4: qIndices.Q4.some((idx) => hasManualArr[idx]),
+            Q1: qIndices.Q1.some((idx) => hasManualArr[idx]),
+            Q2: qIndices.Q2.some((idx) => hasManualArr[idx]),
+            Q3: qIndices.Q3.some((idx) => hasManualArr[idx]),
+            YTD: hasManualArr.some(Boolean),
+        };
+        subRow.hasManualActual = hasManualArr;
+        subRow.hasManualQuarterActual = hasManualQuarter;
+
+        const countSubLast = (indices, field, defVal) => {
+            const valid = indices.filter((idx) => idx < activeMonthCount);
+            for (let i = valid.length - 1; i >= 0; i--) {
+                const val = subRow[field].actual[valid[i]];
+                if (val > 0) return val;
+            }
+            return defVal;
+        };
+        ["Q4", "Q1", "Q2", "Q3"].forEach((q) => {
+            subRow[`actualOps${q}`] = countSubLast(qIndices[q], "valuesOps", subRow.targetOps);
+            subRow[`actualSupport${q}`] = countSubLast(qIndices[q], "valuesSupport", subRow.targetSupport);
+        });
+        subRow.actualOpsYtd = countSubLast(Array.from({ length: 12 }, (_, i) => i), "valuesOps", subRow.targetOps);
+        subRow.actualSupportYtd = countSubLast(Array.from({ length: 12 }, (_, i) => i), "valuesSupport", subRow.targetSupport);
+    };
+    setQuarterCounts(subEmployeesRow, subEmployeesHasManual);
+    setQuarterCounts(subVehiclesRow, subVehiclesHasManual);
 
     return [
         totalManHoursRow,
-        rows[0], // 2.1
-        rows[1], // 2.2
-        rows[2], // 2.3
+        rows[0], // 2.1 MANHOURS PREMISES
+        rows[1], // 2.2 MANHOURS NON PREMISES
+        rows[2], // 2.3 JML KARYAWAN CCPM
+        subEmployeesRow, // Ops : Support :
         totalKilometerRow,
-        rows[3], // 2.4
-        rows[4], // 2.5
-        rows[5], // 2.6
+        rows[3], // 2.4 KILOMETER DRIVEN PREMISES
+        rows[4], // 2.5 KILOMETER DRIVEN NON PREMISES
+        rows[5], // 2.6 JUMLAH UNIT CCPM
+        subVehiclesRow, // Ops : Support :
     ];
 }
 
@@ -1293,13 +1718,29 @@ const OPS_MASTER = [
     },
 ];
 
-function buildOpsRows(reports, activeMonthCount = 12) {
+function buildOpsRows(reports, activeMonthCount = 12, masterKpiTargets = []) {
     return OPS_MASTER.map((config) => {
         const values = createValueObject();
+        const hasManualActual = Array(12).fill(false);
+
+        const dbTarget = masterKpiTargets?.find(
+            (t) =>
+                t.category === "ops" &&
+                ((config.no === "3.1" && String(t.indicator_name).toLowerCase().includes("reliability")) ||
+                    (config.no === "3.2" && String(t.indicator_name).toLowerCase().includes("availability")) ||
+                    (config.no === "3.3" && String(t.indicator_name).toLowerCase().includes("utilization")) ||
+                    (config.no === "3.4" && String(t.indicator_name).toLowerCase().includes("npt")))
+        );
 
         if (config.isPercentage) {
             for (let i = 0; i < 12; i++) {
-                values.plan[i] = config.targetNumber;
+                values.plan[i] = dbTarget?.monthly_plans?.[i] ?? `${config.targetNumber}.00%`;
+                values.actual[i] = values.plan[i]; // default fallback
+            }
+        } else if (config.isText) {
+            for (let i = 0; i < 12; i++) {
+                values.plan[i] = dbTarget?.monthly_plans?.[i] ?? "< 16 Jam /Rig / Bulan";
+                values.actual[i] = "< 16 Jam /Rig / Bulan";
             }
         }
 
@@ -1354,7 +1795,7 @@ function buildOpsRows(reports, activeMonthCount = 12) {
                     item.plan !== null &&
                     item.plan !== ""
                 ) {
-                    values.plan[month] = number(item.plan);
+                    values.plan[month] = item.plan;
                 }
 
                 if (
@@ -1362,29 +1803,42 @@ function buildOpsRows(reports, activeMonthCount = 12) {
                     item.actual !== null &&
                     item.actual !== ""
                 ) {
-                    values.actual[month] = number(item.actual);
+                    values.actual[month] = item.actual;
+                    hasManualActual[month] = true;
                 }
             });
         });
 
+        const qIndices = {
+            Q4: [8, 9, 10],
+            Q1: [11, 0, 1],
+            Q2: [2, 3, 4],
+            Q3: [5, 6, 7],
+        };
+        const hasManualQuarterActual = {
+            Q4: qIndices.Q4.some((idx) => hasManualActual[idx]),
+            Q1: qIndices.Q1.some((idx) => hasManualActual[idx]),
+            Q2: qIndices.Q2.some((idx) => hasManualActual[idx]),
+            Q3: qIndices.Q3.some((idx) => hasManualActual[idx]),
+            YTD: hasManualActual.some(Boolean),
+        };
+
         if (config.isPercentage) {
-            const calcQuarterActual = (start, end) => {
-                const limit = Math.min(end, activeMonthCount);
-                if (start >= activeMonthCount) return "-";
-                const slice = values.actual.slice(start, limit);
-                const filled = slice.filter((v) => v > 0);
-                if (filled.length === 0) return `${config.targetNumber}.00%`;
-                const avg = filled.reduce((a, b) => a + b, 0) / filled.length;
+            const calcQuarterActual = (monthIndices) => {
+                const valid = monthIndices.filter((idx) => idx < activeMonthCount && hasManualActual[idx]);
+                if (valid.length === 0) return `${config.targetNumber}.00%`;
+                const avg = valid.reduce((a, idx) => a + number(values.actual[idx]), 0) / valid.length;
                 return `${avg.toFixed(2)}%`;
             };
 
-            const allFilled = values.actual
-                .slice(0, activeMonthCount)
-                .filter((v) => v > 0);
-            const actualYtd =
-                allFilled.length === 0
-                    ? `${config.targetNumber}.00%`
-                    : `${(allFilled.reduce((a, b) => a + b, 0) / allFilled.length).toFixed(2)}%`;
+            const manualYtd = Array.from({ length: activeMonthCount }, (_, i) => i).filter((idx) => hasManualActual[idx]);
+            const actualYtd = manualYtd.length === 0
+                ? `${config.targetNumber}.00%`
+                : `${(manualYtd.reduce((a, idx) => a + number(values.actual[idx]), 0) / manualYtd.length).toFixed(2)}%`;
+
+            const pQ = config.no === "3.1" ? { q4: "99.00%", q1: "99%", q2: "99.00%", q3: "99.00%" }
+                     : config.no === "3.2" ? { q4: "98.00%", q1: "98%", q2: "98.00%", q3: "98.00%" }
+                     : { q4: "90.00%", q1: "90%", q2: "90.00%", q3: "90.00%" };
 
             return {
                 no: config.no,
@@ -1395,14 +1849,16 @@ function buildOpsRows(reports, activeMonthCount = 12) {
                 notes: config.notes,
                 isPercentage: true,
                 values,
-                planQ1: `${config.targetNumber}.00%`,
-                actualQ1: calcQuarterActual(0, 3),
-                planQ2: `${config.targetNumber}.00%`,
-                actualQ2: calcQuarterActual(3, 6),
-                planQ3: `${config.targetNumber}.00%`,
-                actualQ3: calcQuarterActual(6, 9),
-                planQ4: `${config.targetNumber}.00%`,
-                actualQ4: calcQuarterActual(9, 12),
+                hasManualActual,
+                hasManualQuarterActual,
+                planQ4: pQ.q4,
+                actualQ4: hasManualQuarterActual.Q4 ? calcQuarterActual([8, 9, 10]) : pQ.q4,
+                planQ1: pQ.q1,
+                actualQ1: hasManualQuarterActual.Q1 ? calcQuarterActual([11, 0, 1]) : pQ.q1,
+                planQ2: pQ.q2,
+                actualQ2: hasManualQuarterActual.Q2 ? calcQuarterActual([2, 3, 4]) : pQ.q2,
+                planQ3: pQ.q3,
+                actualQ3: hasManualQuarterActual.Q3 ? calcQuarterActual([5, 6, 7]) : pQ.q3,
                 planYtd: `${config.targetNumber}.00%`,
                 actualYtd,
             };
@@ -1418,14 +1874,16 @@ function buildOpsRows(reports, activeMonthCount = 12) {
                 notes: config.notes,
                 isText: true,
                 values,
+                hasManualActual,
+                hasManualQuarterActual,
+                planQ4: "< 16 Jam /Rig / Bulan",
+                actualQ4: "< 16 Jam /Rig / Bulan",
                 planQ1: "< 16 Jam /Rig / Bulan",
                 actualQ1: "< 16 Jam /Rig / Bulan",
                 planQ2: "< 16 Jam /Rig / Bulan",
                 actualQ2: "< 16 Jam /Rig / Bulan",
                 planQ3: "< 16 Jam /Rig / Bulan",
                 actualQ3: "< 16 Jam /Rig / Bulan",
-                planQ4: "< 16 Jam /Rig / Bulan",
-                actualQ4: "< 16 Jam /Rig / Bulan",
                 planYtd: "< 16 Jam /Rig / Bulan",
                 actualYtd: "< 16 Jam /Rig / Bulan",
             };
@@ -1439,6 +1897,8 @@ function buildOpsRows(reports, activeMonthCount = 12) {
             target: config.target,
             notes: config.notes,
             values,
+            hasManualActual,
+            hasManualQuarterActual,
             ...calculateSummary(values, activeMonthCount),
         };
     });
@@ -1449,7 +1909,7 @@ function buildOpsRows(reports, activeMonthCount = 12) {
 ============================================================ */
 
 export default function Reports() {
-    const { reports: rawReports = [] } = usePage().props;
+    const { reports: rawReports = [], masterKpiTargets = [] } = usePage().props;
 
     const reports = useMemo(
         () =>
@@ -1477,21 +1937,30 @@ export default function Reports() {
         "BMS#19", "BMS#20", "BMS#21", "BMS#22", "BMS#23"
     ]));
 
+    const availableProjects = useMemo(() => {
+        return ALL_CONTRACTS;
+    }, []);
+
+    const [project, setProject] = useState("All Projects");
+
+    const currentContractGroup = useMemo(() => {
+        if (!project || project === "All Projects") return null;
+        return CONTRACT_RIG_GROUPS.find((g) => g.contractNo === project) || null;
+    }, [project]);
+
     const availableRigs = useMemo(() => {
+        if (project && project !== "All Projects") {
+            const rigsInContract = getRigsByContract(project);
+            if (rigsInContract && rigsInContract.length > 0) {
+                return rigsInContract;
+            }
+        }
         const set = new Set(ALL_MASTER_RIGS);
         reports.forEach((r) => {
             if (r.rig_no) set.add(r.rig_no);
         });
         return Array.from(set);
-    }, [reports]);
-
-    const availableProjects = useMemo(() => {
-        const set = new Set(ALL_CONTRACTS);
-        reports.forEach((report) => {
-            if (report.contract_no) set.add(report.contract_no);
-        });
-        return Array.from(set);
-    }, [reports]);
+    }, [reports, project]);
 
     const availableLocations = useMemo(() => {
         const set = new Set(ALL_AREAS);
@@ -1514,13 +1983,24 @@ export default function Reports() {
 
     const [rig, setRig] = useState("All Rigs");
 
-    const [project, setProject] = useState("All Projects");
-
     const [location, setLocation] = useState("All Locations");
 
     const [reportDate, setReportDate] = useState("All Dates");
 
     const [preview, setPreview] = useState(false);
+
+    const handleContractChange = (newContract) => {
+        setProject(newContract);
+        setRig("All Rigs");
+        if (newContract && newContract !== "All Projects") {
+            const group = CONTRACT_RIG_GROUPS.find((g) => g.contractNo === newContract);
+            if (group?.area) {
+                setLocation(group.area);
+            }
+        } else {
+            setLocation("All Locations");
+        }
+    };
 
     const [exporting, setExporting] = useState(false);
 
@@ -1573,11 +2053,24 @@ export default function Reports() {
         );
 
         if (rig !== "All Rigs") {
-            result = result.filter((report) => report.rig_no === rig);
+            const targetRig = String(rig).replace(/\s+/g, "").toUpperCase();
+            result = result.filter((report) => {
+                if (!report.rig_no) return false;
+                if (report.rig_no === rig) return true;
+                const normalizedRigs = String(report.rig_no)
+                    .split(",")
+                    .map((item) => item.replace(/\s+/g, "").toUpperCase());
+                return normalizedRigs.includes(targetRig);
+            });
         }
 
         if (project !== "All Projects") {
-            result = result.filter((report) => report.contract_no === project);
+            const targetContract = String(project).trim().toUpperCase();
+            result = result.filter(
+                (report) =>
+                    report.contract_no === project ||
+                    String(report.contract_no || "").trim().toUpperCase() === targetContract,
+            );
         }
 
         if (location !== "All Locations") {
@@ -1630,6 +2123,13 @@ export default function Reports() {
     }, [filteredReports, selectedCutoffMonth, year]);
 
     const activeMonths = useMemo(() => {
+        if (period === "Annual") {
+            return MONTHS.map((name, index) => ({
+                name,
+                index,
+            }));
+        }
+
         const startMonth = Math.max(0, latestMonthIndex - 2);
         const list = [];
         for (let m = startMonth; m <= latestMonthIndex; m++) {
@@ -1639,7 +2139,7 @@ export default function Reports() {
             });
         }
         return list;
-    }, [latestMonthIndex]);
+    }, [period, latestMonthIndex]);
 
     /* ========================================================
        REPORT DATA
@@ -1651,13 +2151,13 @@ export default function Reports() {
     );
 
     const manHours = useMemo(
-        () => buildManHourRows(filteredReports, latestMonthIndex + 1),
-        [filteredReports, latestMonthIndex],
+        () => buildManHourRows(filteredReports, latestMonthIndex + 1, masterKpiTargets),
+        [filteredReports, latestMonthIndex, masterKpiTargets],
     );
 
     const ops = useMemo(
-        () => buildOpsRows(filteredReports, latestMonthIndex + 1),
-        [filteredReports, latestMonthIndex],
+        () => buildOpsRows(filteredReports, latestMonthIndex + 1, masterKpiTargets),
+        [filteredReports, latestMonthIndex, masterKpiTargets],
     );
 
     const leading = useMemo(
@@ -1828,8 +2328,9 @@ export default function Reports() {
 
     function buildExcelLagging(ws, startRow) {
         let row = startRow;
+        const totalCols = 72;
 
-        ws.mergeCells(row, 1, row, 38);
+        ws.mergeCells(row, 1, row, totalCols);
 
         ws.getCell(row, 1).value = "LAGGING INDICATOR";
 
@@ -1842,25 +2343,20 @@ export default function Reports() {
 
         row++;
 
-        /* HEADER */
+        /* 3-TIER HEADER */
 
         const header1 = row;
         const header2 = row + 1;
+        const header3 = row + 2;
 
-        ws.mergeCells(header1, 1, header2, 1);
-
-        ws.mergeCells(header1, 2, header2, 2);
-
-        ws.mergeCells(header1, 3, header2, 3);
-
-        ws.mergeCells(header1, 4, header2, 4);
+        ws.mergeCells(header1, 1, header3, 1);
+        ws.mergeCells(header1, 2, header3, 2);
+        ws.mergeCells(header1, 3, header3, 3);
+        ws.mergeCells(header1, 4, header3, 4);
 
         ws.getCell(header1, 1).value = "POINT YANG DIUKUR";
-
         ws.getCell(header1, 2).value = "DEFINISI\n(FREQUENCY RATE / UNIT)";
-
         ws.getCell(header1, 3).value = "TARGET / ESTIMASI / MONTH";
-
         ws.getCell(header1, 4).value = "KETERANGAN";
 
         for (let col = 1; col <= 4; col++) {
@@ -1870,96 +2366,63 @@ export default function Reports() {
             });
         }
 
+        const periodList = [
+            "Q1",
+            "Q2",
+            "Q3",
+            "Q4",
+            "TOTAL KUMULATIF YTD",
+            ...MONTHS.map((m) => `${m}-${String(year).slice(-2)}`),
+        ];
+
         let col = 5;
 
-        ["Q1", "Q2", "Q3", "Q4"].forEach((q) => {
-            ws.mergeCells(header1, col, header1, col + 1);
-
-            ws.getCell(header1, col).value = q;
-
+        periodList.forEach((pTitle) => {
+            // Header Row 1: Period Title (span 4 cols)
+            ws.mergeCells(header1, col, header1, col + 3);
+            ws.getCell(header1, col).value = pTitle;
             applyCellStyle(ws.getCell(header1, col), {
                 bold: true,
                 fill: "F1DDDC",
             });
 
+            // Header Row 2: Plan (2 cols) & Actual (2 cols)
+            ws.mergeCells(header2, col, header2, col + 1);
             ws.getCell(header2, col).value = "Plan";
-
-            ws.getCell(header2, col + 1).value = "Actual";
-
-            applyCellStyle(ws.getCell(header2, col), {
-                bold: true,
-                fill: "F1DDDC",
-            });
-
-            applyCellStyle(ws.getCell(header2, col + 1), {
-                bold: true,
-                fill: "F1DDDC",
-            });
-
-            col += 2;
-        });
-
-        ws.mergeCells(header1, col, header1, col + 1);
-
-        ws.getCell(header1, col).value = "TOTAL KUMULATIF YTD";
-
-        ws.getCell(header2, col).value = "Plan";
-
-        ws.getCell(header2, col + 1).value = "Actual";
-
-        applyCellStyle(ws.getCell(header1, col), {
-            bold: true,
-            fill: "F1DDDC",
-        });
-
-        applyCellStyle(ws.getCell(header2, col), {
-            bold: true,
-            fill: "F1DDDC",
-        });
-
-        applyCellStyle(ws.getCell(header2, col + 1), {
-            bold: true,
-            fill: "F1DDDC",
-        });
-
-        col += 2;
-
-        /* MONTH HEADER */
-
-        MONTHS.forEach((month) => {
-            ws.mergeCells(header1, col, header1, col + 1);
-
-            ws.getCell(header1, col).value = `${month}-${String(year).slice(
-                -2,
-            )}`;
-
-            ws.getCell(header2, col).value = "Plan";
-
-            ws.getCell(header2, col + 1).value = "Actual";
-
-            applyCellStyle(ws.getCell(header1, col), {
-                bold: true,
-                fill: "F1DDDC",
-            });
-
             applyCellStyle(ws.getCell(header2, col), {
                 bold: true,
                 fill: "FFFF00",
             });
 
-            applyCellStyle(ws.getCell(header2, col + 1), {
+            ws.mergeCells(header2, col + 2, header2, col + 3);
+            ws.getCell(header2, col + 2).value = "Actual";
+            applyCellStyle(ws.getCell(header2, col + 2), {
                 bold: true,
                 fill: "FFFF00",
             });
 
-            col += 2;
+            // Header Row 3: Case, FR under Plan; Case, FR under Actual
+            ws.getCell(header3, col).value = "Case";
+            ws.getCell(header3, col + 1).value = "FR";
+            ws.getCell(header3, col + 2).value = "Case";
+            ws.getCell(header3, col + 3).value = "FR";
+
+            for (let c = col; c < col + 4; c++) {
+                applyCellStyle(ws.getCell(header3, c), {
+                    bold: true,
+                    fill: "FFFF00",
+                    size: 8,
+                });
+            }
+
+            col += 4;
         });
 
-        row += 2;
+        row = header3 + 1;
 
         /* SECTION 1 */
 
-        ws.mergeCells(row, 1, row, 38);
+        ws.mergeCells(row, 1, row, totalCols);
         ws.getCell(row, 1).value = "1. HES PERFORMANCE";
 
         applyCellStyle(ws.getCell(row, 1), {
@@ -1972,64 +2435,125 @@ export default function Reports() {
         row++;
 
         lagging.forEach((item) => {
-            const isTri = item.no === "1.5";
-            const isMvc = item.no === "1.6";
-            const totalHours = manHours && manHours.length > 0 ? manHours[0] : null;
-            const totalKm = manHours && manHours.length > 4 ? manHours[4] : null;
+            const isTri = item.no === "1.5" || (item.indicator && item.indicator.includes("TOTAL RECORDABLE INJURY"));
+            const isMvc = item.no === "1.6" || (item.indicator && item.indicator.includes("MOTOR VEHICLE CRASH"));
+            const isCaseFr = isTri || isMvc || Boolean(item.isCaseFrCombo);
+            const totalHours = manHours?.find((m) => m.indicator?.includes("JAM KERJA / MAN HOURS (Total)")) || (manHours && manHours.length > 0 ? manHours[0] : null);
+            const totalKm = manHours?.find((m) => m.indicator?.includes("KILOMETER DRIVEN (Total)")) || (manHours && manHours.length > 5 ? manHours[5] : null);
 
-            const formatLagExcel = (val, qKey, mIdx = null, isPlan = false) => {
-                if (typeof val === "string") return val;
-                if (!isTri && !isMvc) return val;
-                const cases = Number(val) || 0;
-                let hours = 0;
-                let km = 0;
-                if (mIdx !== null) {
-                    hours = Number(totalHours?.values?.[isPlan ? "plan" : "actual"]?.[mIdx]) || 0;
-                    km = Number(totalKm?.values?.[isPlan ? "plan" : "actual"]?.[mIdx]) || 0;
-                } else if (qKey === "YTD") {
-                    hours = Number(totalHours?.[isPlan ? "planYtd" : "actualYtd"]) || 0;
-                    km = Number(totalKm?.[isPlan ? "planYtd" : "actualYtd"]) || 0;
-                } else if (qKey) {
-                    hours = Number(totalHours?.[isPlan ? `plan${qKey}` : `actual${qKey}`]) || 0;
-                    km = Number(totalKm?.[isPlan ? `plan${qKey}` : `actual${qKey}`]) || 0;
-                }
-                const fr = isMvc ? calcMvcFrequencyRate(cases, km) : calcFrequencyRate(cases, hours);
-                return `${cases} (FR: ${fr})`;
-            };
-
-            const values = [
+            const targetDisplay = isCaseFr ? `Case: ${item.targetMonth || 0} | FR: ${item.targetFr || "0.00"}` : (item.target ?? 0);
+            const baseCols = [
                 `${item.no} ${item.indicator}`,
                 item.definition || "",
-                item.target,
+                targetDisplay,
                 item.notes || "",
-                formatLagExcel(item.planQ1, "Q1", null, true),
-                formatLagExcel(item.actualQ1, "Q1", null, false),
-                formatLagExcel(item.planQ2, "Q2", null, true),
-                formatLagExcel(item.actualQ2, "Q2", null, false),
-                formatLagExcel(item.planQ3, "Q3", null, true),
-                formatLagExcel(item.actualQ3, "Q3", null, false),
-                formatLagExcel(item.planQ4, "Q4", null, true),
-                formatLagExcel(item.actualQ4, "Q4", null, false),
-                formatLagExcel(item.planYtd, "YTD", null, true),
-                formatLagExcel(item.actualYtd, "YTD", null, false),
             ];
 
-            item.values.plan.forEach((value, index) => {
-                values.push(formatLagExcel(value, null, index, true));
-                values.push(formatLagExcel(item.values.actual[index], null, index, false));
-            });
-
-            values.forEach((value, index) => {
-                const cell = ws.getCell(row, index + 1);
-
-                cell.value = value;
-
+            baseCols.forEach((val, idx) => {
+                const cell = ws.getCell(row, idx + 1);
+                cell.value = val;
                 applyCellStyle(cell, {
                     size: 8,
-                    bold: index === 0 || index === 1,
-                    horizontal: index === 1 ? "left" : "center",
+                    bold: idx === 0 || idx === 1,
+                    horizontal: idx === 1 ? "left" : "center",
                     fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE",
                 });
+            });
+
+            const is1_1to1_4 = ["1.1", "1.2", "1.3", "1.4"].includes(item.no);
+            const is1_7to1_12 = !is1_1to1_4 && !isTri && !isMvc;
+
+            const getLagQuad = (pCases, aCases, pHours = 0, aHours = 0, pKm = 0, aKm = 0, mIdx = null) => {
+                const pc = Number(pCases) || 0;
+                const ac = Number(aCases) || 0;
+                let pFr = "-";
+                let aFr = "-";
+
+                if (is1_1to1_4) {
+                    pFr = "-";
+                    if (mIdx !== null && item.frequencyRate?.[mIdx] !== null && item.frequencyRate?.[mIdx] !== undefined) {
+                        aFr = Number(item.frequencyRate[mIdx]).toFixed(2);
+                    } else if (aHours > 0 && ac > 0) {
+                        aFr = calcFrequencyRate(ac, aHours);
+                    } else {
+                        aFr = "-";
+                    }
+                } else if (is1_7to1_12) {
+                    pFr = "NA";
+                    if (mIdx !== null && item.frequencyRate?.[mIdx] !== null && item.frequencyRate?.[mIdx] !== undefined) {
+                        aFr = Number(item.frequencyRate[mIdx]).toFixed(2);
+                    } else {
+                        aFr = "NA";
+                    }
+                } else if (isTri) {
+                    pFr = pHours > 0 ? calcFrequencyRate(pc, pHours) : "0.00";
+                    if (mIdx !== null && item.frequencyRate?.[mIdx] !== null && item.frequencyRate?.[mIdx] !== undefined) {
+                        aFr = Number(item.frequencyRate[mIdx]).toFixed(2);
+                    } else if (aHours > 0) {
+                        aFr = calcFrequencyRate(ac, aHours);
+                    } else {
+                        aFr = "0.00";
+                    }
+                } else if (isMvc) {
+                    pFr = pKm > 0 ? calcMvcFrequencyRate(pc, pKm) : "0.00";
+                    if (mIdx !== null && item.frequencyRate?.[mIdx] !== null && item.frequencyRate?.[mIdx] !== undefined) {
+                        aFr = Number(item.frequencyRate[mIdx]).toFixed(2);
+                    } else if (aKm > 0) {
+                        aFr = calcMvcFrequencyRate(ac, aKm);
+                    } else {
+                        aFr = "0.00";
+                    }
+                }
+
+                return { pc, pFr, ac, aFr };
+            };
+
+            const periodsData = [
+                getLagQuad(item.planQ1, item.actualQ1, Number(totalHours?.planQ1) || 0, Number(totalHours?.actualQ1) || 0, Number(totalKm?.planQ1) || 0, Number(totalKm?.actualQ1) || 0),
+                getLagQuad(item.planQ2, item.actualQ2, Number(totalHours?.planQ2) || 0, Number(totalHours?.actualQ2) || 0, Number(totalKm?.planQ2) || 0, Number(totalKm?.actualQ2) || 0),
+                getLagQuad(item.planQ3, item.actualQ3, Number(totalHours?.planQ3) || 0, Number(totalHours?.actualQ3) || 0, Number(totalKm?.planQ3) || 0, Number(totalKm?.actualQ3) || 0),
+                getLagQuad(item.planQ4, item.actualQ4, Number(totalHours?.planQ4) || 0, Number(totalHours?.actualQ4) || 0, Number(totalKm?.planQ4) || 0, Number(totalKm?.actualQ4) || 0),
+                getLagQuad(item.planYtd, item.actualYtd, Number(totalHours?.planYtd) || 0, Number(totalHours?.actualYtd) || 0, Number(totalKm?.planYtd) || 0, Number(totalKm?.actualYtd) || 0),
+                ...MONTHS.map((_, idx) => {
+                    const pHours = Number(totalHours?.values?.plan?.[idx]) || 0;
+                    const aHours = Number(totalHours?.values?.actual?.[idx]) || 0;
+                    const pKm = Number(totalKm?.values?.plan?.[idx]) || 0;
+                    const aKm = Number(totalKm?.values?.actual?.[idx]) || 0;
+                    return getLagQuad(item.values?.plan?.[idx], item.values?.actual?.[idx], pHours, aHours, pKm, aKm, idx);
+                }),
+            ];
+
+            let col = 5;
+            periodsData.forEach(({ pc, pFr, ac, aFr }) => {
+                // 1. HES Performance (1.1-1.12) selalu mengisi 4 kolom: Plan Case, Plan FR, Actual Case, Actual FR
+                if (true) {
+                    const c1 = ws.getCell(row, col);
+                    c1.value = pc;
+                    applyCellStyle(c1, { size: 8, fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE" });
+
+                    const c2 = ws.getCell(row, col + 1);
+                    c2.value = pFr;
+                    applyCellStyle(c2, { size: 8, fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE" });
+
+                    const c3 = ws.getCell(row, col + 2);
+                    c3.value = ac;
+                    applyCellStyle(c3, { size: 8, fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE" });
+
+                    const c4 = ws.getCell(row, col + 3);
+                    c4.value = aFr;
+                    applyCellStyle(c4, { size: 8, fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE" });
+                } else {
+                    ws.mergeCells(row, col, row, col + 1);
+                    const pCell = ws.getCell(row, col);
+                    pCell.value = pc;
+                    applyCellStyle(pCell, { size: 8, fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE" });
+
+                    ws.mergeCells(row, col + 2, row, col + 3);
+                    const aCell = ws.getCell(row, col + 2);
+                    aCell.value = ac;
+                    applyCellStyle(aCell, { size: 8, fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE" });
+                }
+                col += 4;
             });
 
             row++;
@@ -2037,7 +2561,7 @@ export default function Reports() {
 
         /* SECTION 2 */
 
-        ws.mergeCells(row, 1, row, 38);
+        ws.mergeCells(row, 1, row, totalCols);
         ws.getCell(row, 1).value = "2. MAN HOURS & KILOMETER PERFORMANCE";
 
         applyCellStyle(ws.getCell(row, 1), {
@@ -2050,13 +2574,14 @@ export default function Reports() {
         row++;
 
         const writeMetric = (item) => {
-            const isHeader = item.isTotalHeader || !item.no;
+            const isHeader = item.isTotalHeader || (!item.no && !item.isOpsSupportSubRow);
+            const isSub = Boolean(item.isOpsSupportSubRow);
 
             const formatForExcel = (val, isPlan = false) => {
                 if (val === undefined || val === null || val === "") return "";
                 if (typeof val === "string") return val;
                 if (item?.isPercentage) {
-                    if (isPlan && val === 0 && item.targetNumber) {
+                    if (isPlan && (val === 0 || val === "0") && item.targetNumber) {
                         return `${item.targetNumber}.00%`;
                     }
                     return `${Number(val).toFixed(2)}%`;
@@ -2067,60 +2592,129 @@ export default function Reports() {
                 return val;
             };
 
-            const values = [
+            const baseCols = [
                 item.no || "",
-                item.indicator,
-                item.target,
+                isSub ? "   Ops :       Support :" : item.indicator,
+                isSub ? `${item.targetOps} | ${item.targetSupport}` : (typeof item.target === "number" ? item.target : (item.target || "")),
                 item.notes || "",
-                formatForExcel(item.planQ1, true),
-                formatForExcel(item.actualQ1, false),
-                formatForExcel(item.planQ2, true),
-                formatForExcel(item.actualQ2, false),
-                formatForExcel(item.planQ3, true),
-                formatForExcel(item.actualQ3, false),
-                formatForExcel(item.planQ4, true),
-                formatForExcel(item.actualQ4, false),
-                formatForExcel(item.planYtd, true),
-                formatForExcel(item.actualYtd, false),
             ];
 
-            item.values.plan.forEach((value, index) => {
-                values.push(formatForExcel(value, true));
-                values.push(formatForExcel(item.values.actual[index], false));
-            });
-
-            values.forEach((value, index) => {
-                const cell = ws.getCell(row, index + 1);
-
-                cell.value = value;
-
+            baseCols.forEach((val, idx) => {
+                const cell = ws.getCell(row, idx + 1);
+                cell.value = val;
                 applyCellStyle(cell, {
                     size: 8,
-                    bold: isHeader || index === 0 || index === 1,
-                    fill: isHeader
-                        ? "DDEBF7"
-                        : row % 2 === 0
-                          ? "FFFFFF"
-                          : "F7F8EE",
-                    horizontal: index === 1 ? "left" : "center",
+                    bold: isHeader || idx === 0 || idx === 1 || isSub,
+                    horizontal: idx === 1 ? "left" : "center",
+                    fill: isHeader ? "DDEBF7" : (row % 2 === 0 ? "FFFFFF" : "F7F8EE"),
                 });
             });
+
+            let col = 5;
+
+            if (isSub) {
+                const quarterNames = REPORT_QUARTERS;
+                quarterNames.forEach((q) => {
+                    const pOps = item[`planOps${q}`] ?? item.targetOps;
+                    const pSupp = item[`planSupport${q}`] ?? item.targetSupport;
+                    const aOps = item[`actualOps${q}`] ?? item.targetOps;
+                    const aSupp = item[`actualSupport${q}`] ?? item.targetSupport;
+
+                    [pOps, pSupp, aOps, aSupp].forEach((v, cIdx) => {
+                        const cell = ws.getCell(row, col + cIdx);
+                        cell.value = v;
+                        applyCellStyle(cell, {
+                            size: 8,
+                            horizontal: "center",
+                            fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE",
+                        });
+                    });
+                    col += 4;
+                });
+
+                // YTD
+                [
+                    item.planOpsYtd ?? item.targetOps,
+                    item.planSupportYtd ?? item.targetSupport,
+                    item.actualOpsYtd ?? item.targetOps,
+                    item.actualSupportYtd ?? item.targetSupport,
+                ].forEach((v, cIdx) => {
+                    const cell = ws.getCell(row, col + cIdx);
+                    cell.value = v;
+                    applyCellStyle(cell, {
+                        size: 8,
+                        horizontal: "center",
+                        fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE",
+                    });
+                });
+                col += 4;
+
+                // 12 Months
+                MONTHS.forEach((_, mIdx) => {
+                    const pOps = item.valuesOps?.plan?.[mIdx] ?? item.targetOps;
+                    const pSupp = item.valuesSupport?.plan?.[mIdx] ?? item.targetSupport;
+                    const aOps = item.valuesOps?.actual?.[mIdx] ?? item.targetOps;
+                    const aSupp = item.valuesSupport?.actual?.[mIdx] ?? item.targetSupport;
+
+                    [pOps, pSupp, aOps, aSupp].forEach((v, cIdx) => {
+                        const cell = ws.getCell(row, col + cIdx);
+                        cell.value = v;
+                        applyCellStyle(cell, {
+                            size: 8,
+                            horizontal: "center",
+                            fill: row % 2 === 0 ? "FFFFFF" : "F7F8EE",
+                        });
+                    });
+                    col += 4;
+                });
+            } else {
+                const metricPeriods = [
+                    ...REPORT_QUARTERS.map((q) => ({
+                        pVal: formatForExcel(getQuarterValue(item, q, "Plan"), true),
+                        aVal: formatForExcel(getQuarterValue(item, q, "Actual"), false),
+                    })),
+                    { pVal: formatForExcel(item.planYtd, true), aVal: formatForExcel(item.actualYtd, false) },
+                    ...MONTHS.map((_, idx) => ({
+                        pVal: formatForExcel(item.values?.plan?.[idx], true),
+                        aVal: formatForExcel(item.values?.actual?.[idx], false),
+                    })),
+                ];
+
+                metricPeriods.forEach(({ pVal, aVal }) => {
+                    // Plan merged across 2 columns
+                    ws.mergeCells(row, col, row, col + 1);
+                    const pCell = ws.getCell(row, col);
+                    pCell.value = pVal;
+                    applyCellStyle(pCell, {
+                        size: 8,
+                        bold: isHeader,
+                        horizontal: "center",
+                        fill: isHeader ? "DDEBF7" : (row % 2 === 0 ? "FFFFFF" : "F7F8EE"),
+                    });
+
+                    // Actual merged across 2 columns
+                    ws.mergeCells(row, col + 2, row, col + 3);
+                    const aCell = ws.getCell(row, col + 2);
+                    aCell.value = aVal;
+                    applyCellStyle(aCell, {
+                        size: 8,
+                        bold: isHeader,
+                        horizontal: "center",
+                        fill: isHeader ? "DDEBF7" : (row % 2 === 0 ? "FFFFFF" : "F7F8EE"),
+                    });
+
+                    col += 4;
+                });
+            }
 
             row++;
         };
 
         manHours.forEach(writeMetric);
 
-        applyCellStyle(ws.getCell(row, 1), {
-            size: 8,
-            horizontal: "center",
-        });
-
-        row++;
-
         /* SECTION 3 */
 
-        ws.mergeCells(row, 1, row, 38);
+        ws.mergeCells(row, 1, row, totalCols);
         ws.getCell(row, 1).value = "3. OPS PERFORMANCE";
 
         applyCellStyle(ws.getCell(row, 1), {
@@ -2182,7 +2776,7 @@ export default function Reports() {
 
         let col = 6;
 
-        ["Q1", "Q2", "Q3", "Q4"].forEach((q) => {
+        REPORT_QUARTERS.forEach((q) => {
             ws.mergeCells(h1, col, h1, col + 1);
 
             ws.getCell(h1, col).value = q;
@@ -2429,12 +3023,6 @@ export default function Reports() {
     ======================================================== */
 
     const handleExportExcel = async () => {
-        if (filteredReports.length === 0) {
-            alert("Tidak ada data report yang sesuai dengan filter.");
-
-            return;
-        }
-
         try {
             setExporting(true);
             window.dispatchEvent(
@@ -2704,38 +3292,53 @@ export default function Reports() {
 
     const renderPlanActualCells = (item) => {
         const cells = [];
-        const totalManHoursItem = manHours && manHours.length > 0 ? manHours[0] : null;
-        const totalKmItem = manHours && manHours.length > 4 ? manHours[4] : null;
+        const totalManHoursItem = manHours?.find((m) => m.indicator?.includes("JAM KERJA / MAN HOURS (Total)")) || (manHours && manHours.length > 0 ? manHours[0] : null);
+        const totalKmItem = manHours?.find((m) => m.indicator?.includes("KILOMETER DRIVEN (Total)")) || (manHours && manHours.length > 5 ? manHours[5] : null);
 
-        const quarterNames = ["Q1", "Q2", "Q3", "Q4"];
+        const quarterNames = REPORT_QUARTERS;
 
         quarterNames.forEach((q) => {
             const hPlan = Number(totalManHoursItem?.[ `plan${q}` ]) || 0;
             const hAct = Number(totalManHoursItem?.[ `actual${q}` ]) || 0;
             const kmPlan = Number(totalKmItem?.[ `plan${q}` ]) || 0;
             const kmAct = Number(totalKmItem?.[ `actual${q}` ]) || 0;
+            const isQFallback = !item.hasManualQuarterActual?.[q];
 
             cells.push(
                 <td key={`${q}-plan`} style={tdCenter}>
-                    {formatMetricCell(
-                        getQuarterValue(item, q, "Plan"),
-                        item,
-                        true,
-                        hPlan,
-                        kmPlan,
-                    )}
+                    <span style={{ fontWeight: "700", color: "#004d32" }}>
+                        {formatMetricCell(
+                            getQuarterValue(item, q, "Plan"),
+                            item,
+                            true,
+                            hPlan,
+                            kmPlan,
+                        )}
+                    </span>
                 </td>,
             );
 
             cells.push(
-                <td key={`${q}-actual`} style={tdCenter}>
-                    {formatMetricCell(
-                        getQuarterValue(item, q, "Actual"),
-                        item,
-                        false,
-                        hAct,
-                        kmAct,
-                    )}
+                <td
+                    key={`${q}-actual`}
+                    style={tdCenter}
+                >
+                    <span
+                        style={{
+                            fontWeight: isQFallback ? "600" : "700",
+                            color: isQFallback ? "#64748b" : "#0f172a",
+                            fontStyle: isQFallback ? "italic" : "normal",
+                        }}
+                        title={isQFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                    >
+                        {formatMetricCell(
+                            getQuarterValue(item, q, "Actual"),
+                            item,
+                            false,
+                            hAct,
+                            kmAct,
+                        )}
+                    </span>
                 </td>,
             );
         });
@@ -2745,16 +3348,31 @@ export default function Reports() {
         const hYtdAct = Number(totalManHoursItem?.actualYtd) || 0;
         const kmYtdPlan = Number(totalKmItem?.planYtd) || 0;
         const kmYtdAct = Number(totalKmItem?.actualYtd) || 0;
+        const isYtdFallback = !item.hasManualQuarterActual?.YTD;
 
         cells.push(
             <td key="ytd-plan" style={tdCenter}>
-                {formatMetricCell(item.planYtd, item, true, hYtdPlan, kmYtdPlan)}
+                <span style={{ fontWeight: "700", color: "#004d32" }}>
+                    {formatMetricCell(item.planYtd, item, true, hYtdPlan, kmYtdPlan)}
+                </span>
             </td>,
         );
 
         cells.push(
-            <td key="ytd-actual" style={tdCenter}>
-                {formatMetricCell(item.actualYtd, item, false, hYtdAct, kmYtdAct)}
+            <td
+                key="ytd-actual"
+                style={tdCenter}
+            >
+                <span
+                    style={{
+                        fontWeight: isYtdFallback ? "600" : "700",
+                        color: isYtdFallback ? "#64748b" : "#0f172a",
+                        fontStyle: isYtdFallback ? "italic" : "normal",
+                    }}
+                    title={isYtdFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                >
+                    {formatMetricCell(item.actualYtd, item, false, hYtdAct, kmYtdAct)}
+                </span>
             </td>,
         );
 
@@ -2763,16 +3381,31 @@ export default function Reports() {
             const hMAct = Number(totalManHoursItem?.values?.actual?.[m.index]) || 0;
             const kmMPlan = Number(totalKmItem?.values?.plan?.[m.index]) || 0;
             const kmMAct = Number(totalKmItem?.values?.actual?.[m.index]) || 0;
+            const isMFallback = !item.hasManualActual?.[m.index];
 
             cells.push(
                 <td key={`${m.name}-plan`} style={tdCenter}>
-                    {formatMetricCell(item.values.plan[m.index], item, true, hMPlan, kmMPlan)}
+                    <span style={{ fontWeight: "700", color: "#004d32" }}>
+                        {formatMetricCell(item.values.plan[m.index], item, true, hMPlan, kmMPlan)}
+                    </span>
                 </td>,
             );
 
             cells.push(
-                <td key={`${m.name}-actual`} style={tdCenter}>
-                    {formatMetricCell(item.values.actual[m.index], item, false, hMAct, kmMAct)}
+                <td
+                    key={`${m.name}-actual`}
+                    style={tdCenter}
+                >
+                    <span
+                        style={{
+                            fontWeight: isMFallback ? "600" : "700",
+                            color: isMFallback ? "#64748b" : "#0f172a",
+                            fontStyle: isMFallback ? "italic" : "normal",
+                        }}
+                        title={isMFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                    >
+                        {formatMetricCell(item.values.actual[m.index], item, false, hMAct, kmMAct)}
+                    </span>
                 </td>,
             );
         });
@@ -2780,62 +3413,543 @@ export default function Reports() {
         return cells;
     };
 
-    const renderLaggingRow = (item, index) => (
-        <tr key={`lagging-${item.no}`}>
-            <td
-                style={{
-                    ...tdStyle,
-                    fontWeight: "700",
-                }}
-            >
-                <span
+    const renderLaggingCaseFrCells = (item) => {
+        const cells = [];
+        const isTri = item.no === "1.5" || (item.indicator && item.indicator.includes("TOTAL RECORDABLE INJURY"));
+        const isMvc = item.no === "1.6" || (item.indicator && item.indicator.includes("MOTOR VEHICLE CRASH"));
+        const isCaseFr = isTri || isMvc || Boolean(item.isCaseFrCombo);
+
+        const totalManHoursItem = manHours?.find((m) => m.indicator?.includes("JAM KERJA / MAN HOURS (Total)")) || (manHours && manHours.length > 0 ? manHours[0] : null);
+        const totalKmItem = manHours?.find((m) => m.indicator?.includes("KILOMETER DRIVEN (Total)")) || (manHours && manHours.length > 5 ? manHours[5] : null);
+
+        const quarterNames = REPORT_QUARTERS;
+
+        const renderPeriodQuad = (keyPrefix, planCase, actualCase, planHours = 0, actualHours = 0, planKm = 0, actualKm = 0, mIdx = null, periodKey = null) => {
+            const pCases = Number(planCase) || 0;
+            const aCases = Number(actualCase) || 0;
+
+            const isManual = mIdx !== null ? Boolean(item.hasManualActual?.[mIdx]) : Boolean(item.hasManualQuarterActual?.[periodKey]);
+            const isFallback = !isManual;
+
+            // Baris 1.1 s/d 1.12 seluruhnya menampilkan sub-kolom Case & FR
+            const is1_1to1_4 = ["1.1", "1.2", "1.3", "1.4"].includes(item.no);
+            const is1_7to1_12 = !is1_1to1_4 && !isTri && !isMvc;
+
+            let pFr = "-";
+            let aFr = "-";
+
+            if (is1_1to1_4) {
+                pFr = "-";
+                if (mIdx !== null && item.frequencyRate?.[mIdx] !== null && item.frequencyRate?.[mIdx] !== undefined) {
+                    aFr = Number(item.frequencyRate[mIdx]).toFixed(2);
+                } else if (actualHours > 0 && aCases > 0) {
+                    aFr = calcFrequencyRate(aCases, actualHours);
+                } else {
+                    aFr = "-";
+                }
+            } else if (is1_7to1_12) {
+                pFr = "NA";
+                if (mIdx !== null && item.frequencyRate?.[mIdx] !== null && item.frequencyRate?.[mIdx] !== undefined) {
+                    aFr = Number(item.frequencyRate[mIdx]).toFixed(2);
+                } else {
+                    aFr = "NA";
+                }
+            } else if (isTri) {
+                pFr = planHours > 0 ? calcFrequencyRate(pCases, planHours) : "0.00";
+                if (mIdx !== null && item.frequencyRate?.[mIdx] !== null && item.frequencyRate?.[mIdx] !== undefined) {
+                    aFr = Number(item.frequencyRate[mIdx]).toFixed(2);
+                } else if (actualHours > 0) {
+                    aFr = calcFrequencyRate(aCases, actualHours);
+                } else {
+                    aFr = "0.00";
+                }
+            } else if (isMvc) {
+                pFr = planKm > 0 ? calcMvcFrequencyRate(pCases, planKm) : "0.00";
+                if (mIdx !== null && item.frequencyRate?.[mIdx] !== null && item.frequencyRate?.[mIdx] !== undefined) {
+                    aFr = Number(item.frequencyRate[mIdx]).toFixed(2);
+                } else if (actualKm > 0) {
+                    aFr = calcMvcFrequencyRate(aCases, actualKm);
+                } else {
+                    aFr = "0.00";
+                }
+            }
+
+            return (
+                <React.Fragment key={keyPrefix}>
+                    {/* PLAN CASE */}
+                    <td style={{ ...tdCenter, fontWeight: "700", color: "#004d32" }}>
+                        {formatNumber(pCases)}
+                    </td>
+                    {/* PLAN FR */}
+                    <td style={{ ...tdCenter, fontWeight: "700", color: "#004d32" }}>
+                        {pFr}
+                    </td>
+                    {/* ACTUAL CASE */}
+                    <td
+                        style={{
+                            ...tdCenter,
+                            fontWeight: aCases > 0 ? "700" : (isFallback ? "600" : "700"),
+                            color: aCases > 0 ? "#dc2626" : (isFallback ? "#64748b" : "#0f172a"),
+                            fontStyle: isFallback ? "italic" : "normal",
+                        }}
+                        title={isFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                    >
+                        {formatNumber(aCases)}
+                    </td>
+                    {/* ACTUAL FR */}
+                    <td
+                        style={{
+                            ...tdCenter,
+                            fontWeight: aFr !== "-" && aFr !== "NA" && aFr !== "0.00" ? "700" : (isFallback ? "600" : "700"),
+                            color: aFr !== "-" && aFr !== "NA" && aFr !== "0.00" ? "#dc2626" : (isFallback ? "#64748b" : "#0f172a"),
+                            fontStyle: isFallback ? "italic" : "normal",
+                        }}
+                        title={isFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                    >
+                        {aFr}
+                    </td>
+                </React.Fragment>
+            );
+        };
+
+        // Quarters Q1..Q4
+        quarterNames.forEach((q) => {
+            const pHours = Number(totalManHoursItem?.[`plan${q}`]) || 0;
+            const aHours = Number(totalManHoursItem?.[`actual${q}`]) || 0;
+            const pKm = Number(totalKmItem?.[`plan${q}`]) || 0;
+            const aKm = Number(totalKmItem?.[`actual${q}`]) || 0;
+            const pCase = getQuarterValue(item, q, "Plan");
+            const aCase = getQuarterValue(item, q, "Actual");
+            cells.push(renderPeriodQuad(`${item.no}-${q}`, pCase, aCase, pHours, aHours, pKm, aKm, null, q));
+        });
+
+        // YTD
+        const ytdPHours = Number(totalManHoursItem?.planYtd) || 0;
+        const ytdAHours = Number(totalManHoursItem?.actualYtd) || 0;
+        const ytdPKm = Number(totalKmItem?.planYtd) || 0;
+        const ytdAKm = Number(totalKmItem?.actualYtd) || 0;
+        cells.push(renderPeriodQuad(`${item.no}-ytd`, item.planYtd, item.actualYtd, ytdPHours, ytdAHours, ytdPKm, ytdAKm, null, "YTD"));
+
+        // Months
+        activeMonths.forEach((m) => {
+            const mPHours = Number(totalManHoursItem?.values?.plan?.[m.index]) || 0;
+            const mAHours = Number(totalManHoursItem?.values?.actual?.[m.index]) || 0;
+            const mPKm = Number(totalKmItem?.values?.plan?.[m.index]) || 0;
+            const mAKm = Number(totalKmItem?.values?.actual?.[m.index]) || 0;
+            const pCase = item.values?.plan?.[m.index] || 0;
+            const aCase = item.values?.actual?.[m.index] || 0;
+            cells.push(renderPeriodQuad(`${item.no}-${m.name}`, pCase, aCase, mPHours, mAHours, mPKm, mAKm, m.index, null));
+        });
+
+        return cells;
+    };
+
+    const renderLaggingRow = (item, index) => {
+        const isTri = item.no === "1.5" || (item.indicator && item.indicator.includes("TOTAL RECORDABLE INJURY"));
+        const isMvc = item.no === "1.6" || (item.indicator && item.indicator.includes("MOTOR VEHICLE CRASH"));
+        const isCaseFr = isTri || isMvc || Boolean(item.isCaseFrCombo);
+
+        return (
+            <tr key={`lagging-${item.no}`}>
+                <td
                     style={{
-                        display: "inline-block",
-                        minWidth: "32px",
-                        marginRight: "5px",
-                        padding: "2px 5px",
-                        backgroundColor: "#FFFF00",
-                        border: "1px solid #222",
+                        ...tdStyle,
+                        fontWeight: "700",
+                    }}
+                >
+                    <span
+                        style={{
+                            display: "inline-block",
+                            minWidth: "32px",
+                            marginRight: "5px",
+                            padding: "2px 5px",
+                            backgroundColor: "#FFFF00",
+                            border: "1px solid #222",
+                            textAlign: "center",
+                        }}
+                    >
+                        {item.no}
+                    </span>
+
+                    {item.indicator}
+                </td>
+
+                <td
+                    style={{
+                        ...tdStyle,
+                        whiteSpace: "pre-line",
+                    }}
+                >
+                    {item.definition || ""}
+                </td>
+
+                <td style={tdCenter}>
+                    {isCaseFr ? (
+                        <div style={{ display: "inline-flex", gap: "6px", alignItems: "center", justifyContent: "center" }}>
+                            <span style={{ fontSize: "11px", fontWeight: "700", color: "#004d32" }}>
+                                Case: {item.targetMonth || item.target || "0"}
+                            </span>
+                            <span style={{ color: "#cbd5e1" }}>|</span>
+                            <span style={{ fontSize: "11px", fontWeight: "700", color: "#004d32" }}>
+                                FR: {item.targetFr || "0.00"}
+                            </span>
+                        </div>
+                    ) : (
+                        typeof item.target === "string"
+                            ? item.target
+                            : formatNumber(item.target)
+                    )}
+                </td>
+
+                <td
+                    style={{
+                        ...tdStyle,
+                        whiteSpace: "pre-line",
                         textAlign: "center",
                     }}
                 >
-                    {item.no}
+                    {item.notes || ""}
+                </td>
+
+                {renderLaggingCaseFrCells(item)}
+            </tr>
+        );
+    };
+
+    const renderMetricMergedCells = (item) => {
+        const cells = [];
+        const quarterNames = REPORT_QUARTERS;
+
+        const formatVal = (val, isPlan = false) => {
+            if (item?.isText) {
+                return "< 16 Jam /Rig / Bulan";
+            }
+            if (val === undefined || val === null || val === "") return "-";
+            if (typeof val === "string") return val;
+            if (item?.isPercentage) {
+                if (isPlan && (val === 0 || val === "0") && item.targetNumber) {
+                    return `${item.targetNumber}.00%`;
+                }
+                return `${Number(val).toFixed(2)}%`;
+            }
+            return formatNumber(val);
+        };
+
+        const renderTextOrValue = (val) => {
+            const formatted = formatVal(val);
+            if (item?.isText) {
+                return (
+                    <span
+                        style={{
+                            display: "inline-block",
+                            fontSize: "8.5px",
+                            lineHeight: "1.25",
+                            whiteSpace: "normal",
+                            wordBreak: "normal",
+                            padding: "2px 1px",
+                            fontWeight: "600",
+                        }}
+                    >
+                        {formatted}
+                    </span>
+                );
+            }
+            return formatted;
+        };
+
+        const cellStyle = item?.isText
+            ? { ...tdCenter, padding: "3px 2px", whiteSpace: "normal", verticalAlign: "middle" }
+            : tdCenter;
+
+        if (item?.isOpsSupportSubRow) {
+            const renderQuarterSubCell = (q) => {
+                const pOps = item[`planOps${q}`] ?? item.targetOps;
+                const pSupp = item[`planSupport${q}`] ?? item.targetSupport;
+                const aOps = item[`actualOps${q}`] ?? item.targetOps;
+                const aSupp = item[`actualSupport${q}`] ?? item.targetSupport;
+                const isSubFallback = !item.hasManualQuarterActual?.[q];
+
+                return [
+                    <td key={`${q}-plan`} colSpan={2} style={tdCenter}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: "100%",
+                                whiteSpace: "nowrap",
+                                gap: "4px",
+                            }}
+                        >
+                            <span style={{ flex: 1, textAlign: "center", fontWeight: "700", color: "#004d32" }}>
+                                {formatNumber(pOps)}
+                            </span>
+                            <span style={{ color: "#94a3b8", fontWeight: "300" }}>|</span>
+                            <span style={{ flex: 1, textAlign: "center", fontWeight: "700", color: "#004d32" }}>
+                                {formatNumber(pSupp)}
+                            </span>
+                        </div>
+                    </td>,
+                    <td key={`${q}-actual`} colSpan={2} style={tdCenter}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: "100%",
+                                whiteSpace: "nowrap",
+                                gap: "4px",
+                            }}
+                        >
+                            <span
+                                style={{
+                                    flex: 1,
+                                    textAlign: "center",
+                                    fontWeight: isSubFallback ? "600" : "700",
+                                    color: isSubFallback ? "#64748b" : "#0f172a",
+                                    fontStyle: isSubFallback ? "italic" : "normal",
+                                }}
+                                title={isSubFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                            >
+                                {formatNumber(aOps)}
+                            </span>
+                            <span style={{ color: "#94a3b8", fontWeight: "300" }}>|</span>
+                            <span
+                                style={{
+                                    flex: 1,
+                                    textAlign: "center",
+                                    fontWeight: isSubFallback ? "600" : "700",
+                                    color: isSubFallback ? "#64748b" : "#0f172a",
+                                    fontStyle: isSubFallback ? "italic" : "normal",
+                                }}
+                                title={isSubFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                            >
+                                {formatNumber(aSupp)}
+                            </span>
+                        </div>
+                    </td>,
+                ];
+            };
+
+            quarterNames.forEach((q) => {
+                cells.push(...renderQuarterSubCell(q));
+            });
+
+            // YTD
+            const isYtdSubFallback = !item.hasManualQuarterActual?.YTD;
+            cells.push(
+                <td key="ytd-plan" colSpan={2} style={tdCenter}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "100%",
+                            whiteSpace: "nowrap",
+                            gap: "4px",
+                        }}
+                    >
+                        <span style={{ flex: 1, textAlign: "center", fontWeight: "700", color: "#004d32" }}>
+                            {formatNumber(item.planOpsYtd ?? item.targetOps)}
+                        </span>
+                        <span style={{ color: "#94a3b8", fontWeight: "300" }}>|</span>
+                        <span style={{ flex: 1, textAlign: "center", fontWeight: "700", color: "#004d32" }}>
+                            {formatNumber(item.planSupportYtd ?? item.targetSupport)}
+                        </span>
+                    </div>
+                </td>,
+                <td key="ytd-actual" colSpan={2} style={tdCenter}>
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: "100%",
+                            whiteSpace: "nowrap",
+                            gap: "4px",
+                        }}
+                    >
+                        <span
+                            style={{
+                                flex: 1,
+                                textAlign: "center",
+                                fontWeight: isYtdSubFallback ? "600" : "700",
+                                color: isYtdSubFallback ? "#64748b" : "#0f172a",
+                                fontStyle: isYtdSubFallback ? "italic" : "normal",
+                            }}
+                            title={isYtdSubFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                        >
+                            {formatNumber(item.actualOpsYtd ?? item.targetOps)}
+                        </span>
+                        <span style={{ color: "#94a3b8", fontWeight: "300" }}>|</span>
+                        <span
+                            style={{
+                                flex: 1,
+                                textAlign: "center",
+                                fontWeight: isYtdSubFallback ? "600" : "700",
+                                color: isYtdSubFallback ? "#64748b" : "#0f172a",
+                                fontStyle: isYtdSubFallback ? "italic" : "normal",
+                            }}
+                            title={isYtdSubFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                        >
+                            {formatNumber(item.actualSupportYtd ?? item.targetSupport)}
+                        </span>
+                    </div>
+                </td>,
+            );
+
+            // Active Months
+            activeMonths.forEach((m) => {
+                const pOps = item.valuesOps?.plan?.[m.index] ?? item.targetOps;
+                const pSupp = item.valuesSupport?.plan?.[m.index] ?? item.targetSupport;
+                const aOps = item.valuesOps?.actual?.[m.index] ?? item.targetOps;
+                const aSupp = item.valuesSupport?.actual?.[m.index] ?? item.targetSupport;
+                const isMSubFallback = !item.hasManualActual?.[m.index];
+
+                cells.push(
+                    <td key={`${m.name}-plan`} colSpan={2} style={tdCenter}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: "100%",
+                                whiteSpace: "nowrap",
+                                gap: "4px",
+                            }}
+                        >
+                            <span style={{ flex: 1, textAlign: "center", fontWeight: "700", color: "#004d32" }}>
+                                {formatNumber(pOps)}
+                            </span>
+                            <span style={{ color: "#94a3b8", fontWeight: "300" }}>|</span>
+                            <span style={{ flex: 1, textAlign: "center", fontWeight: "700", color: "#004d32" }}>
+                                {formatNumber(pSupp)}
+                            </span>
+                        </div>
+                    </td>,
+                    <td key={`${m.name}-actual`} colSpan={2} style={tdCenter}>
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: "100%",
+                                whiteSpace: "nowrap",
+                                gap: "4px",
+                            }}
+                        >
+                            <span
+                                style={{
+                                    flex: 1,
+                                    textAlign: "center",
+                                    fontWeight: isMSubFallback ? "600" : "700",
+                                    color: isMSubFallback ? "#64748b" : "#0f172a",
+                                    fontStyle: isMSubFallback ? "italic" : "normal",
+                                }}
+                                title={isMSubFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                            >
+                                {formatNumber(aOps)}
+                            </span>
+                            <span style={{ color: "#94a3b8", fontWeight: "300" }}>|</span>
+                            <span
+                                style={{
+                                    flex: 1,
+                                    textAlign: "center",
+                                    fontWeight: isMSubFallback ? "600" : "700",
+                                    color: isMSubFallback ? "#64748b" : "#0f172a",
+                                    fontStyle: isMSubFallback ? "italic" : "normal",
+                                }}
+                                title={isMSubFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                            >
+                                {formatNumber(aSupp)}
+                            </span>
+                        </div>
+                    </td>,
+                );
+            });
+
+            return cells;
+        }
+
+        quarterNames.forEach((q) => {
+            const pVal = getQuarterValue(item, q, "Plan");
+            const aVal = getQuarterValue(item, q, "Actual");
+            const isQFallback = !item.hasManualQuarterActual?.[q];
+            cells.push(
+                <td key={`${q}-plan`} colSpan={2} style={cellStyle}>
+                    <span style={{ fontWeight: "700", color: "#004d32" }}>
+                        {renderTextOrValue(pVal)}
+                    </span>
+                </td>,
+                <td key={`${q}-actual`} colSpan={2} style={cellStyle}>
+                    <span
+                        style={{
+                            fontWeight: isQFallback ? "600" : "700",
+                            color: isQFallback ? "#64748b" : "#0f172a",
+                            fontStyle: isQFallback ? "italic" : "normal",
+                        }}
+                        title={isQFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                    >
+                        {renderTextOrValue(aVal)}
+                    </span>
+                </td>,
+            );
+        });
+
+        // YTD
+        const isYtdFallback = !item.hasManualQuarterActual?.YTD;
+        cells.push(
+            <td key="ytd-plan" colSpan={2} style={cellStyle}>
+                <span style={{ fontWeight: "700", color: "#004d32" }}>
+                    {renderTextOrValue(item.planYtd)}
                 </span>
+            </td>,
+            <td key="ytd-actual" colSpan={2} style={cellStyle}>
+                <span
+                    style={{
+                        fontWeight: isYtdFallback ? "600" : "700",
+                        color: isYtdFallback ? "#64748b" : "#0f172a",
+                        fontStyle: isYtdFallback ? "italic" : "normal",
+                    }}
+                    title={isYtdFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                >
+                    {renderTextOrValue(item.actualYtd)}
+                </span>
+            </td>,
+        );
 
-                {item.indicator}
-            </td>
+        // Active Months
+        activeMonths.forEach((m) => {
+            const mPlan = item.values?.plan?.[m.index];
+            const mAct = item.values?.actual?.[m.index];
+            const isMFallback = !item.hasManualActual?.[m.index];
+            cells.push(
+                <td key={`${m.name}-plan`} colSpan={2} style={cellStyle}>
+                    <span style={{ fontWeight: "700", color: "#004d32" }}>
+                        {renderTextOrValue(mPlan)}
+                    </span>
+                </td>,
+                <td key={`${m.name}-actual`} colSpan={2} style={cellStyle}>
+                    <span
+                        style={{
+                            fontWeight: isMFallback ? "600" : "700",
+                            color: isMFallback ? "#64748b" : "#0f172a",
+                            fontStyle: isMFallback ? "italic" : "normal",
+                        }}
+                        title={isMFallback ? "Target acuan default (belum ada input)" : "Data aktual realisasi"}
+                    >
+                        {renderTextOrValue(mAct)}
+                    </span>
+                </td>,
+            );
+        });
 
-            <td
-                style={{
-                    ...tdStyle,
-                    whiteSpace: "pre-line",
-                }}
-            >
-                {item.definition || ""}
-            </td>
-
-            <td style={tdCenter}>
-                {typeof item.target === "string"
-                    ? item.target
-                    : formatNumber(item.target)}
-            </td>
-
-            <td
-                style={{
-                    ...tdStyle,
-                    whiteSpace: "pre-line",
-                    textAlign: "center",
-                }}
-            >
-                {item.notes || ""}
-            </td>
-
-            {renderPlanActualCells(item)}
-        </tr>
-    );
+        return cells;
+    };
 
     const renderMetricRow = (item, index) => {
-        const isHeader = item.isTotalHeader || !item.no;
+        const isHeader = item.isTotalHeader || (!item.no && !item.isOpsSupportSubRow);
+        const isSub = Boolean(item.isOpsSupportSubRow);
 
         return (
             <tr
@@ -2846,7 +3960,8 @@ export default function Reports() {
                     style={{
                         ...tdStyle,
                         backgroundColor: isHeader ? "#DDEBF7" : undefined,
-                        fontWeight: "700",
+                        fontWeight: isHeader ? "700" : isSub ? "600" : undefined,
+                        paddingLeft: isSub ? "36px" : tdStyle.paddingLeft || "8px",
                     }}
                 >
                     {item.no ? (
@@ -2859,13 +3974,21 @@ export default function Reports() {
                                 backgroundColor: "#FFFF00",
                                 border: "1px solid #222",
                                 textAlign: "center",
+                                fontWeight: "700",
                             }}
                         >
                             {item.no}
                         </span>
                     ) : null}
 
-                    {item.indicator}
+                    {isSub ? (
+                        <div style={{ display: "inline-flex", gap: "28px", fontStyle: "italic", fontWeight: "600", color: "#374151" }}>
+                            <span>Ops :</span>
+                            <span>Support :</span>
+                        </div>
+                    ) : (
+                        item.indicator
+                    )}
                 </td>
 
                 <td
@@ -2873,6 +3996,7 @@ export default function Reports() {
                         ...tdStyle,
                         backgroundColor: isHeader ? "#DDEBF7" : undefined,
                         fontWeight: isHeader ? "700" : undefined,
+                        textAlign: isSub ? "center" : "left",
                     }}
                 >
                     {item.definition || "-"}
@@ -2882,12 +4006,20 @@ export default function Reports() {
                     style={{
                         ...tdCenter,
                         backgroundColor: isHeader ? "#DDEBF7" : undefined,
-                        fontWeight: isHeader ? "700" : undefined,
+                        fontWeight: isHeader || isSub ? "700" : undefined,
                     }}
                 >
-                    {typeof item.target === "string"
-                        ? item.target
-                        : formatNumber(item.target)}
+                    {isSub ? (
+                        <div style={{ display: "inline-flex", gap: "6px", alignItems: "center", justifyContent: "center" }}>
+                            <span style={{ color: "#004d32" }}>{item.targetOps}</span>
+                            <span style={{ color: "#cbd5e1" }}>|</span>
+                            <span style={{ color: "#004d32" }}>{item.targetSupport}</span>
+                        </div>
+                    ) : typeof item.target === "string" ? (
+                        item.target
+                    ) : (
+                        formatNumber(item.target)
+                    )}
                 </td>
 
                 <td
@@ -2897,10 +4029,10 @@ export default function Reports() {
                         fontWeight: isHeader ? "700" : undefined,
                     }}
                 >
-                    {item.notes || (isHeader ? "" : "Ops : Support")}
+                    {item.notes || ""}
                 </td>
 
-                {renderPlanActualCells(item)}
+                {renderMetricMergedCells(item)}
             </tr>
         );
     };
@@ -2968,7 +4100,7 @@ export default function Reports() {
 
                     <button
                         onClick={handleExportExcel}
-                        disabled={exporting || filteredReports.length === 0}
+                        disabled={exporting}
                         style={{
                             backgroundColor: "#EFFF00",
                             color: "#064E3B",
@@ -2978,7 +4110,7 @@ export default function Reports() {
                             fontSize: "14px",
                             fontWeight: "700",
                             cursor: exporting ? "not-allowed" : "pointer",
-                            opacity: filteredReports.length === 0 ? 0.5 : 1,
+                            opacity: exporting ? 0.7 : 1,
                         }}
                     >
                         {exporting ? "Exporting..." : "Export Excel"}
@@ -3061,17 +4193,19 @@ export default function Reports() {
                         </label>
 
                         <label style={labelStyle}>
-                            Rig / Location
+                            {project !== "All Projects" ? "Rig dalam Kontrak Terpilih" : "Rig / Location"}
                             <select
                                 value={rig}
                                 onChange={(e) => setRig(e.target.value)}
                                 style={selectStyle}
                             >
-                                <option>All Rigs</option>
+                                <option value="All Rigs">
+                                    {project !== "All Projects" ? "📌 Semua Rig (Konsolidasi Kontrak)" : "All Rigs (Semua Rig)"}
+                                </option>
 
                                 {availableRigs.map((item) => (
                                     <option key={item} value={item}>
-                                        {item}
+                                        🛢️ {item}
                                     </option>
                                 ))}
                             </select>
@@ -3087,17 +4221,17 @@ export default function Reports() {
                         }}
                     >
                         <label style={labelStyle}>
-                            Fokus Corp / Project
+                            Nomor Kontrak (Filter Grouping Rig)
                             <select
                                 value={project}
-                                onChange={(e) => setProject(e.target.value)}
+                                onChange={(e) => handleContractChange(e.target.value)}
                                 style={selectStyle}
                             >
-                                <option>All Projects</option>
+                                <option value="All Projects">-- Semua Nomor Kontrak --</option>
 
-                                {availableProjects.map((item) => (
-                                    <option key={item} value={item}>
-                                        {item}
+                                {CONTRACT_RIG_GROUPS.map((g) => (
+                                    <option key={g.contractNo} value={g.contractNo}>
+                                        {g.contractNo} — Area {g.area} ({g.rigs.join(", ")})
                                     </option>
                                 ))}
                             </select>
@@ -3179,38 +4313,169 @@ export default function Reports() {
                     </div>
                 </section>
 
+                {/* CONTRACT & RIG GROUPING BANNER / SUB-TABS */}
+                {currentContractGroup && (
+                    <div
+                        style={{
+                            marginTop: "20px",
+                            backgroundColor: "#ffffff",
+                            border: "1.5px solid #004d32",
+                            borderRadius: "12px",
+                            padding: "16px 20px",
+                            boxShadow: "0 4px 15px rgba(0, 77, 50, 0.08)",
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                flexWrap: "wrap",
+                                gap: "10px",
+                                marginBottom: "14px",
+                            }}
+                        >
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: "11px",
+                                        fontWeight: "800",
+                                        color: "#059669",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.05em",
+                                    }}
+                                >
+                                    Pengelompokan Rig Berdasarkan Kontrak (Sesuai Excel Resmi)
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: "18px",
+                                        fontWeight: "900",
+                                        color: "#004d32",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "10px",
+                                        marginTop: "2px",
+                                    }}
+                                >
+                                    <span>Nomor Kontrak: {currentContractGroup.contractNo}</span>
+                                    <span
+                                        style={{
+                                            fontSize: "12px",
+                                            fontWeight: "800",
+                                            padding: "2px 10px",
+                                            borderRadius: "12px",
+                                            backgroundColor: "#ecfdf5",
+                                            color: "#004d32",
+                                            border: "1px solid #a7f3d0",
+                                        }}
+                                    >
+                                        Area {currentContractGroup.area}
+                                    </span>
+                                </div>
+                            </div>
+                            <div style={{ fontSize: "12.5px", color: "#475569" }}>
+                                <strong>HSE Coord:</strong> {currentContractGroup.hseCoord || "-"} •{" "}
+                                <strong>Rig Terdaftar:</strong> {currentContractGroup.rigs.join(", ")}
+                            </div>
+                        </div>
+
+                        {/* RIG SUB-TABS (KLIK UNTUK SWITCH PREVIEW LANGSUNG) */}
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setRig("All Rigs");
+                                    setPreview(true);
+                                }}
+                                style={{
+                                    padding: "8px 16px",
+                                    borderRadius: "8px",
+                                    border: rig === "All Rigs" ? "1.5px solid #004d32" : "1px solid #cbd5e1",
+                                    backgroundColor: rig === "All Rigs" ? "#004d32" : "#f8fafc",
+                                    color: rig === "All Rigs" ? "#efff00" : "#334155",
+                                    fontSize: "12.5px",
+                                    fontWeight: "800",
+                                    cursor: "pointer",
+                                    transition: "all 0.15s ease",
+                                    boxShadow: rig === "All Rigs" ? "0 2px 6px rgba(0, 77, 50, 0.25)" : "none",
+                                }}
+                            >
+                                📌 Seluruh Rig Kontrak (Konsolidasi)
+                            </button>
+                            {currentContractGroup.rigs.map((r) => {
+                                const isActive = rig === r;
+                                return (
+                                    <button
+                                        key={r}
+                                        type="button"
+                                        onClick={() => {
+                                            setRig(r);
+                                            setPreview(true);
+                                        }}
+                                        style={{
+                                            padding: "8px 16px",
+                                            borderRadius: "8px",
+                                            border: isActive ? "1.5px solid #004d32" : "1px solid #cbd5e1",
+                                            backgroundColor: isActive ? "#004d32" : "#ffffff",
+                                            color: isActive ? "#efff00" : "#1e293b",
+                                            fontSize: "12.5px",
+                                            fontWeight: "800",
+                                            cursor: "pointer",
+                                            transition: "all 0.15s ease",
+                                            boxShadow: isActive ? "0 2px 6px rgba(0, 77, 50, 0.25)" : "none",
+                                        }}
+                                    >
+                                        🛢️ {r}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {/* STATUS */}
 
                 {preview && (
                     <div
                         style={{
                             marginTop: "15px",
-                            padding: "12px 16px",
-                            borderRadius: "6px",
+                            padding: "12px 18px",
+                            borderRadius: "8px",
                             backgroundColor:
                                 filteredReports.length > 0
                                     ? "#E8F7EF"
-                                    : "#FFF1F0",
+                                    : "#EFF6FF",
                             border:
                                 filteredReports.length > 0
                                     ? "1px solid #B8DEC8"
-                                    : "1px solid #E7B9B4",
+                                    : "1px solid #BFDBFE",
                             color:
                                 filteredReports.length > 0
                                     ? "#075E45"
-                                    : "#A33A2B",
+                                    : "#1E40AF",
                             fontSize: "13px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
                         }}
                     >
-                        {filteredReports.length > 0
-                            ? `Data ditemukan: ${filteredReports.length} report untuk filter yang dipilih.`
-                            : "Tidak ada data report yang sesuai dengan filter."}
+                        {filteredReports.length > 0 ? (
+                            <span>
+                                <strong>Data Ditemukan:</strong> Terdeteksi {filteredReports.length} laporan actual manual untuk filter yang dipilih. Tabel di bawah menggabungkan data Actual manual yang telah diisi dengan nilai Target Plan default untuk periode yang belum diinput.
+                            </span>
+                        ) : (
+                            <span>
+                                <strong>Mode Default Master Plan:</strong> Belum ada data laporan Actual manual yang diinput untuk filter/rig yang dipilih. Tabel Report tetap ditampilkan 100% penuh menggunakan nilai acuan Master Target / Plan default Excel (angka aktual acuan ditampilkan dengan warna abu-abu miring).
+                            </span>
+                        )}
                     </div>
                 )}
 
                 {/* PREVIEW */}
 
-                {preview && filteredReports.length > 0 && (
+                {preview && (
                     <section
                         style={{
                             marginTop: "20px",
@@ -3326,12 +4591,8 @@ export default function Reports() {
                                     <div>
                                         :{" "}
                                         {latestReport?.report_date
-                                            ? formatDate(
-                                                  latestReport.report_date,
-                                              )
-                                            : "-"}{" "}
-                                        / Rev.
-                                        {latestReport?.revision_no ?? "00"}
+                                            ? `${formatDate(latestReport.report_date)} / Rev.${latestReport?.revision_no ?? "00"}`
+                                            : "Master Default KPI / Rev.00"}
                                     </div>
                                 </div>
 
@@ -3344,7 +4605,7 @@ export default function Reports() {
                                     <strong>Fokus Corp / Project</strong>
 
                                     <div>
-                                        : {latestReport?.contract_no || "-"}
+                                        : {latestReport?.contract_no || (project !== "All Projects" ? project : (currentContractGroup?.contractNo || "-"))}
                                     </div>
                                 </div>
                             </div>
@@ -3389,7 +4650,7 @@ export default function Reports() {
 
                                     <div>
                                         :{" "}
-                                        {latestReport?.location_district || "-"}
+                                        {latestReport?.location_district || (location !== "All Locations" ? location : (currentContractGroup?.area || "-"))}
                                     </div>
                                 </div>
                             </div>
@@ -3408,8 +4669,47 @@ export default function Reports() {
                                         marginTop: "5px",
                                     }}
                                 >
-                                    {latestReport?.program_reference || "-"}
+                                    {latestReport?.program_reference || "Form Standar KPI HSE PT Besmindo Materi Sewatama"}
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* =================================================
+                               LEGEND / KETERANGAN STATUS METRIK
+                            ================================================= */}
+                        <div
+                            style={{
+                                minWidth: "1800px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "24px",
+                                backgroundColor: "#ffffff",
+                                border: "1px solid #cbd5e1",
+                                borderRadius: "8px",
+                                padding: "10px 18px",
+                                marginBottom: "14px",
+                                fontSize: "12px",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                            }}
+                        >
+                            <span style={{ fontWeight: "700", color: "#064E3B", display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span>Keterangan Status Metrik:</span>
+                            </span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ width: "14px", height: "14px", borderRadius: "3px", backgroundColor: "#DDEBF7", border: "1px solid #94a3b8", display: "inline-block" }}></span>
+                                <span style={{ fontWeight: "700", color: "#004d32" }}>Plan / Target (Acuan Baku Master Excel)</span>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ width: "14px", height: "14px", borderRadius: "3px", backgroundColor: "#f8fafc", border: "1px dashed #64748b", display: "inline-block" }}></span>
+                                <span style={{ fontStyle: "italic", fontWeight: "600", color: "#64748b" }}>Actual Fallback (Abu-abu Miring: Menggunakan target acuan Excel karena belum ada input aktual)</span>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ width: "14px", height: "14px", borderRadius: "3px", backgroundColor: "#e2e8f0", border: "1px solid #0f172a", display: "inline-block" }}></span>
+                                <span style={{ fontWeight: "700", color: "#0f172a" }}>Actual Realisasi (Hitam Bold: Hasil input aktual user)</span>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ width: "14px", height: "14px", borderRadius: "3px", backgroundColor: "#fee2e2", border: "1px solid #dc2626", display: "inline-block" }}></span>
+                                <span style={{ fontWeight: "700", color: "#dc2626" }}>Insiden Kasus &gt; 0 (Merah)</span>
                             </div>
                         </div>
 
@@ -3419,7 +4719,7 @@ export default function Reports() {
 
                         <div
                             style={{
-                                minWidth: "2200px",
+                                minWidth: `${Math.max(2200, 870 + (5 + activeMonths.length) * 220)}px`,
                                 border: "1px solid #222",
                             }}
                         >
@@ -3444,9 +4744,10 @@ export default function Reports() {
                                 }}
                             >
                                 <thead>
+                                    {/* TIER 1: BASE HEADERS & PERIOD TITLES */}
                                     <tr>
                                         <th
-                                            rowSpan={2}
+                                            rowSpan={3}
                                             style={{
                                                 ...thStyle,
                                                 backgroundColor: "#F1DDDC",
@@ -3457,18 +4758,18 @@ export default function Reports() {
                                         </th>
 
                                         <th
-                                            rowSpan={2}
+                                            rowSpan={3}
                                             style={{
                                                 ...thStyle,
                                                 backgroundColor: "#F1DDDC",
                                                 minWidth: "260px",
                                             }}
                                         >
-                                            DEFINISI
+                                            DEFINISI (FREQUENCY RATE / UNIT)
                                         </th>
 
                                         <th
-                                            rowSpan={2}
+                                            rowSpan={3}
                                             style={{
                                                 ...thStyle,
                                                 backgroundColor: "#F1DDDC",
@@ -3479,7 +4780,7 @@ export default function Reports() {
                                         </th>
 
                                         <th
-                                            rowSpan={2}
+                                            rowSpan={3}
                                             style={{
                                                 ...thStyle,
                                                 backgroundColor: "#F1DDDC",
@@ -3489,10 +4790,10 @@ export default function Reports() {
                                             KETERANGAN
                                         </th>
 
-                                        {["Q1", "Q2", "Q3", "Q4"].map((q) => (
+                                        {REPORT_QUARTERS.map((q) => (
                                             <th
                                                 key={q}
-                                                colSpan={2}
+                                                colSpan={4}
                                                 style={{
                                                     ...thStyle,
                                                     backgroundColor: "#F1DDDC",
@@ -3503,7 +4804,7 @@ export default function Reports() {
                                         ))}
 
                                         <th
-                                            colSpan={2}
+                                            colSpan={4}
                                             style={{
                                                 ...thStyle,
                                                 backgroundColor: "#F1DDDC",
@@ -3527,7 +4828,7 @@ export default function Reports() {
                                         {activeMonths.map((m) => (
                                             <th
                                                 key={m.name}
-                                                colSpan={2}
+                                                colSpan={4}
                                                 style={{
                                                     ...thStyle,
                                                     backgroundColor: "#F1DDDC",
@@ -3538,20 +4839,59 @@ export default function Reports() {
                                         ))}
                                     </tr>
 
+                                    {/* TIER 2: PLAN & ACTUAL PER PERIOD */}
                                     <tr>
                                         {Array.from({
                                             length: 5 + activeMonths.length,
                                         }).map((_, index) => (
-                                            <React.Fragment key={index}>
+                                            <React.Fragment key={`plan-act-header-${index}`}>
+                                                <th
+                                                    colSpan={2}
+                                                    style={{
+                                                        ...thStyle,
+                                                        backgroundColor:
+                                                            "#FFFF00",
+                                                        fontSize: "10px",
+                                                        fontWeight: "700",
+                                                        minWidth: "72px",
+                                                    }}
+                                                >
+                                                    Plan
+                                                </th>
+
+                                                <th
+                                                    colSpan={2}
+                                                    style={{
+                                                        ...thStyle,
+                                                        backgroundColor:
+                                                            "#FFFF00",
+                                                        fontSize: "10px",
+                                                        fontWeight: "700",
+                                                        minWidth: "72px",
+                                                    }}
+                                                >
+                                                    Actual
+                                                </th>
+                                            </React.Fragment>
+                                        ))}
+                                    </tr>
+
+                                    {/* TIER 3: CASE & FR UNDER PLAN, CASE & FR UNDER ACTUAL */}
+                                    <tr>
+                                        {Array.from({
+                                            length: 5 + activeMonths.length,
+                                        }).map((_, index) => (
+                                            <React.Fragment key={`case-fr-header-${index}`}>
                                                 <th
                                                     style={{
                                                         ...thStyle,
                                                         backgroundColor:
                                                             "#FFFF00",
                                                         fontSize: "9px",
+                                                        minWidth: "36px",
                                                     }}
                                                 >
-                                                    Plan
+                                                    Case
                                                 </th>
 
                                                 <th
@@ -3560,9 +4900,34 @@ export default function Reports() {
                                                         backgroundColor:
                                                             "#FFFF00",
                                                         fontSize: "9px",
+                                                        minWidth: "36px",
                                                     }}
                                                 >
-                                                    Actual
+                                                    FR
+                                                </th>
+
+                                                <th
+                                                    style={{
+                                                        ...thStyle,
+                                                        backgroundColor:
+                                                            "#FFFF00",
+                                                        fontSize: "9px",
+                                                        minWidth: "36px",
+                                                    }}
+                                                >
+                                                    Case
+                                                </th>
+
+                                                <th
+                                                    style={{
+                                                        ...thStyle,
+                                                        backgroundColor:
+                                                            "#FFFF00",
+                                                        fontSize: "9px",
+                                                        minWidth: "36px",
+                                                    }}
+                                                >
+                                                    FR
                                                 </th>
                                             </React.Fragment>
                                         ))}
@@ -3576,7 +4941,7 @@ export default function Reports() {
                                         <td
                                             colSpan={
                                                 4 +
-                                                (5 + activeMonths.length) * 2
+                                                (5 + activeMonths.length) * 4
                                             }
                                             style={{
                                                 ...tdStyle,
@@ -3599,7 +4964,7 @@ export default function Reports() {
                                         <td
                                             colSpan={
                                                 4 +
-                                                (5 + activeMonths.length) * 2
+                                                (5 + activeMonths.length) * 4
                                             }
                                             style={{
                                                 ...tdStyle,
@@ -3621,7 +4986,7 @@ export default function Reports() {
                                         <td
                                             colSpan={
                                                 4 +
-                                                (5 + activeMonths.length) * 2
+                                                (5 + activeMonths.length) * 4
                                             }
                                             style={{
                                                 ...tdStyle,
@@ -3732,7 +5097,7 @@ export default function Reports() {
                                             FREQUENCY RATE / UNIT
                                         </th>
 
-                                        {["Q1", "Q2", "Q3", "Q4"].map((q) => (
+                                        {REPORT_QUARTERS.map((q) => (
                                             <th
                                                 key={q}
                                                 colSpan={2}

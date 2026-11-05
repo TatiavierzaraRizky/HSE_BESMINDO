@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PasswordResetMail;
 use App\Models\User;
+use App\Services\AuthTokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class AuthController extends Controller
@@ -13,17 +19,26 @@ class AuthController extends Controller
     /**
      * Menampilkan halaman login.
      */
-    public function showLogin()
+    public function showLogin(Request $request)
     {
-        if (Auth::check()) {
+        // Jika user mengakses root URL ('/'), arahkan ke dashboard sesuai role jika sudah login
+        if ($request->path() === '/' && Auth::check()) {
             $user = Auth::user();
             if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             }
+
             return redirect()->route('user.input-data');
         }
 
-        return Inertia::render('Login');
+        return Inertia::render('Login', [
+            'activeSessionUser' => Auth::check() ? [
+                'id' => Auth::user()->id,
+                'name' => Auth::user()->name,
+                'role' => Auth::user()->role,
+                'email' => Auth::user()->email,
+            ] : null,
+        ]);
     }
 
     /**
@@ -36,6 +51,7 @@ class AuthController extends Controller
             if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             }
+
             return redirect()->route('user.input-data');
         }
 
@@ -113,30 +129,70 @@ class AuthController extends Controller
             'jejen' => 'jejen@besmindo.com',
         ];
 
-        $targetEmail = $aliases[$rawEmail] ?? (str_contains($rawEmail, '@') ? $rawEmail : $rawEmail . '@besmindo.com');
+        $targetEmail = $aliases[$rawEmail] ?? (str_contains($rawEmail, '@') ? $rawEmail : $rawEmail.'@besmindo.com');
 
         $credentials = [
             'email' => $targetEmail,
             'password' => $validated['password'],
         ];
 
+        $user = null;
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']], $request->boolean('remember'))) {
-            $request->session()->regenerate();
-
             $user = Auth::user();
-
-            if ($user->role === 'admin') {
-                return redirect()->intended(route('admin.dashboard'));
+        } else {
+            // Fallback demo matching jika password default
+            $candidate = User::where('email', $credentials['email'])->first();
+            if ($candidate && Hash::check($credentials['password'], $candidate->password)) {
+                Auth::login($candidate, $request->boolean('remember'));
+                $user = $candidate;
             }
-
-            return redirect()->intended(route('user.input-data'));
         }
 
-        // Fallback demo matching jika password default
-        $user = User::where('email', $credentials['email'])->first();
-        if ($user && Hash::check($credentials['password'], $user->password)) {
-            Auth::login($user, $request->boolean('remember'));
+        if ($user) {
             $request->session()->regenerate();
+
+            // Buat token terenkripsi persisten untuk tab ini
+            $token = AuthTokenService::generateToken($user, $request->input('tab_id'));
+
+            // Cookie tab token (non-HttpOnly agar dapat disinkronkan oleh JS antar tab)
+            cookie()->queue(cookie(
+                AuthTokenService::COOKIE_TAB_TOKEN,
+                $token,
+                60 * 24 * 14,
+                '/',
+                null,
+                false,
+                false,
+                false,
+                'Lax'
+            ));
+
+            // Cookie role tersimpan untuk mencegah path-crossing saat refresh
+            if ($user->role === 'admin') {
+                cookie()->queue(cookie(
+                    AuthTokenService::COOKIE_ADMIN_AUTH,
+                    $token,
+                    60 * 24 * 14,
+                    '/',
+                    null,
+                    false,
+                    true,
+                    false,
+                    'Lax'
+                ));
+            } else {
+                cookie()->queue(cookie(
+                    AuthTokenService::COOKIE_USER_AUTH,
+                    $token,
+                    60 * 24 * 14,
+                    '/',
+                    null,
+                    false,
+                    true,
+                    false,
+                    'Lax'
+                ));
+            }
 
             if ($user->role === 'admin') {
                 return redirect()->intended(route('admin.dashboard'));
@@ -176,23 +232,23 @@ class AuthController extends Controller
 
         $email = $request->email;
         $user = User::where('email', $email)->first();
-        $token = \Illuminate\Support\Str::random(60);
+        $token = Str::random(60);
 
-        \Illuminate\Support\Facades\DB::table('password_reset_tokens')->updateOrInsert(
+        DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $email],
             [
-                'token' => \Illuminate\Support\Facades\Hash::make($token),
+                'token' => Hash::make($token),
                 'created_at' => now(),
             ]
         );
 
-        $resetUrl = url("/reset-password/{$token}?email=" . urlencode($email));
+        $resetUrl = url("/reset-password/{$token}?email=".urlencode($email));
 
         // Kirim email
         try {
-            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\PasswordResetMail($user, $resetUrl));
+            Mail::to($email)->send(new PasswordResetMail($user, $resetUrl));
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('Password reset email could not be sent: ' . $e->getMessage());
+            Log::warning('Password reset email could not be sent: '.$e->getMessage());
         }
 
         return back()->with([
@@ -227,11 +283,11 @@ class AuthController extends Controller
             'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
         ]);
 
-        $record = \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+        $record = DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->first();
 
-        if (!$record || !\Illuminate\Support\Facades\Hash::check($request->token, $record->token)) {
+        if (! $record || ! Hash::check($request->token, $record->token)) {
             // Periksa juga jika waktu token lebih dari 60 menit
             return back()->withErrors([
                 'email' => 'Token reset kata sandi tidak valid atau telah kadaluarsa. Silakan ajukan kembali.',
@@ -240,11 +296,11 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->firstOrFail();
         $user->update([
-            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'password' => Hash::make($request->password),
         ]);
 
         // Hapus token yang sudah dipakai
-        \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+        DB::table('password_reset_tokens')
             ->where('email', $request->email)
             ->delete();
 
@@ -256,9 +312,18 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        $role = Auth::user()?->role;
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        cookie()->queue(cookie()->forget(AuthTokenService::COOKIE_TAB_TOKEN));
+        if ($role === 'admin') {
+            cookie()->queue(cookie()->forget(AuthTokenService::COOKIE_ADMIN_AUTH));
+        } else {
+            cookie()->queue(cookie()->forget(AuthTokenService::COOKIE_USER_AUTH));
+        }
 
         return redirect()->route('login');
     }

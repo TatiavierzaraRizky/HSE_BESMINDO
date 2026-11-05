@@ -47,13 +47,15 @@ return new class extends Migration
             $table->text('program_reference')->nullable();
 
             // =========================
-            // STATUS REPORT
+            // STATUS REPORT & APPROVAL
             // =========================
-            $table->enum('status', [
-                'draft',
-                'validation',
-                'approved'
-            ])->default('draft');
+            $table->string('status', 50)->default('draft');
+            $table->string('approval_token', 100)->nullable();
+            $table->text('remarks')->nullable();
+            $table->string('submitter_role', 50)->nullable();
+            $table->text('rejection_reason')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->unsignedBigInteger('approved_by')->nullable();
 
             // =========================
             // USER / CREATOR

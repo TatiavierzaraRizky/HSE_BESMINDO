@@ -8,13 +8,19 @@ import {
     ChevronRight,
     ShieldCheck,
     UserCheck,
+    BookmarkCheck,
+    History,
+    FileText,
 } from "lucide-react";
+import { clearTabAuth } from "../Services/authService";
 
 export default function UserSidebar({
     collapsed: collapsedProp,
     onToggle,
 }) {
-    const { url } = usePage();
+    const page = usePage();
+    const url = page.url;
+    const currentUser = page.props?.auth?.user;
 
     /*
     |--------------------------------------------------------------------------
@@ -96,6 +102,7 @@ export default function UserSidebar({
     |--------------------------------------------------------------------------
     */
     const handleLogout = () => {
+        clearTabAuth();
         localStorage.removeItem("isLoggedIn");
         router.post("/logout");
     };
@@ -231,27 +238,30 @@ export default function UserSidebar({
                         </div>
 
                         {!collapsed && (
-                            <div style={{ overflow: "hidden" }}>
+                            <div style={{ overflow: "hidden", minWidth: 0 }}>
                                 <div
                                     style={{
                                         fontSize: "13px",
                                         fontWeight: "800",
                                         color: "#004d32",
                                         whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
                                     }}
+                                    title={currentUser?.name || "Field PIC / Operator"}
                                 >
-                                    Field PIC / Operator
+                                    {currentUser?.name || "Field PIC / Operator"}
                                 </div>
                                 <div
                                     style={{
-                                        fontSize: "10px",
+                                        fontSize: "10.5px",
                                         color: "#64748b",
-                                        fontWeight: "600",
+                                        fontWeight: "700",
                                         marginTop: "1px",
                                         whiteSpace: "nowrap",
                                     }}
                                 >
-                                    Data Entry Access
+                                    {currentUser?.role === "admin" ? "Administrator HSE" : "Field PIC / Operator"}
                                 </div>
                             </div>
                         )}
@@ -284,60 +294,85 @@ export default function UserSidebar({
                         Form Menu
                     </div>
 
-                    <Link
-                        href="/user/input-data"
-                        title={collapsed ? "Input Data HSE" : ""}
-                        style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: collapsed ? "center" : "flex-start",
-                            width: "100%",
-                            boxSizing: "border-box",
-                            padding: collapsed ? "10px 8px" : "10px 14px",
-                            marginBottom: "4px",
-                            borderRadius: "10px",
-                            textDecoration: "none",
-                            background: "#004d32",
-                            color: "#efff00",
-                            border: "1px solid #efff00",
-                            fontSize: "12.5px",
-                            fontWeight: "800",
-                            letterSpacing: "-0.01em",
-                            minHeight: "40px",
-                            overflow: "hidden",
-                            boxShadow:
-                                "0 0 14px rgba(239, 255, 0, 0.35), inset 0 0 8px rgba(239, 255, 0, 0.15)",
-                            transition: "all 0.2s ease",
-                        }}
-                    >
-                        <span
-                            style={{
-                                width: "24px",
-                                minWidth: "24px",
-                                height: "24px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                marginRight: collapsed ? "0" : "10px",
-                                color: "#efff00",
-                                flexShrink: 0,
-                            }}
-                        >
-                            <ClipboardList size={18} strokeWidth={2.6} />
-                        </span>
-
-                        {!collapsed && (
-                            <span
+                    {[
+                        {
+                            href: "/user/input-data",
+                            label: "Input Data HSE",
+                            icon: ClipboardList,
+                        },
+                        {
+                            href: "/user/drafts",
+                            label: "Draf Laporan",
+                            icon: BookmarkCheck,
+                        },
+                        {
+                            href: "/user/history",
+                            label: "Status & History",
+                            icon: History,
+                        },
+                    ].map((item) => {
+                        const active = isActive(item.href);
+                        const IconComponent = item.icon;
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                title={collapsed ? item.label : ""}
                                 style={{
-                                    whiteSpace: "nowrap",
-                                    textShadow:
-                                        "0 0 10px rgba(239, 255, 0, 0.5)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: collapsed ? "center" : "flex-start",
+                                    width: "100%",
+                                    boxSizing: "border-box",
+                                    padding: collapsed ? "10px 8px" : "10px 14px",
+                                    marginBottom: "6px",
+                                    borderRadius: "10px",
+                                    textDecoration: "none",
+                                    background: active ? "#004d32" : "transparent",
+                                    color: active ? "#efff00" : "#475569",
+                                    border: active ? "1px solid #efff00" : "1px solid transparent",
+                                    fontSize: "12.5px",
+                                    fontWeight: active ? "800" : "600",
+                                    letterSpacing: "-0.01em",
+                                    minHeight: "40px",
+                                    overflow: "hidden",
+                                    boxShadow: active
+                                        ? "0 0 14px rgba(239, 255, 0, 0.35), inset 0 0 8px rgba(239, 255, 0, 0.15)"
+                                        : "none",
+                                    transition: "all 0.2s ease",
                                 }}
                             >
-                                Input Data HSE
-                            </span>
-                        )}
-                    </Link>
+                                <span
+                                    style={{
+                                        width: "24px",
+                                        minWidth: "24px",
+                                        height: "24px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        marginRight: collapsed ? "0" : "10px",
+                                        color: active ? "#efff00" : "#64748b",
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <IconComponent size={18} strokeWidth={active ? 2.6 : 2} />
+                                </span>
+
+                                {!collapsed && (
+                                    <span
+                                        style={{
+                                            whiteSpace: "nowrap",
+                                            textShadow: active
+                                                ? "0 0 10px rgba(239, 255, 0, 0.5)"
+                                                : "none",
+                                        }}
+                                    >
+                                        {item.label}
+                                    </span>
+                                )}
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 {/* =====================================================

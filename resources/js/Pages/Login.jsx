@@ -17,6 +17,7 @@ import {
     MapPin,
     Fuel,
 } from "lucide-react";
+import { getTabId } from "../Services/authService";
 
 // DAFTAR AKUN PRESET RESMI TERHUBUNG DATABASE MYSQL
 export const LOGIN_PRESET_ACCOUNTS = [
@@ -266,7 +267,7 @@ const AREA_FILTER_TABS = [
     { key: "North", label: "North", badge: "3 Akun", dotColor: "#0284c7" },
 ];
 
-export default function Login({ status }) {
+export default function Login({ status, activeSessionUser }) {
     const [activeAreaTab, setActiveAreaTab] = useState("ADMIN");
     const [selectedAccountId, setSelectedAccountId] = useState("admin");
     const [showPassword, setShowPassword] = useState(false);
@@ -276,6 +277,7 @@ export default function Login({ status }) {
         password: "password",
         role: "admin",
         remember: true,
+        tab_id: getTabId(),
     });
 
     // Cari info akun aktif saat ini
@@ -354,6 +356,10 @@ export default function Login({ status }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         post("/login", {
+            data: {
+                ...data,
+                tab_id: getTabId(),
+            },
             onFinish: () => reset("password"),
         });
     };
@@ -1004,6 +1010,44 @@ export default function Login({ status }) {
                             }}
                         >
                             {errors.email}
+                        </div>
+                    )}
+
+                    {/* MULTI-TAB SESSION BANNER (JIKA SUDAH ADA SESI DI TAB LAIN) */}
+                    {activeSessionUser && (
+                        <div
+                            style={{
+                                backgroundColor: "#f0f9ff",
+                                border: "1.5px solid #bae6fd",
+                                borderRadius: "10px",
+                                padding: "10px 14px",
+                                marginBottom: "14px",
+                                color: "#0369a1",
+                                fontSize: "11.5px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: "10px",
+                                flexWrap: "wrap",
+                            }}
+                        >
+                            <div style={{ lineHeight: "1.4" }}>
+                                <span>
+                                    Sesi aktif terdeteksi: <strong>{activeSessionUser.name}</strong> ({activeSessionUser.role === "admin" ? "Admin" : "Field PIC"}). Anda dapat login akun lain untuk tab ini atau lanjut ke sesi aktif.
+                                </span>
+                            </div>
+                            <a
+                                href={activeSessionUser.role === "admin" ? "/admin/dashboard" : "/user/input-data"}
+                                style={{
+                                    color: "#0284c7",
+                                    fontWeight: "800",
+                                    textDecoration: "underline",
+                                    whiteSpace: "nowrap",
+                                    fontSize: "11px",
+                                }}
+                            >
+                                Buka Sesi Aktif &rarr;
+                            </a>
                         </div>
                     )}
 

@@ -8,11 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('hse_reports', function (Blueprint $table) {
-            $table->string('location_district', 150)
-                ->nullable()
-                ->after('focus_project');
-        });
+        if (! Schema::hasColumn('hse_reports', 'location_district')) {
+            Schema::table('hse_reports', function (Blueprint $table) {
+                $table->string('location_district', 150)
+                    ->nullable()
+                    ->after('focus_project');
+            });
+        }
     }
 
     public function down(): void

@@ -202,16 +202,113 @@ export const ALL_HSE_COORDS = [
 
 export const ALL_CONTRACTS = [
     "SPHR00576A",
-    "SPHR01003C",
+    "SPHR00797A",
     "SPHR01002C",
+    "SPHR01003C",
     "SPHR01067C",
     "SPHR01071C",
     "SPHR01095C",
-    "SPHR01097C",
     "SPHR01096C",
-    "SPHR00797A",
+    "SPHR01097C",
     "SPHR01220A",
 ];
+
+/**
+ * PENGELOMPOKAN RESMI RIG BERDASARKAN NOMOR KONTRAK (SESUAI LAMPIRAN RESMI)
+ */
+export const CONTRACT_RIG_GROUPS = [
+    {
+        contractNo: "SPHR00576A",
+        area: "RH-1",
+        hseCoord: "Ahmad Afandi / Edo Syahputra",
+        rigs: ["BMS # 19"],
+    },
+    {
+        contractNo: "SPHR00797A",
+        area: "RH-1",
+        hseCoord: "Ahmad Afandi / Edo Syahputra",
+        rigs: ["BMS # 16", "BMS # 11", "BMS # 10"],
+    },
+    {
+        contractNo: "SPHR01002C",
+        area: "North",
+        hseCoord: "Suryatno / Satrio",
+        rigs: ["BMS # 05"],
+    },
+    {
+        contractNo: "SPHR01003C",
+        area: "HO",
+        hseCoord: "Mulya Fernando / Joko Nuryanto",
+        rigs: ["BMS # 20"],
+    },
+    {
+        contractNo: "SPHR01067C",
+        area: "HO",
+        hseCoord: "Mulya Fernando / Joko Nuryanto",
+        rigs: ["BMS # 06"],
+    },
+    {
+        contractNo: "SPHR01071C",
+        area: "HO",
+        hseCoord: "Mulya Fernando / Joko Nuryanto",
+        rigs: ["BMS # 21"],
+    },
+    {
+        contractNo: "SPHR01095C",
+        area: "South",
+        hseCoord: "Teddy / Jejen",
+        rigs: ["BMS # 02", "BMS # 03", "BMS # 08"],
+    },
+    {
+        contractNo: "SPHR01096C",
+        area: "North",
+        hseCoord: "Suryatno / Satrio",
+        rigs: ["BMS # 17"],
+    },
+    {
+        contractNo: "SPHR01097C",
+        area: "HO",
+        hseCoord: "Mulya Fernando / Joko Nuryanto",
+        rigs: ["BMS # 03a"],
+    },
+    {
+        contractNo: "SPHR01220A",
+        area: "North & South",
+        hseCoord: "Suryatno / Satrio (North) & Teddy / Jejen (South)",
+        rigs: ["BMS # 18", "BMS # 15", "BMS # 07"],
+    },
+];
+
+/**
+ * Ambil daftar Rig yang dinaungi oleh Nomor Kontrak tertentu
+ */
+export function getRigsByContract(contractNo) {
+    if (!contractNo || contractNo === "all" || contractNo === "All Projects") {
+        return ALL_RIG_NAMES;
+    }
+    const group = CONTRACT_RIG_GROUPS.find((g) => g.contractNo === contractNo);
+    return group ? group.rigs : [];
+}
+
+/**
+ * Ambil Nomor Kontrak dan Area untuk suatu Rig
+ */
+export function getContractInfoByRig(rigName) {
+    if (!rigName) return null;
+    const key = normalizeRigKey(rigName);
+    for (const group of CONTRACT_RIG_GROUPS) {
+        const found = group.rigs.find((r) => normalizeRigKey(r) === key);
+        if (found) {
+            return {
+                contractNo: group.contractNo,
+                area: group.area,
+                hseCoord: group.hseCoord,
+                rig: found,
+            };
+        }
+    }
+    return null;
+}
 
 export const ALL_RIG_NAMES = RIG_CONTRACT_MASTER.map((m) => m.rig);
 

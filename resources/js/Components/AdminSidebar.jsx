@@ -22,6 +22,7 @@ import {
     ArrowUpRight,
 } from "lucide-react";
 import FeatureGuideModal from "./FeatureGuideModal";
+import { clearTabAuth } from "../Services/authService";
 
 function AdminSidebar({
     collapsed: collapsedProp,
@@ -195,6 +196,7 @@ function AdminSidebar({
     |--------------------------------------------------------------------------
     */
     const handleLogout = () => {
+        clearTabAuth();
         localStorage.removeItem("isLoggedIn");
         router.post("/logout");
     };

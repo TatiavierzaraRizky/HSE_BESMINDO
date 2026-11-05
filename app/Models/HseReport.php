@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class HseReport extends Model
 {
@@ -31,9 +31,12 @@ class HseReport extends Model
         'submitter_name',
         'submitter_email',
         'rejection_reason',
+        'latest_admin_note',
         'approved_at',
         'approved_by',
         'created_by',
+        'updated_by',
+        'submitted_by',
     ];
 
     protected $casts = [
@@ -90,14 +93,38 @@ class HseReport extends Model
 
     public function getEvidenceFileUrlAttribute(): ?string
     {
-        return $this->evidence_file ? asset('storage/' . $this->evidence_file) : null;
+        return $this->evidence_file ? asset('storage/'.$this->evidence_file) : null;
     }
 
     /**
-     * Relasi ke User pembuat
+     * Relasi ke User pembuat (Creator)
      */
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relasi ke User pengubah terakhir (Updater)
+     */
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * Relasi ke User pen-submit terakhir
+     */
+    public function submitterUser()
+    {
+        return $this->belongsTo(User::class, 'submitted_by');
+    }
+
+    /**
+     * Riwayat catatan penolakan dari admin (Rejection History Logs)
+     */
+    public function rejectionLogs(): HasMany
+    {
+        return $this->hasMany(HseReportRejectionLog::class, 'report_id')->orderByDesc('created_at');
     }
 }

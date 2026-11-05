@@ -6,6 +6,7 @@ use App\Models\HseReport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -15,7 +16,9 @@ class HseReportApprovalMail extends Mailable
     use Queueable, SerializesModels;
 
     public HseReport $report;
+
     public string $approveUrl;
+
     public string $rejectUrl;
 
     /**
@@ -33,14 +36,14 @@ class HseReportApprovalMail extends Mailable
      */
     public function envelope(): Envelope
     {
-        $fromName = !empty($this->report->submitter_name)
-            ? $this->report->submitter_name . ' (PT BESMINDO HSE)'
+        $fromName = ! empty($this->report->submitter_name)
+            ? $this->report->submitter_name.' (PT BESMINDO HSE)'
             : (config('mail.from.name') ?: 'PT BESMINDO MATERI SEWATAMA');
 
         $fromAddress = config('mail.from.address', 'tatiavierzararizky@gmail.com');
 
         $replyToList = [];
-        if (!empty($this->report->submitter_email)) {
+        if (! empty($this->report->submitter_email)) {
             $replyToList[] = new Address(
                 $this->report->submitter_email,
                 $this->report->submitter_name ?: 'Submitter HSE'
@@ -50,7 +53,7 @@ class HseReportApprovalMail extends Mailable
         return new Envelope(
             from: new Address($fromAddress, $fromName),
             replyTo: $replyToList,
-            subject: "[APPROVAL REQUIRED] Laporan HSE {$this->report->rig_no} - Periode {$this->report->period} ({$this->report->year})" . (!empty($this->report->submitter_name) ? " - Diinput oleh: {$this->report->submitter_name}" : ""),
+            subject: "[APPROVAL REQUIRED] Laporan HSE {$this->report->rig_no} - Periode {$this->report->period} ({$this->report->year})".(! empty($this->report->submitter_name) ? " - Diinput oleh: {$this->report->submitter_name}" : ''),
         );
     }
 
@@ -67,7 +70,7 @@ class HseReportApprovalMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

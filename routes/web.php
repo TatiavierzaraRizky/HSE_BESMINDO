@@ -1,10 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HseReportController;
 use App\Http\Controllers\SettingController;
+use App\Services\AuthTokenService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +20,30 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.attempt');
 Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
+
+// REALTIME SESSION & MULTI-TAB AUTH CHECK
+Route::get('/auth/current-user', function (Request $request) {
+    $preferredRole = $request->query('role');
+    $user = AuthTokenService::resolveUserFromRequest($request, $preferredRole) ?: auth()->user();
+    if (! $user) {
+        return response()->json([
+            'authenticated' => false,
+            'user' => null,
+        ]);
+    }
+
+    return response()->json([
+        'authenticated' => true,
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'area' => $user->area,
+            'assigned_rigs' => $user->getAssignedRigs(),
+        ],
+    ]);
+})->name('auth.current-user');
 
 // FORGOT & RESET PASSWORD
 Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])->name('password.request');
@@ -41,7 +67,6 @@ Route::get('/hse-report/reject/{id}/{token}', [
     'emailReject',
 ])->name('hse-report.email-reject');
 
-
 /*
 |--------------------------------------------------------------------------
 | USER (FIELD OPERATOR / PIC)
@@ -53,21 +78,41 @@ Route::prefix('user')->middleware(['role:user,admin'])->group(function () {
         return redirect()->route('user.input-data');
     });
 
-    Route::get('/input-data', function () {
-        return Inertia::render('User/InputData');
-    })->name('user.input-data');
+    Route::get('/input-data', [
+        HseReportController::class,
+        'inputDataUser',
+    ])->name('user.input-data');
+
+    Route::get('/drafts', [
+        HseReportController::class,
+        'draftsUser',
+    ])->name('user.drafts');
+
+    Route::get('/history', [
+        HseReportController::class,
+        'historyUser',
+    ])->name('user.history');
 
     Route::post('/hse-report', [
         HseReportController::class,
-        'store'
+        'store',
     ])->name('user.hse-report.store');
+
+    Route::delete('/hse-report/draft/{id}', [
+        HseReportController::class,
+        'deleteDraft',
+    ])->name('user.hse-report.draft.delete');
 });
 
 Route::post('/hse-report', [
     HseReportController::class,
-    'store'
+    'store',
 ])->middleware(['role:user,admin'])->name('hse-report.store');
 
+Route::delete('/hse-report/draft/{id}', [
+    HseReportController::class,
+    'deleteDraft',
+])->middleware(['role:user,admin'])->name('hse-report.draft.delete');
 
 /*
 |--------------------------------------------------------------------------
@@ -88,17 +133,16 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
         'dashboard',
     ])->name('admin.dashboard');
 
-
     /*
     |--------------------------------------------------------------------------
     | INPUT DATA HSE
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/input-data', function () {
-        return Inertia::render('Admin/InputData');
-    })->name('admin.input-data');
-
+    Route::get('/input-data', [
+        HseReportController::class,
+        'inputDataAdmin',
+    ])->name('admin.input-data');
 
     /*
     |--------------------------------------------------------------------------
@@ -109,29 +153,26 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
     // Simpan data HSE
     Route::post('/hse-report', [
         HseReportController::class,
-        'store'
+        'store',
     ])->name('admin.hse-report.store');
-
 
     // Ambil daftar report
     Route::get('/hse-report', [
         HseReportController::class,
-        'index'
+        'index',
     ])->name('admin.hse-report.index');
-
 
     // Ambil satu report berdasarkan ID
     Route::get('/hse-report/{id}', [
         HseReportController::class,
-        'show'
+        'show',
     ])->name('admin.hse-report.show');
 
     // Hapus satu report berdasarkan ID (CRUD Delete)
     Route::delete('/hse-report/{id}', [
         HseReportController::class,
-        'destroy'
+        'destroy',
     ])->name('admin.hse-report.destroy');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -144,7 +185,6 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
         'performance',
     ])->name('admin.hse-performance');
 
-
     /*
     |--------------------------------------------------------------------------
     | KPI PER RIG (REDIRECTED TO HSE PERFORMANCE RIG COMPARISON)
@@ -152,7 +192,6 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
     */
 
     Route::redirect('/kpi-per-rig', '/admin/hse-performance')->name('admin.kpi-per-rig');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -163,7 +202,6 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
     Route::get('/target-kpi', function () {
         return Inertia::render('Admin/TargetKPIManagement');
     })->name('admin.target-kpi');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -181,7 +219,6 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
         'updateApprovalStatus',
     ])->name('admin.approval.update');
 
-
     /*
     |--------------------------------------------------------------------------
     | REPORTS UTAMA
@@ -190,9 +227,8 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
 
     Route::get('/reports', [
         HseReportController::class,
-        'index'
+        'index',
     ])->name('admin.reports');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -212,7 +248,6 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
         'plan',
     ])->name('admin.reports.plan');
 
-
     /*
     |--------------------------------------------------------------------------
     | REPORT ACTUAL
@@ -230,7 +265,6 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
         HseReportController::class,
         'actual',
     ])->name('admin.reports.actual');
-
 
     /*
     |--------------------------------------------------------------------------

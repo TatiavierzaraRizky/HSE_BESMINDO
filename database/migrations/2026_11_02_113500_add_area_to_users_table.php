@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('users', 'area')) {
+        if (! Schema::hasColumn('users', 'area')) {
             Schema::table('users', function (Blueprint $table) {
                 $table->string('area', 50)->nullable()->after('role');
             });

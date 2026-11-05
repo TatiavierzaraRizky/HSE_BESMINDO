@@ -41,7 +41,7 @@ return new class extends Migration
         Schema::table('hse_lagging_indicators', function (Blueprint $table) {
 
             $table->dropIndex([
-                'hse_lagging_indicators_year_month_index'
+                'hse_lagging_indicators_year_month_index',
             ]);
 
             $table->dropColumn([

@@ -13,6 +13,9 @@ class HseLeadingIndicator extends Model
         'report_id',
         'indicator_no',
         'indicator_name',
+        'is_parent',
+        'parent_name',
+        'sub_label',
         'definition',
         'unit',
         'target_month',
@@ -25,11 +28,14 @@ class HseLeadingIndicator extends Model
     ];
 
     protected $casts = [
-        'indicator_no' => 'integer',
-        'target_month' => 'decimal:2',
-        'target_year' => 'decimal:2',
-        'plan' => 'decimal:2',
-        'actual' => 'decimal:2',
+        'indicator_no' => 'string',
+        'is_parent' => 'boolean',
+        'parent_name' => 'string',
+        'sub_label' => 'string',
+        'target_month' => 'string',
+        'target_year' => 'string',
+        'plan' => 'string',
+        'actual' => 'string',
         'month' => 'integer',
         'year' => 'integer',
     ];

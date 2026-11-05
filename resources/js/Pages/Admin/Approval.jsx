@@ -429,8 +429,11 @@ export default function Approval({ reports: initialReports = [] }) {
                                             const isPending = report.status === "pending" || report.status === "draft";
                                             const isApproved = report.status === "approved";
                                             const isRejected = report.status === "rejected";
-                                            const creatorName = report.submitter_name || report.creator?.name || (report.submitter_role === "admin" ? "HSE Administrator" : "User / PIC Lapangan");
-                                            const creatorEmail = report.submitter_email || report.creator?.email || "";
+                                            const creatorName = report.creator?.name || report.submitter_name || (report.submitter_role === "admin" ? "HSE Administrator" : "User / PIC Lapangan");
+                                            const creatorEmail = report.creator?.email || report.submitter_email || "";
+                                            const updaterName = (report.updater?.name && report.updater.name !== creatorName)
+                                                ? report.updater.name
+                                                : (report.submitter_user?.name && report.submitter_user.name !== creatorName ? report.submitter_user.name : null);
 
                                             return (
                                                 <tr
@@ -472,7 +475,7 @@ export default function Approval({ reports: initialReports = [] }) {
                                                         {report.report_date ? new Date(report.report_date).toLocaleDateString("id-ID") : "-"}
                                                     </td>
                                                     <td style={{ ...tdStyle, textAlign: "left" }}>
-                                                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                                        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
                                                             <div
                                                                 style={{
                                                                     width: "24px",
@@ -486,6 +489,7 @@ export default function Approval({ reports: initialReports = [] }) {
                                                                     fontSize: "10.5px",
                                                                     fontWeight: "800",
                                                                     flexShrink: 0,
+                                                                    marginTop: "2px",
                                                                 }}
                                                             >
                                                                 {creatorName.charAt(0).toUpperCase()}
@@ -497,6 +501,11 @@ export default function Approval({ reports: initialReports = [] }) {
                                                                 <div style={{ fontSize: "10.5px", color: "#64748b" }}>
                                                                     {creatorEmail || (report.submitter_role === "admin" ? "Role: Admin" : "Role: Field User")}
                                                                 </div>
+                                                                {updaterName && (
+                                                                    <div style={{ fontSize: "10.5px", color: "#0284c7", fontWeight: "700", marginTop: "2px", lineHeight: "1.2" }}>
+                                                                        (Diperbarui oleh: {updaterName})
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </td>
@@ -785,7 +794,7 @@ export default function Approval({ reports: initialReports = [] }) {
                                         </span>
                                     </div>
                                     <span style={{ fontSize: "11.5px", color: "#64748b" }}>
-                                        Submitter: {selectedReport.submitter_role === "admin" ? "HSE Admin" : "Field User / PIC"}
+                                        Submitter: {selectedReport.creator?.name || selectedReport.submitter_name || (selectedReport.submitter_role === "admin" ? "HSE Admin" : "Field User / PIC")}
                                     </span>
                                 </div>
 
@@ -1116,11 +1125,11 @@ export default function Approval({ reports: initialReports = [] }) {
                                                                 fontWeight: "800",
                                                             }}
                                                         >
-                                                            {(selectedReport.submitter_name || selectedReport.creator?.name || "U").charAt(0).toUpperCase()}
+                                                            {(selectedReport.creator?.name || selectedReport.submitter_name || "U").charAt(0).toUpperCase()}
                                                         </div>
                                                         <span>
-                                                            {selectedReport.submitter_name || selectedReport.creator?.name || (selectedReport.submitter_role === "admin" ? "HSE Administrator" : "User Lapangan")}
-                                                            {(selectedReport.submitter_email || selectedReport.creator?.email) ? ` (${selectedReport.submitter_email || selectedReport.creator?.email})` : ""}
+                                                            {selectedReport.creator?.name || selectedReport.submitter_name || (selectedReport.submitter_role === "admin" ? "HSE Administrator" : "User Lapangan")}
+                                                            {(selectedReport.creator?.email || selectedReport.submitter_email) ? ` (${selectedReport.creator?.email || selectedReport.submitter_email})` : ""}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -1130,6 +1139,40 @@ export default function Approval({ reports: initialReports = [] }) {
                                                         {selectedReport.created_at ? new Date(selectedReport.created_at).toLocaleString("id-ID") : "-"}
                                                     </div>
                                                 </div>
+
+                                                {((selectedReport.updater?.name && selectedReport.updater.name !== (selectedReport.creator?.name || selectedReport.submitter_name)) || (selectedReport.submitter_user?.name && selectedReport.submitter_user.name !== (selectedReport.creator?.name || selectedReport.submitter_name))) && (
+                                                    <div style={{ ...detailBoxStyle, gridColumn: "span 2", backgroundColor: "#f0f9ff", border: "1px solid #bae6fd" }}>
+                                                        <div style={{ ...detailLabel, color: "#0369a1" }}>Terakhir Diperbarui Oleh</div>
+                                                        <div style={{ ...detailVal, color: "#0284c7", fontWeight: "700", display: "flex", alignItems: "center", gap: "6px" }}>
+                                                            <div
+                                                                style={{
+                                                                    width: "20px",
+                                                                    height: "20px",
+                                                                    borderRadius: "50%",
+                                                                    backgroundColor: "#0284c7",
+                                                                    color: "#ffffff",
+                                                                    display: "flex",
+                                                                    alignItems: "center",
+                                                                    justifyContent: "center",
+                                                                    fontSize: "10px",
+                                                                    fontWeight: "800",
+                                                                }}
+                                                            >
+                                                                {(selectedReport.updater?.name || selectedReport.submitter_user?.name || "U").charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <span>
+                                                                {selectedReport.updater?.name || selectedReport.submitter_user?.name}
+                                                                {(selectedReport.updater?.email || selectedReport.submitter_user?.email) ? ` (${selectedReport.updater?.email || selectedReport.submitter_user?.email})` : ""}
+                                                            </span>
+                                                            {selectedReport.updated_at && (
+                                                                <span style={{ fontSize: "11px", fontWeight: "500", color: "#64748b", marginLeft: "auto" }}>
+                                                                    pada {new Date(selectedReport.updated_at).toLocaleString("id-ID")}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                                 <div style={detailBoxStyle}>
                                                     <div style={detailLabel}>Disetujui Oleh (Approver)</div>
                                                     <div style={detailVal}>

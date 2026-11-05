@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\HseReport;
-use App\Models\HseManHour;
 use App\Models\HseLaggingIndicator;
 use App\Models\HseLeadingIndicator;
+use App\Models\HseManHour;
+use App\Models\HseReport;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -25,61 +25,61 @@ class Kpi2027Seeder extends Seeder
                 '01' => [
                     'BMS#02' => [
                         'manHours' => ['p_plan' => 16500, 'p_act' => 15904, 'np_plan' => 3600, 'np_act' => 3499, 'emp' => 59, 'veh' => 7, 'km_p_plan' => 9500, 'km_p_act' => 8398, 'km_np_plan' => 3600, 'km_np_act' => 3266],
-                        'leading' => ['peka' => [118, 125], 'hazid' => [840, 976], 'swa' => [168, 172], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'top_mwt' => [1, 1], 'mwt' => [4, 4], 'tgm' => [56, 56], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'lead_forum' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]]
+                        'leading' => ['peka' => [118, 125], 'hazid' => [840, 976], 'swa' => [168, 172], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'top_mwt' => [1, 1], 'mwt' => [4, 4], 'tgm' => [56, 56], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'lead_forum' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]],
                     ],
                     'BMS#03' => [
                         'manHours' => ['p_plan' => 12500, 'p_act' => 11881, 'np_plan' => 3500, 'np_act' => 3351, 'emp' => 51, 'veh' => 5, 'km_p_plan' => 10179, 'km_p_act' => 6724, 'km_np_plan' => 3958, 'km_np_act' => 2615],
-                        'leading' => ['peka' => [114, 118], 'hazid' => [840, 890], 'swa' => [168, 170], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'top_mwt' => [1, 1], 'mwt' => [4, 3], 'tgm' => [56, 56], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'lead_forum' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]]
+                        'leading' => ['peka' => [114, 118], 'hazid' => [840, 890], 'swa' => [168, 170], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'top_mwt' => [1, 1], 'mwt' => [4, 3], 'tgm' => [56, 56], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'lead_forum' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]],
                     ],
                     'BMS#08' => [
                         'manHours' => ['p_plan' => 12200, 'p_act' => 11881, 'np_plan' => 3400, 'np_act' => 3351, 'emp' => 57, 'veh' => 6, 'km_p_plan' => 10179, 'km_p_act' => 6974, 'km_np_plan' => 3958, 'km_np_act' => 2712],
-                        'leading' => ['peka' => [114, 116], 'hazid' => [840, 920], 'swa' => [168, 168], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'top_mwt' => [1, 1], 'mwt' => [4, 4], 'tgm' => [56, 56], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'lead_forum' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 4], 'erp_rig' => [3, 3]]
+                        'leading' => ['peka' => [114, 116], 'hazid' => [840, 920], 'swa' => [168, 168], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'top_mwt' => [1, 1], 'mwt' => [4, 4], 'tgm' => [56, 56], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'lead_forum' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 4], 'erp_rig' => [3, 3]],
                     ],
                 ],
                 '02' => [
                     'BMS#02' => [
                         'manHours' => ['p_plan' => 18000, 'p_act' => 17608, 'np_plan' => 4000, 'np_act' => 3874, 'emp' => 59, 'veh' => 7, 'km_p_plan' => 10179, 'km_p_act' => 7603, 'km_np_plan' => 3958, 'km_np_act' => 2129],
-                        'leading' => ['peka' => [118, 337], 'hazid' => [930, 977], 'swa' => [186, 234], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 4], 'erp_rig' => [3, 3]]
+                        'leading' => ['peka' => [118, 337], 'hazid' => [930, 977], 'swa' => [186, 234], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 4], 'erp_rig' => [3, 3]],
                     ],
                     'BMS#03' => [
                         'manHours' => ['p_plan' => 17000, 'p_act' => 16864, 'np_plan' => 3800, 'np_act' => 3710, 'emp' => 57, 'veh' => 5, 'km_p_plan' => 10179, 'km_p_act' => 7741, 'km_np_plan' => 3958, 'km_np_act' => 3011],
                         'leading' => ['peka' => [114, 279], 'hazid' => [930, 967], 'swa' => [186, 186], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 5], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]],
                         'nearMiss' => 1,
-                        'nearMissNotes' => 'Pengait sling terlepas saat pengangkatan material pipa di tubular yard; area steril sehingga tidak ada cedera dan kerusakan.'
+                        'nearMissNotes' => 'Pengait sling terlepas saat pengangkatan material pipa di tubular yard; area steril sehingga tidak ada cedera dan kerusakan.',
                     ],
                     'BMS#08' => [
                         'manHours' => ['p_plan' => 17200, 'p_act' => 16864, 'np_plan' => 3800, 'np_act' => 3710, 'emp' => 57, 'veh' => 5, 'km_p_plan' => 14137, 'km_p_act' => 8734, 'km_np_plan' => 3958, 'km_np_act' => 2446],
-                        'leading' => ['peka' => [114, 256], 'hazid' => [930, 1046], 'swa' => [186, 186], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]]
+                        'leading' => ['peka' => [114, 256], 'hazid' => [930, 1046], 'swa' => [186, 186], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 4], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]],
                     ],
                 ],
                 '03' => [
                     'BMS#02' => [
                         'manHours' => ['p_plan' => 17500, 'p_act' => 17040, 'np_plan' => 3900, 'np_act' => 3749, 'emp' => 59, 'veh' => 7, 'km_p_plan' => 10179, 'km_p_act' => 5042, 'km_np_plan' => 3958, 'km_np_act' => 1961],
-                        'leading' => ['peka' => [118, 316], 'hazid' => [900, 952], 'swa' => [180, 180], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 5], 'tgm' => [60, 60], 'pre_hitch' => [3, 3], 'phr' => [4, 12], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]]
+                        'leading' => ['peka' => [118, 316], 'hazid' => [900, 952], 'swa' => [180, 180], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 5], 'tgm' => [60, 60], 'pre_hitch' => [3, 3], 'phr' => [4, 12], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]],
                     ],
                     'BMS#03' => [
                         'manHours' => ['p_plan' => 16500, 'p_act' => 16080, 'np_plan' => 3600, 'np_act' => 3538, 'emp' => 57, 'veh' => 6, 'km_p_plan' => 10179, 'km_p_act' => 7720, 'km_np_plan' => 3958, 'km_np_act' => 3002],
-                        'leading' => ['peka' => [114, 244], 'hazid' => [900, 952], 'swa' => [180, 244], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 6], 'tgm' => [60, 60], 'pre_hitch' => [3, 3], 'phr' => [4, 12], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]]
+                        'leading' => ['peka' => [114, 244], 'hazid' => [900, 952], 'swa' => [180, 244], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 6], 'tgm' => [60, 60], 'pre_hitch' => [3, 3], 'phr' => [4, 12], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]],
                     ],
                     'BMS#08' => [
                         'manHours' => ['p_plan' => 16800, 'p_act' => 16320, 'np_plan' => 3700, 'np_act' => 3590, 'emp' => 57, 'veh' => 5, 'km_p_plan' => 10179, 'km_p_act' => 6032, 'km_np_plan' => 3958, 'km_np_act' => 2345],
-                        'leading' => ['peka' => [114, 244], 'hazid' => [900, 900], 'swa' => [180, 187], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [60, 60], 'pre_hitch' => [3, 3], 'phr' => [4, 12], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]]
+                        'leading' => ['peka' => [114, 244], 'hazid' => [900, 900], 'swa' => [180, 187], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [60, 60], 'pre_hitch' => [3, 3], 'phr' => [4, 12], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]],
                     ],
                 ],
                 '04' => [
                     'BMS#02' => [
                         'manHours' => ['p_plan' => 17800, 'p_act' => 17608, 'np_plan' => 3900, 'np_act' => 3874, 'emp' => 59, 'veh' => 7, 'km_p_plan' => 10179, 'km_p_act' => 4947, 'km_np_plan' => 3958, 'km_np_act' => 1923],
-                        'leading' => ['peka' => [118, 370], 'hazid' => [930, 1019], 'swa' => [186, 188], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 11], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]]
+                        'leading' => ['peka' => [118, 370], 'hazid' => [930, 1019], 'swa' => [186, 188], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 11], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 3]],
                     ],
                     'BMS#03' => [
                         'manHours' => ['p_plan' => 16616, 'p_act' => 16864, 'np_plan' => 3656, 'np_act' => 3710, 'emp' => 57, 'veh' => 6, 'km_p_plan' => 10179, 'km_p_act' => 7991, 'km_np_plan' => 3958, 'km_np_act' => 3107],
-                        'leading' => ['peka' => [114, 264], 'hazid' => [930, 996], 'swa' => [186, 269], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 11], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 5], 'erp_rig' => [3, 5]]
+                        'leading' => ['peka' => [114, 264], 'hazid' => [930, 996], 'swa' => [186, 269], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 11], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 5], 'erp_rig' => [3, 5]],
                     ],
                     'BMS#08' => [
                         'manHours' => ['p_plan' => 17000, 'p_act' => 16864, 'np_plan' => 3750, 'np_act' => 3710, 'emp' => 57, 'veh' => 5, 'km_p_plan' => 10179, 'km_p_act' => 6032, 'km_np_plan' => 3958, 'km_np_act' => 2345],
-                        'leading' => ['peka' => [114, 285], 'hazid' => [930, 1074], 'swa' => [186, 187], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 11], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 4]]
+                        'leading' => ['peka' => [114, 285], 'hazid' => [930, 1074], 'swa' => [186, 187], 'apd' => [1, 1], 'drops' => [4, 4], 'vv' => [1, 1], 'ivms' => [100, 100], 'pti' => [5, 5], 'mwt' => [4, 4], 'tgm' => [62, 62], 'pre_hitch' => [3, 3], 'phr' => [4, 11], 'st_yard' => [1, 1], 'st_rig' => [1, 1], 'housekeeping' => [1, 1], 'best_peka' => [1, 1], 'best_driver' => [1, 1], 'onsite' => [3, 3], 'erp_rig' => [3, 4]],
                     ],
-                ]
+                ],
             ];
 
             $laggingList = [

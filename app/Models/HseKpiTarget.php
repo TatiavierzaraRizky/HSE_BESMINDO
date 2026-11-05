@@ -16,7 +16,12 @@ class HseKpiTarget extends Model
         'location_district',
 
         'indicator_no',
+        'order_no',
         'indicator_name',
+        'is_parent',
+        'parent_name',
+        'sub_label',
+        'category',
         'definition',
 
         'frequency_rate',
@@ -29,20 +34,26 @@ class HseKpiTarget extends Model
 
         'plan',
         'actual',
+        'monthly_plans',
 
         'notes',
     ];
 
     protected $casts = [
         'year' => 'integer',
-        'indicator_no' => 'integer',
+        'indicator_no' => 'string',
+        'order_no' => 'integer',
+        'is_parent' => 'boolean',
+        'parent_name' => 'string',
+        'sub_label' => 'string',
 
-        'target_month' => 'decimal:2',
-        'target_year' => 'decimal:2',
+        'target_month' => 'string',
+        'target_year' => 'string',
 
         'month' => 'integer',
 
-        'plan' => 'decimal:2',
-        'actual' => 'decimal:2',
+        'plan' => 'string',
+        'actual' => 'string',
+        'monthly_plans' => 'array',
     ];
 }
