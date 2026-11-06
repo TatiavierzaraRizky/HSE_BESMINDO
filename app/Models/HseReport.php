@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -11,12 +12,15 @@ class HseReport extends Model
     protected $table = 'hse_reports';
 
     protected $fillable = [
+        'rig_id',
         'report_date',
         'contract_no',
+        'contract_number',
         'rig_no',
         'work_period',
         'year',
         'period',
+        'month',
         'focus_project',
         'location_district',
         'issued_date',
@@ -44,7 +48,47 @@ class HseReport extends Model
         'issued_date' => 'date',
         'approved_at' => 'datetime',
         'year' => 'integer',
+        'month' => 'integer',
+        'rig_id' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $report) {
+            // Sinkronkan contract_number dengan contract_no
+            if (! empty($report->contract_no) && empty($report->contract_number)) {
+                $report->contract_number = $report->contract_no;
+            } elseif (! empty($report->contract_number) && empty($report->contract_no)) {
+                $report->contract_no = $report->contract_number;
+            }
+
+            // Sinkronkan month dengan period
+            if (! empty($report->period) && empty($report->month)) {
+                $report->month = (int) $report->period;
+            }
+
+            // Sinkronkan rig_id dan rig_no
+            if (! empty($report->rig_no) && empty($report->rig_id)) {
+                $rig = Rig::where('rig_no', $report->rig_no)->first();
+                if ($rig) {
+                    $report->rig_id = $rig->id;
+                }
+            } elseif (! empty($report->rig_id) && empty($report->rig_no)) {
+                $rig = Rig::find($report->rig_id);
+                if ($rig) {
+                    $report->rig_no = $rig->rig_no;
+                }
+            }
+        });
+    }
+
+    /**
+     * Relasi ke Master Rig
+     */
+    public function rig(): BelongsTo
+    {
+        return $this->belongsTo(Rig::class, 'rig_id');
+    }
 
     /**
      * Relasi ke Man Hours

@@ -56,6 +56,13 @@ class RoleMiddleware
 
         // Jika setelah pemulihan token hak akses tetap tidak memenuhi
         if (! empty($roles) && ! in_array($user->role, $roles)) {
+            if ($request->expectsJson() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Akses ditolak: Akun Anda tidak memiliki hak akses yang diperlukan.',
+                ], 403);
+            }
+
             // User lapangan mencoba membuka area admin
             if ($user->role === 'user') {
                 return redirect()->route('user.input-data')->with('error', 'Akses ditolak: Akun Anda tidak memiliki hak akses Administrator.');

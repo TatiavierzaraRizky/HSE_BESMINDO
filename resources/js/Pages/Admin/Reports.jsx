@@ -3,6 +3,7 @@ import AdminSidebar from "../../Components/AdminSidebar";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { usePage } from "@inertiajs/react";
+import { AlertTriangle, Download, X } from "lucide-react";
 import { calcFrequencyRate, calcMvcFrequencyRate } from "../../Utils/hseCalculations";
 import {
     ALL_AREAS,
@@ -2003,6 +2004,7 @@ export default function Reports() {
     };
 
     const [exporting, setExporting] = useState(false);
+    const [showExportModal, setShowExportModal] = useState(false);
 
     const availableDates = useMemo(() => {
         return [
@@ -3021,6 +3023,15 @@ export default function Reports() {
     /* ========================================================
        EXPORT EXCEL
     ======================================================== */
+
+    const handleExportExcelClick = () => {
+        setShowExportModal(true);
+    };
+
+    const handleConfirmExport = async () => {
+        setShowExportModal(false);
+        await handleExportExcel();
+    };
 
     const handleExportExcel = async () => {
         try {
@@ -4099,7 +4110,7 @@ export default function Reports() {
                     </div>
 
                     <button
-                        onClick={handleExportExcel}
+                        onClick={handleExportExcelClick}
                         disabled={exporting}
                         style={{
                             backgroundColor: "#EFFF00",
@@ -4522,7 +4533,7 @@ export default function Reports() {
                             </div>
 
                             <button
-                                onClick={handleExportExcel}
+                                onClick={handleExportExcelClick}
                                 disabled={exporting}
                                 style={{
                                     backgroundColor: "#EFFF00",
@@ -5469,6 +5480,249 @@ export default function Reports() {
                     </section>
                 )}
             </main>
+
+            {/* MODAL POP-UP KONFIRMASI / PENGINGAT EKSPOR EXCEL */}
+            <ExportExcelConfirmModal
+                isOpen={showExportModal}
+                onClose={() => setShowExportModal(false)}
+                onConfirm={handleConfirmExport}
+                isExporting={exporting}
+                reportConfig={{
+                    reportType: "HSE Performance",
+                    period,
+                    year,
+                    rig,
+                    project,
+                    location,
+                    reportDate,
+                }}
+            />
+        </div>
+    );
+}
+
+/* ============================================================
+   SUB-COMPONENT: MODAL PENGINGAT EKSPOR EXCEL
+============================================================ */
+
+function ExportExcelConfirmModal({ isOpen, onClose, onConfirm, isExporting, reportConfig }) {
+    const [confirmSignCheckbox, setConfirmSignCheckbox] = useState(false);
+
+    if (!isOpen) return null;
+
+    const { reportType, period, year, rig, project, location } = reportConfig || {};
+
+    return (
+        <div
+            style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(15, 23, 42, 0.65)",
+                backdropFilter: "blur(4px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 9999,
+                padding: "20px",
+                boxSizing: "border-box",
+            }}
+            onClick={onClose}
+        >
+            <div
+                style={{
+                    backgroundColor: "#ffffff",
+                    borderRadius: "14px",
+                    maxWidth: "520px",
+                    width: "100%",
+                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35)",
+                    border: "1.5px solid #fde68a",
+                    overflow: "hidden",
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div
+                    style={{
+                        padding: "18px 24px",
+                        backgroundColor: "#b45309",
+                        backgroundImage: "linear-gradient(135deg, #b45309 0%, #78350f 100%)",
+                        color: "#ffffff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                    }}
+                >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <span style={{ fontSize: "20px" }}>⚠️</span>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "800", color: "#fef3c7" }}>
+                                Pengingat Ekspor Laporan Excel
+                            </h3>
+                            <p style={{ margin: 0, fontSize: "11.5px", color: "#fde68a", fontWeight: "600" }}>
+                                Pemeriksaan Kelengkapan Tanda Tangan & Administrasi
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isExporting}
+                        style={{
+                            border: "none",
+                            background: "transparent",
+                            cursor: "pointer",
+                            color: "#fde68a",
+                            padding: "4px",
+                            display: "flex",
+                            alignItems: "center",
+                            borderRadius: "4px",
+                        }}
+                    >
+                        <X size={18} />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: "22px 24px" }}>
+                    {/* Warning Box */}
+                    <div
+                        style={{
+                            backgroundColor: "#fffbeb",
+                            border: "1.5px solid #fde68a",
+                            borderRadius: "10px",
+                            padding: "16px 18px",
+                            marginBottom: "16px",
+                            display: "flex",
+                            gap: "12px",
+                            alignItems: "flex-start",
+                        }}
+                    >
+                        <AlertTriangle size={22} color="#b45309" style={{ flexShrink: 0, marginTop: "2px" }} />
+                        <div style={{ fontSize: "13.5px", color: "#92400e", lineHeight: "1.55", fontWeight: "600" }}>
+                            File laporan Excel akan segera diunduh. Jangan lupa untuk mengisi nama Asmen dan menambahkan tanda tangan manual pada berkas Excel setelah file berhasil diekspor.
+                        </div>
+                    </div>
+
+                    {/* Metadata Summary Box */}
+                    <div
+                        style={{
+                            backgroundColor: "#f8fafc",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "9px",
+                            padding: "12px 16px",
+                            marginBottom: "18px",
+                            fontSize: "12.5px",
+                        }}
+                    >
+                        <div style={{ display: "grid", gridTemplateColumns: "130px 1fr", gap: "6px", marginBottom: "6px" }}>
+                            <span style={{ color: "#64748b", fontWeight: "700" }}>Jenis Laporan:</span>
+                            <span style={{ color: "#0f172a", fontWeight: "700" }}>{reportType || "HSE Performance"}</span>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "130px 1fr", gap: "6px", marginBottom: "6px" }}>
+                            <span style={{ color: "#64748b", fontWeight: "700" }}>Periode / Tahun:</span>
+                            <span style={{ color: "#004d32", fontWeight: "800" }}>{period} - Tahun {year}</span>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "130px 1fr", gap: "6px", marginBottom: "6px" }}>
+                            <span style={{ color: "#64748b", fontWeight: "700" }}>Rig / Lokasi:</span>
+                            <span style={{ color: "#0f172a", fontWeight: "700" }}>{rig} ({location})</span>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "130px 1fr", gap: "6px" }}>
+                            <span style={{ color: "#64748b", fontWeight: "700" }}>Nomor Kontrak:</span>
+                            <span style={{ color: "#0f172a", fontWeight: "700" }}>{project === "All Projects" ? "-- Semua Nomor Kontrak --" : project}</span>
+                        </div>
+                    </div>
+
+                    {/* Optional Checkbox */}
+                    <label
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            cursor: "pointer",
+                            userSelect: "none",
+                            backgroundColor: confirmSignCheckbox ? "#f0fdf4" : "#f8fafc",
+                            border: confirmSignCheckbox ? "1.5px solid #86efac" : "1px solid #cbd5e1",
+                            borderRadius: "8px",
+                            padding: "11px 14px",
+                            transition: "all 0.15s ease",
+                        }}
+                    >
+                        <input
+                            type="checkbox"
+                            checked={confirmSignCheckbox}
+                            onChange={(e) => setConfirmSignCheckbox(e.target.checked)}
+                            style={{
+                                width: "16px",
+                                height: "16px",
+                                accentColor: "#004d32",
+                                cursor: "pointer",
+                            }}
+                        />
+                        <span style={{ fontSize: "13px", fontWeight: "700", color: confirmSignCheckbox ? "#166534" : "#334155" }}>
+                            Saya memahami dan akan melengkapi tanda tangan.{" "}
+                            <span style={{ fontSize: "11.5px", fontWeight: "500", color: "#64748b" }}>(opsional)</span>
+                        </span>
+                    </label>
+                </div>
+
+                {/* Footer Actions */}
+                <div
+                    style={{
+                        padding: "14px 24px",
+                        backgroundColor: "#f1f5f9",
+                        borderTop: "1px solid #e2e8f0",
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        gap: "10px",
+                    }}
+                >
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isExporting}
+                        style={{
+                            height: "38px",
+                            padding: "0 18px",
+                            backgroundColor: "#ffffff",
+                            border: "1px solid #cbd5e1",
+                            borderRadius: "7px",
+                            fontSize: "13px",
+                            fontWeight: "700",
+                            color: "#475569",
+                            cursor: "pointer",
+                        }}
+                    >
+                        Batal
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        disabled={isExporting}
+                        style={{
+                            height: "38px",
+                            padding: "0 22px",
+                            backgroundColor: "#EFFF00",
+                            border: "1px solid #d9e021",
+                            borderRadius: "7px",
+                            fontSize: "13px",
+                            fontWeight: "800",
+                            color: "#064E3B",
+                            cursor: isExporting ? "not-allowed" : "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                        }}
+                    >
+                        <Download size={15} />
+                        {isExporting ? "Mengunduh File..." : "Lanjutkan Ekspor / Unduh Excel"}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

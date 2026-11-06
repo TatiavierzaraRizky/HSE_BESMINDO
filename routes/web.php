@@ -2,11 +2,11 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HseReportController;
+use App\Http\Controllers\KpiMasterController;
 use App\Http\Controllers\SettingController;
 use App\Services\AuthTokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,6 +102,12 @@ Route::prefix('user')->middleware(['role:user,admin'])->group(function () {
         HseReportController::class,
         'deleteDraft',
     ])->name('user.hse-report.draft.delete');
+
+    // Read-only KPI Targets untuk PIC
+    Route::get('/kpi-targets', [
+        KpiMasterController::class,
+        'index',
+    ])->name('user.kpi-targets.index');
 });
 
 Route::post('/hse-report', [
@@ -199,9 +205,25 @@ Route::prefix('admin')->middleware(['role:admin'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/target-kpi', function () {
-        return Inertia::render('Admin/TargetKPIManagement');
-    })->name('admin.target-kpi');
+    Route::get('/target-kpi', [
+        KpiMasterController::class,
+        'index',
+    ])->name('admin.target-kpi');
+
+    Route::post('/target-kpi', [
+        KpiMasterController::class,
+        'store',
+    ])->name('admin.target-kpi.store');
+
+    Route::put('/target-kpi/{id}', [
+        KpiMasterController::class,
+        'update',
+    ])->name('admin.target-kpi.update');
+
+    Route::delete('/target-kpi/{id}', [
+        KpiMasterController::class,
+        'destroy',
+    ])->name('admin.target-kpi.destroy');
 
     /*
     |--------------------------------------------------------------------------

@@ -9,6 +9,7 @@ use App\Models\HseLeadingIndicator;
 use App\Models\HseManHour;
 use App\Models\HseReport;
 use App\Models\HseReportRejectionLog;
+use App\Models\Rig;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -404,6 +405,10 @@ class HseReportController extends Controller
         $reqRig = (string) $request->input('rigNo');
         $reqContract = (string) $request->input('contractNo');
 
+        $rig = Rig::where('rig_no', $reqRig)->first();
+        $rigId = $rig?->id;
+        $monthNum = ! empty($reqPeriod) ? (int) $reqPeriod : (int) date('n', strtotime($request->input('date', 'now')));
+
         // ========================================================
         // HAK AKSES BERBASIS RIG (SECURITY CHECK)
         // PIC dari rig yang berbeda SANGAT DILARANG menginput/mengedit rig lain
@@ -426,22 +431,23 @@ class HseReportController extends Controller
                 ], 403);
             }
 
-            // Tolak hanya jika laporan ini sudah disubmit (pending) atau approved
-            if ($existingReport && in_array($existingReport->status, ['pending', 'approved'])) {
-                $monthNames = [
-                    '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',
-                    '04' => 'April', '05' => 'Mei', '06' => 'Juni',
-                    '07' => 'Juli', '08' => 'Agustus', '09' => 'September',
-                    '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
-                ];
-                $paddedPeriod = str_pad((string) $existingReport->period, 2, '0', STR_PAD_LEFT);
-                $monthName = $monthNames[$paddedPeriod] ?? "Bulan {$existingReport->period}";
+            // Penegakan Hak Akses: Jika laporan spesifik yang ingin diupdate berstatus pending / approved
+            if ($existingReport && $user && $user->role !== 'admin') {
+                if ($existingReport->status === 'approved') {
+                    return response()->json([
+                        'success' => false,
+                        'is_locked' => true,
+                        'message' => 'Laporan ini telah disetujui (APPROVED) dan berstatus Read-Only. Kru lapangan tidak diizinkan mengubah laporan yang telah disetujui.',
+                    ], 403);
+                }
 
-                return response()->json([
-                    'success' => false,
-                    'is_duplicate' => true,
-                    'message' => "Data untuk Rig {$existingReport->rig_no} periode {$monthName} {$existingReport->year} sudah pernah dikirim (Submitted). Tidak dapat melakukan penginputan ulang untuk mencegah duplikasi data.",
-                ], 422);
+                if ($existingReport->status === 'pending') {
+                    return response()->json([
+                        'success' => false,
+                        'is_locked' => true,
+                        'message' => 'Laporan ini sedang menunggu persetujuan Admin (SUBMITTED) dan formulir terkunci.',
+                    ], 403);
+                }
             }
         }
 
@@ -453,16 +459,23 @@ class HseReportController extends Controller
         // diperbolehkan untuk merevisi dan melakukan submit ulang (resubmit).
         // ========================================================
         $duplicateQuery = HseReport::whereIn('status', ['pending', 'approved'])
-            ->where('rig_no', $reqRig)
-            ->where('contract_no', $reqContract)
+            ->where(function ($q) use ($reqRig, $rigId) {
+                if ($rigId) {
+                    $q->where('rig_id', $rigId)->orWhere('rig_no', $reqRig);
+                } else {
+                    $q->where('rig_no', $reqRig);
+                }
+            })
+            ->where(function ($q) use ($reqContract) {
+                $q->where('contract_no', $reqContract)->orWhere('contract_number', $reqContract);
+            })
             ->where('year', $reqYear)
-            ->where('period', $reqPeriod);
+            ->where(function ($q) use ($reqPeriod, $monthNum) {
+                $q->where('period', $reqPeriod)->orWhere('month', $monthNum);
+            });
 
         if ($draftId) {
             $duplicateQuery->where('id', '!=', $draftId);
-        }
-        if ($existingReport) {
-            $duplicateQuery->where('id', '!=', $existingReport->id);
         }
 
         $alreadySubmitted = $duplicateQuery->first();
@@ -479,15 +492,27 @@ class HseReportController extends Controller
             return response()->json([
                 'success' => false,
                 'is_duplicate' => true,
+                'is_locked' => true,
+                'status' => $alreadySubmitted->status,
                 'message' => "Data untuk Rig {$reqRig} periode {$monthName} {$reqYear} sudah pernah dikirim (Submitted). Tidak dapat melakukan penginputan ulang untuk mencegah duplikasi data.",
             ], 422);
         }
 
         if (! $existingReport) {
-            $existingReport = HseReport::where('rig_no', $reqRig)
-                ->where('contract_no', $reqContract)
+            $existingReport = HseReport::where(function ($q) use ($reqRig, $rigId) {
+                if ($rigId) {
+                    $q->where('rig_id', $rigId)->orWhere('rig_no', $reqRig);
+                } else {
+                    $q->where('rig_no', $reqRig);
+                }
+            })
+                ->where(function ($q) use ($reqContract) {
+                    $q->where('contract_no', $reqContract)->orWhere('contract_number', $reqContract);
+                })
                 ->where('year', $reqYear)
-                ->where('period', $reqPeriod)
+                ->where(function ($q) use ($reqPeriod, $monthNum) {
+                    $q->where('period', $reqPeriod)->orWhere('month', $monthNum);
+                })
                 ->where(function ($q) use ($isDraft) {
                     if ($isDraft) {
                         $q->where('status', 'draft');
@@ -496,6 +521,30 @@ class HseReportController extends Controller
                     }
                 })
                 ->first();
+        }
+
+        // ========================================================
+        // PENEGAKAN HAK AKSES TRANSAKSI (RBAC TABEL TRANSAKSI PIC vs ADMIN)
+        // - DRAFT: Create & Update diizinkan.
+        // - REJECTED: Update Only diizinkan (edit revisi untuk resubmit).
+        // - PENDING / APPROVED: Strictly Read-Only / locked.
+        // ========================================================
+        if ($existingReport && $user && $user->role !== 'admin') {
+            if ($existingReport->status === 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'is_locked' => true,
+                    'message' => 'Laporan ini telah disetujui (APPROVED) dan berstatus Read-Only. Kru lapangan tidak diizinkan mengubah laporan yang telah disetujui.',
+                ], 403);
+            }
+
+            if ($existingReport->status === 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'is_locked' => true,
+                    'message' => 'Laporan ini sedang menunggu persetujuan Admin (SUBMITTED) dan formulir terkunci.',
+                ], 403);
+            }
         }
 
         $hasExistingEvidence = ! empty($existingReport?->evidence_file);
@@ -583,9 +632,9 @@ class HseReportController extends Controller
         $validated = $validator->validated();
 
         try {
-            $report = DB::transaction(function () use ($validated, $request, $isDraft, $existingReport) {
+            $report = DB::transaction(function () use ($validated, $request, $isDraft, $existingReport, $rigId, $monthNum) {
                 $year = ! empty($validated['year']) ? (int) $validated['year'] : (int) date('Y', strtotime($validated['date']));
-                $month = (int) date('n', strtotime($validated['date']));
+                $month = $monthNum ?: (int) date('n', strtotime($validated['date']));
                 $approvalToken = Str::random(40);
                 $submitterRole = $validated['submitterRole'] ?? ($request->is('admin/*') ? 'admin' : 'user');
                 $targetStatus = $isDraft ? 'draft' : 'pending';
@@ -600,6 +649,9 @@ class HseReportController extends Controller
 
                 if ($existingReport) {
                     $updatePayload = [
+                        'rig_id' => $rigId,
+                        'contract_number' => $validated['contractNo'],
+                        'month' => $month,
                         'report_date' => $validated['date'],
                         'contract_no' => $validated['contractNo'],
                         'rig_no' => $validated['rigNo'],
@@ -647,6 +699,9 @@ class HseReportController extends Controller
                     $report = $existingReport;
                 } else {
                     $report = HseReport::create([
+                        'rig_id' => $rigId,
+                        'contract_number' => $validated['contractNo'],
+                        'month' => $month,
                         'report_date' => $validated['date'],
                         'contract_no' => $validated['contractNo'],
                         'rig_no' => $validated['rigNo'],
@@ -1005,6 +1060,13 @@ class HseReportController extends Controller
      */
     public function updateApprovalStatus(Request $request, $id)
     {
+        if (auth()->user()?->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses Ditolak: Hanya Administrator yang berwenang melakukan Approval atau Penolakan laporan.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'status' => ['required', 'in:approved,rejected,pending'],
             'rejection_reason' => ['nullable', 'string'],
@@ -1092,6 +1154,13 @@ class HseReportController extends Controller
      */
     public function destroy($id)
     {
+        if (auth()->user()?->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses Ditolak: Hanya Administrator yang berwenang menghapus Laporan HSE.',
+            ], 403);
+        }
+
         $report = HseReport::findOrFail($id);
 
         DB::transaction(function () use ($report) {

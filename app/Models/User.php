@@ -7,6 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -39,6 +41,23 @@ class User extends Authenticatable
     }
 
     /**
+     * Relasi ke penugasan rig (pivot table user_rig_assignments).
+     */
+    public function rigAssignments(): HasMany
+    {
+        return $this->hasMany(UserRigAssignment::class, 'user_id');
+    }
+
+    /**
+     * Relasi ke seluruh Rig yang ditugaskan ke user ini.
+     */
+    public function rigs(): BelongsToMany
+    {
+        return $this->belongsToMany(Rig::class, 'user_rig_assignments', 'user_id', 'rig_id')
+            ->withTimestamps();
+    }
+
+    /**
      * Ambil daftar Rig yang menjadi hak akses pengguna.
      *
      * @return array<string>
@@ -54,15 +73,30 @@ class User extends Authenticatable
             ];
         }
 
+        // 1. Cek dari relasi user_rig_assignments jika ada
+        if ($this->relationLoaded('rigAssignments')) {
+            $assigned = $this->rigAssignments->pluck('rig_no')->filter()->values()->all();
+            if (! empty($assigned)) {
+                return $assigned;
+            }
+        } elseif ($this->exists) {
+            $assigned = $this->rigAssignments()->pluck('rig_no')->filter()->values()->all();
+            if (! empty($assigned)) {
+                return $assigned;
+            }
+        }
+
+        // 2. Cek dari kolom JSON assigned_rigs
         if (! empty($this->assigned_rigs) && is_array($this->assigned_rigs)) {
             return $this->assigned_rigs;
         }
 
+        // 3. Fallback berdasarkan area
         if (! empty($this->area) && isset(self::AREA_RIG_MAP[$this->area])) {
             return self::AREA_RIG_MAP[$this->area];
         }
 
-        // Deteksi fallback berdasarkan nama atau email PIC
+        // 4. Deteksi fallback berdasarkan nama atau email PIC
         $lower = strtolower($this->name.' '.$this->email);
         if (str_contains($lower, 'afandi') || str_contains($lower, 'edo') || str_contains($lower, 'rh1') || str_contains($lower, 'rh-1')) {
             return self::AREA_RIG_MAP['RH-1'];
